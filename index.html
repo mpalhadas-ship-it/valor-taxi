@@ -214,17 +214,21 @@
     z-index: 9999; padding: 20px;
   }
   .confirm-box {
-    background: white; border-radius: 16px; padding: 24px;
+    background: var(--taxi-blue-dark); border-radius: 16px; padding: 24px;
     max-width: 380px; width: 100%; text-align: center;
     box-shadow: 0 8px 32px rgba(0,0,0,0.3);
   }
-  .confirm-box .confirm-icon { font-size: 2rem; margin-bottom: 8px; }
+  .confirm-box .confirm-icon { display: none; }
   .confirm-box .confirm-address {
-    background: #f5f5f5; border-radius: 8px; padding: 12px;
-    font-size: 0.9rem; color: #333; margin: 12px 0; text-align: left;
+    background: var(--taxi-yellow); border-radius: 8px; padding: 12px;
+    font-size: 1rem; color: var(--taxi-blue-dark); margin: 12px 0; text-align: center;
+    font-weight: 700;
   }
   .confirm-box .confirm-warning {
-    font-size: 0.8rem; color: #c0392b; font-weight: 600; margin-bottom: 16px;
+    font-size: 0.8rem; color: var(--taxi-yellow); font-weight: 600; margin-bottom: 16px;
+  }
+  .confirm-box .confirm-title {
+    color: var(--taxi-yellow); font-weight: 700; font-size: 1rem; margin-bottom: 4px;
   }
   .confirm-box .confirm-btns { display: flex; gap: 10px; }
   .confirm-box .btn-confirmar {
@@ -233,8 +237,8 @@
     font-weight: 700; font-size: 1rem; cursor: pointer;
   }
   .confirm-box .btn-cancelar {
-    flex: 1; background: #eee; color: #555;
-    border: none; border-radius: 8px; padding: 12px;
+    flex: 1; background: transparent; color: var(--taxi-yellow);
+    border: 2px solid var(--taxi-yellow); border-radius: 8px; padding: 12px;
     font-weight: 600; font-size: 0.95rem; cursor: pointer;
   }
 
@@ -810,7 +814,7 @@ CÁLCULO VÁLIDO PARA CORRIDAS NO PERÍMETRO URBANO DE JUIZ DE FORA
       overlay.innerHTML = `
         <div class="confirm-box">
           <div class="confirm-icon">📍</div>
-          <div style="font-weight:700;font-size:1rem;margin-bottom:4px;">Endereço encontrado:</div>
+          <div class="confirm-title">Endereço encontrado:</div>
           <div class="confirm-address">${formatted}</div>
           <div class="confirm-warning">⚠️ Válido apenas para destinos em Juiz de Fora - MG</div>
           <div class="confirm-btns">
