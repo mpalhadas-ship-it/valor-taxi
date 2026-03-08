@@ -682,9 +682,23 @@ CÁLCULO VÁLIDO PARA CORRIDAS NO PERÍMETRO URBANO DE JUIZ DE FORA
     'aeroporto iza',
     'aeroporto de rio novo',
     'aeroporto rio novo',
+    'aeroporto do galeão',
+    'aeroporto galeão',
+    'aeroporto santos dumont',
+    'aeroporto congonhas',
+    'aeroporto guarulhos',
+    'aeroporto confins',
+    'aeroporto de confins',
+    'aeroporto tancredo neves',
+    'aeroporto internacional',
     'goianá',
     'goiana',
-    'rio novo'
+    'rio novo',
+    'galeão',
+    'santos dumont',
+    'congonhas',
+    'guarulhos',
+    'confins'
   ];
 
   async function geocodeFresh(addr) {
@@ -720,6 +734,19 @@ CÁLCULO VÁLIDO PARA CORRIDAS NO PERÍMETRO URBANO DE JUIZ DE FORA
       throw new Error('Destino fora do perímetro urbano de Juiz de Fora. Para outros municípios consulte o taxista.');
     }
     return { lat: loc.lat, lon: loc.lng };
+  }
+
+  // Centro de JF (Rodoviária)
+  const JF_CENTRO = { lat: -21.738045, lon: -43.374371 };
+
+  function distanciaKm(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   }
 
   async function geocode(addr) {
@@ -778,6 +805,13 @@ CÁLCULO VÁLIDO PARA CORRIDAS NO PERÍMETRO URBANO DE JUIZ DE FORA
         originCoord = await geocodeFresh(originVal);
       }
       const destCoords = await Promise.all(filled.map(addr => geocodeFresh(addr)));
+      // Verifica raio máximo de 25km a partir do centro de JF
+      for (const coord of destCoords) {
+        const dist = distanciaKm(JF_CENTRO.lat, JF_CENTRO.lon, coord.lat, coord.lon);
+        if (dist > 25) {
+          throw new Error('Destino fora do perímetro urbano de Juiz de Fora. Para outros municípios consulte o taxista.');
+        }
+      }
       const coords = [originCoord, ...destCoords];
       const { distKm, durMin } = await calcularRota(coords);
       const distText = distKm.toFixed(1) + ' km';
