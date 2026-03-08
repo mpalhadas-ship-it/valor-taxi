@@ -207,6 +207,37 @@
   .loc-btn-big.locating .loc-spinner { display: inline-block; }
   .loc-btn-big.located { border-color: var(--green); color: var(--green); background: rgba(34,197,94,0.08); }
 
+  /* CONFIRM MODAL */
+  .confirm-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999; padding: 20px;
+  }
+  .confirm-box {
+    background: white; border-radius: 16px; padding: 24px;
+    max-width: 380px; width: 100%; text-align: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+  .confirm-box .confirm-icon { font-size: 2rem; margin-bottom: 8px; }
+  .confirm-box .confirm-address {
+    background: #f5f5f5; border-radius: 8px; padding: 12px;
+    font-size: 0.9rem; color: #333; margin: 12px 0; text-align: left;
+  }
+  .confirm-box .confirm-warning {
+    font-size: 0.8rem; color: #c0392b; font-weight: 600; margin-bottom: 16px;
+  }
+  .confirm-box .confirm-btns { display: flex; gap: 10px; }
+  .confirm-box .btn-confirmar {
+    flex: 1; background: var(--taxi-yellow); color: var(--taxi-blue-dark);
+    border: none; border-radius: 8px; padding: 12px;
+    font-weight: 700; font-size: 1rem; cursor: pointer;
+  }
+  .confirm-box .btn-cancelar {
+    flex: 1; background: #eee; color: #555;
+    border: none; border-radius: 8px; padding: 12px;
+    font-weight: 600; font-size: 0.95rem; cursor: pointer;
+  }
+
   /* ADD STOP */
   .add-stop-btn {
     background: transparent;
@@ -561,7 +592,7 @@
       <div class="addr-group">
         <label style="color:var(--taxi-yellow);"><span class="dot-dest"></span> PARA ONDE VAMOS?</label>
         <div class="addr-row">
-          <input class="addr-input stop-input" data-index="0" type="text" placeholder="Informe o local ou rua com o número" />
+          <input class="addr-input stop-input" data-index="0" type="text" placeholder="Informe o Local, Rua ou Avenida, se possível com o número, que seja em Juiz de Fora" />
         </div>
       </div>
     </div>
@@ -771,6 +802,28 @@ CÁLCULO VÁLIDO PARA CORRIDAS NO PERÍMETRO URBANO DE JUIZ DE FORA
     return { lat: loc.lat, lon: loc.lng, formatted };
   }
 
+  // Custom confirmation dialog
+  function confirmarEndereco(formatted) {
+    return new Promise((resolve) => {
+      const overlay = document.createElement('div');
+      overlay.className = 'confirm-overlay';
+      overlay.innerHTML = `
+        <div class="confirm-box">
+          <div class="confirm-icon">📍</div>
+          <div style="font-weight:700;font-size:1rem;margin-bottom:4px;">Endereço encontrado:</div>
+          <div class="confirm-address">${formatted}</div>
+          <div class="confirm-warning">⚠️ Válido apenas para destinos em Juiz de Fora - MG</div>
+          <div class="confirm-btns">
+            <button class="btn-cancelar">Corrigir</button>
+            <button class="btn-confirmar">Confirmar e Calcular</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+      overlay.querySelector('.btn-confirmar').onclick = () => { overlay.remove(); resolve(true); };
+      overlay.querySelector('.btn-cancelar').onclick = () => { overlay.remove(); resolve(false); };
+    });
+  }
+
   // Centro de JF (Rodoviária)
   const JF_CENTRO = { lat: -21.738045, lon: -43.374371 };
 
@@ -852,7 +905,7 @@ CÁLCULO VÁLIDO PARA CORRIDAS NO PERÍMETRO URBANO DE JUIZ DE FORA
 
       // Confirma endereço encontrado com o usuário
       for (const res of destResults) {
-        const confirmado = confirm('📍 Endereço encontrado:\n\n' + res.formatted + '\n\nEste é o destino correto?');
+        const confirmado = await confirmarEndereco(res.formatted);
         if (!confirmado) {
           mostrarNotif('Por favor, informe o endereço com mais detalhes.');
           setLoading(false);
