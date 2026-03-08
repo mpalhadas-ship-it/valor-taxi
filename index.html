@@ -207,6 +207,20 @@
   .loc-btn-big.locating .loc-spinner { display: inline-block; }
   .loc-btn-big.located { border-color: var(--green); color: var(--green); background: rgba(34,197,94,0.08); }
 
+  /* AUTOCOMPLETE */
+  .autocomplete-list {
+    position: absolute; top: 100%; left: 0; right: 0;
+    background: white; border: 2px solid var(--taxi-yellow);
+    border-top: none; border-radius: 0 0 8px 8px;
+    z-index: 100; max-height: 200px; overflow-y: auto;
+  }
+  .autocomplete-item {
+    padding: 10px 14px; font-size: 0.9rem; color: #333;
+    cursor: pointer; border-bottom: 1px solid #eee;
+  }
+  .autocomplete-item:hover { background: var(--taxi-yellow); color: var(--taxi-blue-dark); font-weight: 600; }
+  .addr-group { position: relative; }
+
   /* CONFIRM MODAL */
   .confirm-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.6);
@@ -907,13 +921,43 @@ CÁLCULO VÁLIDO PARA CORRIDAS NO PERÍMETRO URBANO DE JUIZ DE FORA
         }
       }
 
-      // Confirma endereço encontrado com o usuário
-      for (const res of destResults) {
-        const confirmado = await confirmarEndereco(res.formatted);
-        if (!confirmado) {
-          mostrarNotif('Por favor, informe o endereço com mais detalhes.');
-          setLoading(false);
-          return;
+      // Confirma endereço apenas quando o termo digitado se parece com cidade vizinha
+      const CIDADES_VIZINHAS = [
+        'matias barbosa', 'bicas', 'mar de espanha', 'santos dumont', 'rio novo',
+        'três rios', 'tres rios', 'são joão nepomuceno', 'sao joao nepomuceno',
+        'paraíba do sul', 'paraiba do sul', 'lima duarte', 'sapucaia',
+        'rio pomba', 'areal', 'valença', 'valenca', 'além paraíba', 'alem paraiba',
+        'astolfo dutra', 'tocantins', 'barbacena', 'paty do alferes',
+        'leopoldina', 'miguel pereira', 'vassouras', 'carmo', 'cataguases',
+        'teresópolis', 'teresopolis', 'petrópolis', 'petropolis',
+        'volta redonda', 'barra mansa', 'resende', 'itatiaia',
+        'lavras', 'são joão del rei', 'sao joao del rei', 'tiradentes',
+        'ubá', 'uba', 'muriaé', 'muriae', 'viçosa', 'vicosa',
+        'conselheiro lafaiete', 'ouro preto', 'mariana',
+        'coronel pacheco', 'ewbank da camara', 'ewbank da câmara',
+        'chácara', 'chacara', 'simão pereira', 'simao pereira', 'piau',
+        'goianá', 'goiana', 'tabuleiro', 'bias fortes',
+        'belmiro braga', 'chiador', 'descoberto', 'guarani', 'guarará',
+        'guarara', 'maripá de minas', 'maripa de minas',
+        'mercês', 'merces', 'olaria', 'oliveira fortes', 'paiva',
+        'pequeri', 'piraúba', 'pirauba', 'rio das flores', 'rio preto',
+        'santana do deserto', 'santa bárbara do monte verde',
+        'santa barbara do monte verde', 'aracitaba', 'argirita',
+        'levy gasparian', 'rio de janeiro', 'são paulo', 'sao paulo',
+        'belo horizonte', 'brasília', 'brasilia', 'niterói', 'niteroi',
+        'angra dos reis', 'paraty', 'cabo frio', 'búzios', 'buzios'
+      ];
+      for (let i = 0; i < destResults.length; i++) {
+        const res = destResults[i];
+        const digitado = filled[i].toLowerCase().trim();
+        const pareceCidade = CIDADES_VIZINHAS.some(c => digitado.includes(c) || c.includes(digitado));
+        if (pareceCidade) {
+          const confirmado = await confirmarEndereco(res.formatted);
+          if (!confirmado) {
+            mostrarNotif('Por favor, informe o endereço com mais detalhes.');
+            setLoading(false);
+            return;
+          }
         }
       }
 
@@ -968,6 +1012,67 @@ CÁLCULO VÁLIDO PARA CORRIDAS NO PERÍMETRO URBANO DE JUIZ DE FORA
     btn.closest('.addr-group').remove();
     stopCount--;
     document.getElementById('add-stop-btn').style.display = 'flex';
+  }
+
+  // AUTOCOMPLETE
+  let autocompleteTimer = null;
+
+  function setupAutocomplete(input) {
+    const wrapper = input.closest('.addr-group') || input.parentElement;
+    
+    input.addEventListener('input', () => {
+      clearTimeout(autocompleteTimer);
+      const val = input.value.trim();
+      removeAutocompleteList(wrapper);
+      if (val.length < 3) return;
+      autocompleteTimer = setTimeout(() => fetchSuggestions(val, input, wrapper), 800);
+    });
+
+    input.addEventListener('blur', () => {
+      setTimeout(() => removeAutocompleteList(wrapper), 200);
+    });
+  }
+
+  async function fetchSuggestions(query, input, wrapper) {
+    try {
+      const q = encodeURIComponent(query + ', Juiz de Fora, MG, Brasil');
+      const r = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${q}&region=br&language=pt-BR&key=${GOOGLE_API_KEY}`);
+      const d = await r.json();
+      if (d.status !== 'OK' || !d.results.length) return;
+
+      // Filtra só resultados de JF
+      const jfResults = d.results.filter(res => {
+        const addr = res.formatted_address.toLowerCase();
+        return addr.includes('juiz de fora');
+      }).slice(0, 4);
+
+      if (!jfResults.length) return;
+      showAutocompleteList(jfResults, input, wrapper);
+    } catch(e) {}
+  }
+
+  function showAutocompleteList(results, input, wrapper) {
+    removeAutocompleteList(wrapper);
+    const list = document.createElement('div');
+    list.className = 'autocomplete-list';
+    results.forEach(res => {
+      const item = document.createElement('div');
+      item.className = 'autocomplete-item';
+      // Mostra só rua + bairro, sem cidade e país
+      const parts = res.formatted_address.split(',');
+      item.textContent = parts.slice(0, 2).join(',').trim();
+      item.addEventListener('mousedown', () => {
+        input.value = item.textContent;
+        removeAutocompleteList(wrapper);
+      });
+      list.appendChild(item);
+    });
+    wrapper.appendChild(list);
+  }
+
+  function removeAutocompleteList(wrapper) {
+    const existing = wrapper.querySelector('.autocomplete-list');
+    if (existing) existing.remove();
   }
 
   // MODAL
