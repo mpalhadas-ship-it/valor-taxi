@@ -1,55 +1,545 @@
-From: <Saved by Blink>
-Snapshot-Content-Location: file:///C:/Users/marce/Downloads/index-taxi.html
-Subject: =?utf-8?Q?Calculadora=20de=20T=C3=A1xi=20=E2=80=94=20Juiz=20de=20Fora?=
-Date: Sun, 8 Mar 2026 10:43:05 -0300
-MIME-Version: 1.0
-Content-Type: multipart/related;
-	type="text/html";
-	boundary="----MultipartBoundary--pqVWGZYAlmYUEHVBtl146QxXZ8WCZpJWjBqNsGmgAR----"
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Táxi — Juiz de Fora</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --taxi-yellow: #FFE600;
+    --taxi-yellow-dark: #E6CF00;
+    --taxi-yellow-light: #FFF176;
+    --taxi-blue-dark: #122B62;
+    --taxi-blue: #1B3F8B;
+    --taxi-blue-light: #2A55B8;
+    --white: #ffffff;
+    --black: #0a0a0a;
+    --green: #22c55e;
+    --gray2: #2a2a2a;
+    --text-muted: #6B7280;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--taxi-yellow);
+    color: var(--taxi-blue-dark);
+    font-family: 'Barlow', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  header {
+    background: transparent;
+    padding: 0 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 8px 0 14px;
+  }
+
+  .logo {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1.4rem;
+    letter-spacing: 1px;
+    color: var(--white);
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+  }
+
+  .logo span { color: var(--taxi-yellow); }
+
+  .badge {
+    background: var(--taxi-yellow);
+    color: var(--taxi-blue-dark);
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 4px 12px;
+    border-radius: 4px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-family: 'Barlow Condensed', sans-serif;
+  }
+
+  /* HERO */
+  .hero {
+    text-align: center;
+    padding: 16px 24px 12px;
+    position: relative;
+  }
+
+  .hero h1 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 10px;
+    white-space: nowrap;
+    color: var(--taxi-blue-dark);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: block;
+  }
+
+  /* MAIN GRID */
+  .main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 12px 16px 16px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--taxi-blue-dark);
+    border: 1px solid rgba(27,63,139,0.5);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 4px 16px rgba(13,27,62,0.2);
+  }
+
+  .card-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ADDRESS INPUTS */
+  .addr-group { margin-bottom: 10px; }
+
+  .addr-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--taxi-yellow);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+    font-family: 'Barlow Condensed', sans-serif;
+  }
+
+  .dot-origin { width: 10px; height: 10px; border-radius: 50%; background: var(--taxi-yellow); flex-shrink:0; }
+  .dot-dest { width: 10px; height: 10px; border-radius: 50%; background: var(--green); flex-shrink:0; }
+
+  .addr-row { display: flex; gap: 8px; align-items: center; }
+  .addr-row .addr-input { flex: 1; }
+
+  .addr-input {
+    background: #ffffff !important;
+    border: 2px solid transparent !important;
+    border-radius: 14px !important;
+    padding: 10px 14px !important;
+    color: var(--taxi-blue-dark) !important;
+    font-family: 'Barlow', sans-serif !important;
+    font-size: 1.05rem !important;
+    font-weight: 500 !important;
+    outline: none !important;
+    transition: all 0.25s !important;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.12) !important;
+    width: 100% !important;
+  }
+
+  .addr-input:focus {
+    border-color: var(--taxi-yellow) !important;
+    box-shadow: 0 0 0 4px rgba(255,230,0,0.25), 0 2px 12px rgba(0,0,0,0.12) !important;
+  }
+
+  .addr-input::placeholder { color: #9CA3AF !important; font-weight: 400 !important; }
+
+  /* LOCATION BUTTON */
+  .loc-btn-big {
+    width: 100%;
+    margin-top: 10px;
+    background: var(--taxi-yellow);
+    border: 2px solid var(--taxi-yellow);
+    border-radius: 14px;
+    padding: 10px 14px;
+    color: var(--taxi-blue-dark);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.25s;
+    box-shadow: 0 2px 12px rgba(255,230,0,0.3);
+    text-transform: uppercase;
+  }
+
+  .loc-btn-big:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,230,0,0.4); }
+  .loc-btn-big.locating { pointer-events: none; opacity: 0.7; }
+  .loc-btn-big.locating .loc-icon { display: none; }
+  .loc-btn-big .loc-spinner {
+    display: none;
+    width: 16px; height: 16px;
+    border: 2px solid rgba(18,43,98,0.3);
+    border-top-color: var(--taxi-blue-dark);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+  .loc-btn-big.locating .loc-spinner { display: inline-block; }
+  .loc-btn-big.located { border-color: var(--green); color: var(--green); background: rgba(34,197,94,0.08); }
+
+  /* ADD STOP */
+  .add-stop-btn {
+    background: transparent;
+    border: 2px dashed rgba(255,255,255,0.3);
+    color: rgba(255,255,255,0.6);
+    border-radius: 10px;
+    padding: 8px 16px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    width: 100%;
+    margin-bottom: 8px;
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .add-stop-btn:hover { border-color: var(--taxi-yellow); color: var(--taxi-yellow); }
+
+  .remove-stop-btn {
+    flex-shrink: 0;
+    width: 32px; height: 32px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.8rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .remove-stop-btn:hover { background: rgba(239,68,68,0.15); color: #ef4444; border-color: #ef4444; }
+
+  /* CALC BUTTON */
+  .calc-btn {
+    width: 100%;
+    background: var(--taxi-yellow);
+    color: var(--taxi-blue-dark);
+    border: 3px solid var(--taxi-blue-dark);
+    border-radius: 14px;
+    padding: 12px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 1.15rem;
+    cursor: pointer;
+    transition: all 0.25s;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    box-shadow: 0 4px 16px rgba(13,27,62,0.3);
+  }
+  .calc-btn:hover { background: var(--taxi-blue); transform: translateY(-2px); }
+  .calc-btn:active { transform: translateY(0); }
+  .calc-btn.loading .btn-text { display: none; }
+  .calc-btn .spinner { display: none; width: 18px; height: 18px; border: 2px solid rgba(255,230,0,0.3); border-top-color: var(--taxi-yellow); border-radius: 50%; animation: spin 0.6s linear infinite; margin: 0 auto; }
+  .calc-btn.loading .spinner { display: block; }
+
+  /* RESULT CARD */
+  .result-card {
+    background: var(--taxi-yellow);
+    border: 1px solid var(--taxi-yellow-dark);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .result-label {
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--taxi-blue-dark);
+    margin-bottom: 6px;
+    font-weight: 700;
+    font-family: 'Barlow Condensed', sans-serif;
+  }
+
+  .result-value {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--taxi-blue-dark);
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+
+  .result-sub { font-size: 0.8rem; color: var(--taxi-blue); }
+
+  /* SIDEBAR */
+  .sidebar { display: flex; flex-direction: column; gap: 12px; }
+
+  /* DIVIDER */
+  .divider { height: 1px; background: rgba(255,255,255,0.08); }
+
+  /* NOTIF */
+  .notif {
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #1a1a2e;
+    color: var(--white);
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 999;
+    white-space: nowrap;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+  .notif.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* INSTALL BANNER */
+  .install-banner {
+    display: none;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--taxi-blue-dark);
+    border-top: 2px solid var(--taxi-yellow);
+    padding: 14px 20px;
+    align-items: center;
+    gap: 12px;
+    z-index: 500;
+  }
+  .banner-text { flex: 1; font-size: 0.9rem; color: var(--white); }
+  .banner-install { background: var(--taxi-yellow); color: var(--taxi-blue-dark); border: none; border-radius: 8px; padding: 8px 16px; font-weight: 800; font-family: 'Barlow Condensed', sans-serif; cursor: pointer; font-size: 0.9rem; }
+  .banner-close { background: transparent; border: none; color: rgba(255,255,255,0.5); font-size: 1.2rem; cursor: pointer; }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(13,27,62,0.92);
+    backdrop-filter: blur(6px);
+    z-index: 2000;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .modal-box {
+    background: var(--taxi-blue-dark);
+    border: 2px solid var(--taxi-yellow);
+    border-radius: 20px;
+    padding: 32px 28px;
+    max-width: 500px;
+    width: 100%;
+    text-align: center;
+    animation: fadeIn 0.4s ease;
+  }
+  .modal-title { font-family: 'Barlow Condensed', sans-serif; font-size: 1.5rem; font-weight: 900; color: var(--taxi-yellow); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .modal-subtitle { font-size: 0.85rem; color: rgba(255,255,255,0.6); margin-bottom: 24px; }
+  .modal-text { background: transparent; border: none; padding: 16px; font-size: 0.95rem; color: var(--taxi-yellow); line-height: 1.6; text-align: center; margin-bottom: 20px; font-weight: 500; }
+  .modal-check-row { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 14px 16px; margin-bottom: 20px; cursor: pointer; transition: all 0.2s; text-align: left; }
+  .modal-check-row:hover { border-color: var(--taxi-yellow); }
+  .modal-check-row.checked { border-color: var(--green); background: rgba(34,197,94,0.08); }
+  .modal-checkbox { width: 22px; height: 22px; border: 2px solid rgba(255,255,255,0.3); border-radius: 6px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; font-size: 0.9rem; color: white; }
+  .modal-check-row.checked .modal-checkbox { background: var(--green); border-color: var(--green); }
+  .modal-check-label { font-size: 0.9rem; color: rgba(255,255,255,0.8); font-weight: 500; line-height: 1.4; }
+  .modal-btn { width: 100%; background: var(--taxi-yellow); color: var(--taxi-blue-dark); border: none; border-radius: 12px; padding: 14px; font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 1.1rem; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; opacity: 0.4; pointer-events: none; }
+  .modal-btn.enabled { opacity: 1; pointer-events: all; box-shadow: 0 4px 16px rgba(255,230,0,0.3); }
+  .modal-btn.enabled:hover { background: var(--taxi-yellow-dark); transform: translateY(-1px); }
+
+  /* ANIMATIONS */
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .fade-in { animation: fadeIn 0.4s ease; }
+
+  footer {
+    text-align: center;
+    padding: 12px;
+    background: transparent;
+    color: var(--taxi-blue-dark);
+    font-size: 0.8rem;
+  }
+  footer a { color: var(--taxi-blue-dark); text-decoration: none; }
+
+  /* ── MOBILE ─────────────────────────────────── */
+  @media (max-width: 768px) {
+
+    header {
+      padding: 0 14px;
+    }
+
+    .header-inner {
+      padding: 10px 0 10px;
+    }
+
+    .header-inner span[style*="font-size:1.7rem"] {
+      font-size: 1.3rem !important;
+    }
+
+    .header-inner div[style*="padding:8px 0 18px"] {
+      padding: 6px 0 12px !important;
+    }
+
+    header h1 {
+      font-size: 1rem !important;
+      white-space: normal !important;
+      line-height: 1.3 !important;
+      text-align: center;
+    }
+
+    .main {
+      padding: 10px 10px 20px;
+      gap: 12px;
+      grid-template-columns: 1fr !important;
+    }
+
+    .card {
+      padding: 14px;
+      border-radius: 12px;
+    }
+
+    .addr-input {
+      font-size: 1rem !important;
+      padding: 12px 14px !important;
+    }
+
+    .loc-btn-big {
+      font-size: 0.95rem;
+      padding: 12px 14px;
+    }
+
+    .calc-btn {
+      font-size: 1.1rem;
+      padding: 14px;
+    }
+
+    .add-stop-btn {
+      font-size: 0.85rem;
+      padding: 10px;
+    }
+
+    .result-card {
+      padding: 14px;
+    }
+
+    /* Stack price and info vertically on mobile */
+    .result-card > div[style*="display:flex"] {
+      flex-direction: column !important;
+      gap: 10px !important;
+      align-items: center !important;
+    }
+
+    .result-value {
+      font-size: 2.4rem !important;
+    }
+
+    .result-label {
+      font-size: 1rem !important;
+    }
+
+    #result-info div[style*="font-size:0.9rem"] {
+      font-size: 0.85rem !important;
+    }
+
+    .sidebar {
+      grid-template-columns: 1fr !important;
+    }
+
+    footer {
+      font-size: 0.78rem;
+      padding: 14px 12px;
+    }
+
+    /* Modal */
+    .modal-box {
+      padding: 24px 18px;
+      border-radius: 16px;
+    }
+
+    .modal-title {
+      font-size: 1.3rem;
+    }
+
+    .modal-text {
+      font-size: 0.88rem;
+    }
+
+    .modal-btn {
+      font-size: 1rem;
+      padding: 14px;
+    }
+
+    /* Install banner */
+    .install-banner {
+      padding: 12px 14px;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .header-inner span[style*="font-size:1.7rem"] {
+      font-size: 1.1rem !important;
+    }
+
+    header h1 {
+      font-size: 0.9rem !important;
+    }
+
+    .result-value {
+      font-size: 2rem !important;
+    }
+  }
 
 
-------MultipartBoundary--pqVWGZYAlmYUEHVBtl146QxXZ8WCZpJWjBqNsGmgAR----
-Content-Type: text/html
-Content-ID: <frame-79637DA98A3E436F846963927D7A61A3@mhtml.blink>
-Content-Transfer-Encoding: quoted-printable
-Content-Location: file:///C:/Users/marce/Downloads/index-taxi.html
-
-<!DOCTYPE html><html lang=3D"pt-BR"><head><meta http-equiv=3D"Content-Type"=
- content=3D"text/html; charset=3DUTF-8"><link rel=3D"stylesheet" type=3D"te=
-xt/css" href=3D"cid:css-1ea03d03-67e2-4354-9f2c-5a25a4c9c059@mhtml.blink" /=
->
-
-<meta name=3D"viewport" content=3D"width=3Ddevice-width, initial-scale=3D1.=
-0">
-<title>Calculadora de T=C3=A1xi =E2=80=94 Juiz de Fora</title>
-<link href=3D"https://fonts.googleapis.com/css2?family=3DBarlow+Condensed:w=
-ght@600;700;800;900&amp;family=3DBarlow:wght@300;400;500;600&amp;display=3D=
-swap" rel=3D"stylesheet">
-
+  /* ZEBRINHA */
+  .zebrinha {
+    width: 100%;
+    height: 36px;
+    background-color: var(--taxi-yellow);
+    background-image:
+      repeating-conic-gradient(var(--taxi-blue-dark) 0% 25%, var(--taxi-yellow) 0% 50%);
+    background-size: 36px 36px;
+    flex-shrink: 0;
+    margin: 10px 0;
+  }
+</style>
 </head>
 <body>
 
 <!-- MODAL TERMOS -->
-<div class=3D"modal-overlay" id=3D"modal-termos">
-  <div class=3D"modal-box">
-    <div style=3D"margin-bottom:16px;">
-     =20
+<div class="modal-overlay" id="modal-termos">
+  <div class="modal-box">
+    <div style="margin-bottom:16px;">
+      
     </div>
-   =20
-   =20
-    <div class=3D"modal-text">
-      <span style=3D"font-size:1.1rem;font-weight:700;text-align:center;dis=
-play:block;line-height:1.6;">Os valores s=C3=A3o uma estimativa, podendo so=
-frer varia=C3=A7=C3=A3o para mais ou para menos conforme condi=C3=A7=C3=B5e=
-s do tr=C3=A2nsito.<br><br>Informe o destino corretamente para maior precis=
-=C3=A3o do c=C3=A1lculo.</span>
+    
+    
+    <div class="modal-text">
+      <span style="font-size:1.1rem;font-weight:700;text-align:center;display:block;line-height:1.6;">Os valores são uma estimativa, podendo sofrer variação para mais ou para menos conforme condições do trânsito.<br><br>Informe o destino corretamente para maior precisão do cálculo.</span>
     </div>
-    <div class=3D"modal-check-row" id=3D"check-row">
-      <div class=3D"modal-checkbox" id=3D"modal-checkbox"></div>
-      <span class=3D"modal-check-label">Li e concordo que o valor pode vari=
-ar conforme informado.</span>
+    <div class="modal-check-row" id="check-row" onclick="toggleCheck()">
+      <div class="modal-checkbox" id="modal-checkbox"></div>
+      <span class="modal-check-label">Li e concordo que o valor pode variar conforme informado.</span>
     </div>
-    <button class=3D"modal-btn" id=3D"modal-btn">
+    <button class="modal-btn" id="modal-btn" onclick="entrarNoApp()">
       Ir para o valor aproximado
     </button>
   </div>
@@ -57,562 +547,298 @@ ar conforme informado.</span>
 
 <!-- HEADER -->
 
-<div class=3D"zebrinha"></div>
-<div class=3D"main">
+<div class="zebrinha"></div>
+<div class="main">
   <!-- FORM CARD -->
-  <div class=3D"card">
-    <div class=3D"addr-group">
-     =20
-      <div id=3D"origin-display" style=3D"font-family:'Barlow Condensed',sa=
-ns-serif;font-size:1rem;font-weight:900;color:var(--taxi-yellow);text-trans=
-form:uppercase;letter-spacing:0.5px;padding:2px 0 10px;line-height:1.2;text=
--align:center;">=E2=80=94</div>
-     =20
+  <div class="card">
+    <div class="addr-group">
+      
+      <div id="origin-display" style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:900;color:var(--taxi-yellow);text-transform:uppercase;letter-spacing:0.5px;padding:2px 0 10px;line-height:1.2;text-align:center;">—</div>
+      <input type="hidden" id="origin" />
     </div>
 
-    <div class=3D"addr-group" id=3D"stops-container">
-      <div class=3D"addr-group">
-        <label style=3D"color:var(--taxi-yellow);"><span class=3D"dot-dest"=
-></span> PARA ONDE VAMOS?</label>
-        <div class=3D"addr-row">
-          <input class=3D"addr-input stop-input" data-index=3D"0" type=3D"t=
-ext" placeholder=3D"Informe o local ou rua com o n=C3=BAmero">
+    <div class="addr-group" id="stops-container">
+      <div class="addr-group">
+        <label style="color:var(--taxi-yellow);"><span class="dot-dest"></span> PARA ONDE VAMOS?</label>
+        <div class="addr-row">
+          <input class="addr-input stop-input" data-index="0" type="text" placeholder="Informe o local ou rua com o número" />
         </div>
       </div>
     </div>
 
-    <button class=3D"add-stop-btn" id=3D"add-stop-btn" style=3D"display:non=
-e;">+ Adicionar parada ou destino</button>
+    <button class="add-stop-btn" onclick="adicionarParada()" id="add-stop-btn" style="display:none;">+ Adicionar parada ou destino</button>
 
-    <button class=3D"calc-btn" id=3D"calc-map-btn">
-      <span class=3D"btn-text">Calcular o valor aproximado</span>
-      <span class=3D"spinner"></span>
+    <button class="calc-btn" id="calc-map-btn" onclick="calcularPorMapa()">
+      <span class="btn-text">Calcular o valor aproximado</span>
+      <span class="spinner"></span>
     </button>
   </div>
 
   <!-- RESULT CARD -->
-  <div class=3D"result-card" id=3D"result-card">
-    <div style=3D"display:flex;flex-direction:column;align-items:center;tex=
-t-align:center;gap:8px;">
+  <div class="result-card" id="result-card">
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;">
       <div>
-       =20
-        <div style=3D"font-family:'Barlow Condensed',sans-serif;font-size:1=
-rem;font-weight:700;color:var(--taxi-blue-dark);text-align:center;letter-sp=
-acing:2px;">ENTRE</div>
-        <div class=3D"result-value" id=3D"total-price">R$</div>
+        
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;color:var(--taxi-blue-dark);text-align:center;letter-spacing:2px;">ENTRE</div>
+        <div class="result-value" id="total-price">R$</div>
 
 
       </div>
-    <div id=3D"result-info" style=3D"display:none;margin-top:0;flex-directi=
-on:column;gap:3px;text-align:left;">
+    <div id="result-info" style="display:none;margin-top:0;flex-direction:column;gap:3px;text-align:left;">
 
-      <div style=3D"font-size:1.6rem;color:var(--taxi-blue-dark);font-weigh=
-t:900;line-height:1.3;margin-top:8px;text-align:center;font-family:'Barlow =
-Condensed',sans-serif;letter-spacing:1px;">SEU T=C3=81XI J=C3=81 EST=C3=81 =
-NO PONTO<br>BOA CORRIDA!</div>
+      <div style="font-size:1.6rem;color:var(--taxi-blue-dark);font-weight:900;line-height:1.3;margin-top:8px;text-align:center;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;">SEU TÁXI JÁ ESTÁ NO PONTO<br>BOA CORRIDA!</div>
     </div>
     </div>
   </div>
 
   <!-- SIDEBAR -->
-  <div class=3D"sidebar">
+  <div class="sidebar">
 
 
 
   </div>
 </div>
 
-<div class=3D"zebrinha"></div>
+<div class="zebrinha"></div>
 <footer>
-  <p style=3D"font-family:'Barlow Condensed',sans-serif;font-size:0.9rem;fo=
-nt-weight:700;color:var(--taxi-blue-dark);text-align:center;line-height:1.8=
-;padding:8px 16px;">
-C=C3=81LCULO V=C3=81LIDO PARA CORRIDAS NO PER=C3=8DMETRO URBANO DE JUIZ DE =
-FORA
+  <p style="font-family:'Barlow Condensed',sans-serif;font-size:0.9rem;font-weight:700;color:var(--taxi-blue-dark);text-align:center;line-height:1.8;padding:8px 16px;">
+CÁLCULO VÁLIDO PARA CORRIDAS NO PERÍMETRO URBANO DE JUIZ DE FORA
   </p>
 </footer>
 
-<div class=3D"notif" id=3D"notif"></div>
+<div class="notif" id="notif"></div>
 
-<div class=3D"install-banner" id=3D"install-banner">
-  <span class=3D"banner-text">=F0=9F=93=B1 Instale o Calculadora de T=C3=A1=
-xi no seu celular!</span>
-  <button class=3D"banner-install">Instalar</button>
-  <button class=3D"banner-close">=E2=9C=95</button>
+<div class="install-banner" id="install-banner">
+  <span class="banner-text">📱 Instale o Calculadora de Táxi no seu celular!</span>
+  <button class="banner-install" onclick="instalarApp()">Instalar</button>
+  <button class="banner-close" onclick="fecharBanner()">✕</button>
 </div>
 
-
-
-</body></html>
-------MultipartBoundary--pqVWGZYAlmYUEHVBtl146QxXZ8WCZpJWjBqNsGmgAR----
-Content-Type: text/css
-Content-Transfer-Encoding: quoted-printable
-Content-Location: https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap
-
-@charset "utf-8";
-
-@font-face { font-family: Barlow; font-style: normal; font-weight: 300; fon=
-t-display: swap; src: url("https://fonts.gstatic.com/s/barlow/v13/7cHqv4kjg=
-oGqM7E3p-ks6FospT4.woff2") format("woff2"); unicode-range: U+102-103, U+110=
--111, U+128-129, U+168-169, U+1A0-1A1, U+1AF-1B0, U+300-301, U+303-304, U+3=
-08-309, U+323, U+329, U+1EA0-1EF9, U+20AB; }
-
-@font-face { font-family: Barlow; font-style: normal; font-weight: 300; fon=
-t-display: swap; src: url("https://fonts.gstatic.com/s/barlow/v13/7cHqv4kjg=
-oGqM7E3p-ks6VospT4.woff2") format("woff2"); unicode-range: U+100-2BA, U+2BD=
--2C5, U+2C7-2CC, U+2CE-2D7, U+2DD-2FF, U+304, U+308, U+329, U+1D00-1DBF, U+=
-1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C=
-7F, U+A720-A7FF; }
-
-@font-face { font-family: Barlow; font-style: normal; font-weight: 300; fon=
-t-display: swap; src: url("https://fonts.gstatic.com/s/barlow/v13/7cHqv4kjg=
-oGqM7E3p-ks51os.woff2") format("woff2"); unicode-range: U+0-FF, U+131, U+15=
-2-153, U+2BB-2BC, U+2C6, U+2DA, U+2DC, U+304, U+308, U+329, U+2000-206F, U+=
-20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
-
-@font-face { font-family: Barlow; font-style: normal; font-weight: 400; fon=
-t-display: swap; src: url("https://fonts.gstatic.com/s/barlow/v13/7cHpv4kjg=
-oGqM7E_A8s52Hs.woff2") format("woff2"); unicode-range: U+102-103, U+110-111=
-, U+128-129, U+168-169, U+1A0-1A1, U+1AF-1B0, U+300-301, U+303-304, U+308-3=
-09, U+323, U+329, U+1EA0-1EF9, U+20AB; }
-
-@font-face { font-family: Barlow; font-style: normal; font-weight: 400; fon=
-t-display: swap; src: url("https://fonts.gstatic.com/s/barlow/v13/7cHpv4kjg=
-oGqM7E_Ass52Hs.woff2") format("woff2"); unicode-range: U+100-2BA, U+2BD-2C5=
-, U+2C7-2CC, U+2CE-2D7, U+2DD-2FF, U+304, U+308, U+329, U+1D00-1DBF, U+1E00=
--1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, =
-U+A720-A7FF; }
-
-@font-face { font-family: Barlow; font-style: normal; font-weight: 400; fon=
-t-display: swap; src: url("https://fonts.gstatic.com/s/barlow/v13/7cHpv4kjg=
-oGqM7E_DMs5.woff2") format("woff2"); unicode-range: U+0-FF, U+131, U+152-15=
-3, U+2BB-2BC, U+2C6, U+2DA, U+2DC, U+304, U+308, U+329, U+2000-206F, U+20AC=
-, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
-
-@font-face { font-family: Barlow; font-style: normal; font-weight: 500; fon=
-t-display: swap; src: url("https://fonts.gstatic.com/s/barlow/v13/7cHqv4kjg=
-oGqM7E3_-gs6FospT4.woff2") format("woff2"); unicode-range: U+102-103, U+110=
--111, U+128-129, U+168-169, U+1A0-1A1, U+1AF-1B0, U+300-301, U+303-304, U+3=
-08-309, U+323, U+329, U+1EA0-1EF9, U+20AB; }
-
-@font-face { font-family: Barlow; font-style: normal; font-weight: 500; fon=
-t-display: swap; src: url("https://fonts.gstatic.com/s/barlow/v13/7cHqv4kjg=
-oGqM7E3_-gs6VospT4.woff2") format("woff2"); unicode-range: U+100-2BA, U+2BD=
--2C5, U+2C7-2CC, U+2CE-2D7, U+2DD-2FF, U+304, U+308, U+329, U+1D00-1DBF, U+=
-1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C=
-7F, U+A720-A7FF; }
-
-@font-face { font-family: Barlow; font-style: normal; font-weight: 500; fon=
-t-display: swap; src: url("https://fonts.gstatic.com/s/barlow/v13/7cHqv4kjg=
-oGqM7E3_-gs51os.woff2") format("woff2"); unicode-range: U+0-FF, U+131, U+15=
-2-153, U+2BB-2BC, U+2C6, U+2DA, U+2DC, U+304, U+308, U+329, U+2000-206F, U+=
-20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
-
-@font-face { font-family: Barlow; font-style: normal; font-weight: 600; fon=
-t-display: swap; src: url("https://fonts.gstatic.com/s/barlow/v13/7cHqv4kjg=
-oGqM7E30-8s6FospT4.woff2") format("woff2"); unicode-range: U+102-103, U+110=
--111, U+128-129, U+168-169, U+1A0-1A1, U+1AF-1B0, U+300-301, U+303-304, U+3=
-08-309, U+323, U+329, U+1EA0-1EF9, U+20AB; }
-
-@font-face { font-family: Barlow; font-style: normal; font-weight: 600; fon=
-t-display: swap; src: url("https://fonts.gstatic.com/s/barlow/v13/7cHqv4kjg=
-oGqM7E30-8s6VospT4.woff2") format("woff2"); unicode-range: U+100-2BA, U+2BD=
--2C5, U+2C7-2CC, U+2CE-2D7, U+2DD-2FF, U+304, U+308, U+329, U+1D00-1DBF, U+=
-1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C=
-7F, U+A720-A7FF; }
-
-@font-face { font-family: Barlow; font-style: normal; font-weight: 600; fon=
-t-display: swap; src: url("https://fonts.gstatic.com/s/barlow/v13/7cHqv4kjg=
-oGqM7E30-8s51os.woff2") format("woff2"); unicode-range: U+0-FF, U+131, U+15=
-2-153, U+2BB-2BC, U+2C6, U+2DA, U+2DC, U+304, U+308, U+329, U+2000-206F, U+=
-20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
-
-@font-face { font-family: "Barlow Condensed"; font-style: normal; font-weig=
-ht: 600; font-display: swap; src: url("https://fonts.gstatic.com/s/barlowco=
-ndensed/v13/HTxwL3I-JCGChYJ8VI-L6OO_au7B4873z3nWuZEC.woff2") format("woff2"=
-); unicode-range: U+102-103, U+110-111, U+128-129, U+168-169, U+1A0-1A1, U+=
-1AF-1B0, U+300-301, U+303-304, U+308-309, U+323, U+329, U+1EA0-1EF9, U+20AB=
-; }
-
-@font-face { font-family: "Barlow Condensed"; font-style: normal; font-weig=
-ht: 600; font-display: swap; src: url("https://fonts.gstatic.com/s/barlowco=
-ndensed/v13/HTxwL3I-JCGChYJ8VI-L6OO_au7B4873z3jWuZEC.woff2") format("woff2"=
-); unicode-range: U+100-2BA, U+2BD-2C5, U+2C7-2CC, U+2CE-2D7, U+2DD-2FF, U+=
-304, U+308, U+329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20=
-AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
-
-@font-face { font-family: "Barlow Condensed"; font-style: normal; font-weig=
-ht: 600; font-display: swap; src: url("https://fonts.gstatic.com/s/barlowco=
-ndensed/v13/HTxwL3I-JCGChYJ8VI-L6OO_au7B4873z3bWuQ.woff2") format("woff2");=
- unicode-range: U+0-FF, U+131, U+152-153, U+2BB-2BC, U+2C6, U+2DA, U+2DC, U=
-+304, U+308, U+329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+=
-2215, U+FEFF, U+FFFD; }
-
-@font-face { font-family: "Barlow Condensed"; font-style: normal; font-weig=
-ht: 700; font-display: swap; src: url("https://fonts.gstatic.com/s/barlowco=
-ndensed/v13/HTxwL3I-JCGChYJ8VI-L6OO_au7B46r2z3nWuZEC.woff2") format("woff2"=
-); unicode-range: U+102-103, U+110-111, U+128-129, U+168-169, U+1A0-1A1, U+=
-1AF-1B0, U+300-301, U+303-304, U+308-309, U+323, U+329, U+1EA0-1EF9, U+20AB=
-; }
-
-@font-face { font-family: "Barlow Condensed"; font-style: normal; font-weig=
-ht: 700; font-display: swap; src: url("https://fonts.gstatic.com/s/barlowco=
-ndensed/v13/HTxwL3I-JCGChYJ8VI-L6OO_au7B46r2z3jWuZEC.woff2") format("woff2"=
-); unicode-range: U+100-2BA, U+2BD-2C5, U+2C7-2CC, U+2CE-2D7, U+2DD-2FF, U+=
-304, U+308, U+329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20=
-AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
-
-@font-face { font-family: "Barlow Condensed"; font-style: normal; font-weig=
-ht: 700; font-display: swap; src: url("https://fonts.gstatic.com/s/barlowco=
-ndensed/v13/HTxwL3I-JCGChYJ8VI-L6OO_au7B46r2z3bWuQ.woff2") format("woff2");=
- unicode-range: U+0-FF, U+131, U+152-153, U+2BB-2BC, U+2C6, U+2DA, U+2DC, U=
-+304, U+308, U+329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+=
-2215, U+FEFF, U+FFFD; }
-
-@font-face { font-family: "Barlow Condensed"; font-style: normal; font-weig=
-ht: 800; font-display: swap; src: url("https://fonts.gstatic.com/s/barlowco=
-ndensed/v13/HTxwL3I-JCGChYJ8VI-L6OO_au7B47b1z3nWuZEC.woff2") format("woff2"=
-); unicode-range: U+102-103, U+110-111, U+128-129, U+168-169, U+1A0-1A1, U+=
-1AF-1B0, U+300-301, U+303-304, U+308-309, U+323, U+329, U+1EA0-1EF9, U+20AB=
-; }
-
-@font-face { font-family: "Barlow Condensed"; font-style: normal; font-weig=
-ht: 800; font-display: swap; src: url("https://fonts.gstatic.com/s/barlowco=
-ndensed/v13/HTxwL3I-JCGChYJ8VI-L6OO_au7B47b1z3jWuZEC.woff2") format("woff2"=
-); unicode-range: U+100-2BA, U+2BD-2C5, U+2C7-2CC, U+2CE-2D7, U+2DD-2FF, U+=
-304, U+308, U+329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20=
-AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
-
-@font-face { font-family: "Barlow Condensed"; font-style: normal; font-weig=
-ht: 800; font-display: swap; src: url("https://fonts.gstatic.com/s/barlowco=
-ndensed/v13/HTxwL3I-JCGChYJ8VI-L6OO_au7B47b1z3bWuQ.woff2") format("woff2");=
- unicode-range: U+0-FF, U+131, U+152-153, U+2BB-2BC, U+2C6, U+2DA, U+2DC, U=
-+304, U+308, U+329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+=
-2215, U+FEFF, U+FFFD; }
-
-@font-face { font-family: "Barlow Condensed"; font-style: normal; font-weig=
-ht: 900; font-display: swap; src: url("https://fonts.gstatic.com/s/barlowco=
-ndensed/v13/HTxwL3I-JCGChYJ8VI-L6OO_au7B45L0z3nWuZEC.woff2") format("woff2"=
-); unicode-range: U+102-103, U+110-111, U+128-129, U+168-169, U+1A0-1A1, U+=
-1AF-1B0, U+300-301, U+303-304, U+308-309, U+323, U+329, U+1EA0-1EF9, U+20AB=
-; }
-
-@font-face { font-family: "Barlow Condensed"; font-style: normal; font-weig=
-ht: 900; font-display: swap; src: url("https://fonts.gstatic.com/s/barlowco=
-ndensed/v13/HTxwL3I-JCGChYJ8VI-L6OO_au7B45L0z3jWuZEC.woff2") format("woff2"=
-); unicode-range: U+100-2BA, U+2BD-2C5, U+2C7-2CC, U+2CE-2D7, U+2DD-2FF, U+=
-304, U+308, U+329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20=
-AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
-
-@font-face { font-family: "Barlow Condensed"; font-style: normal; font-weig=
-ht: 900; font-display: swap; src: url("https://fonts.gstatic.com/s/barlowco=
-ndensed/v13/HTxwL3I-JCGChYJ8VI-L6OO_au7B45L0z3bWuQ.woff2") format("woff2");=
- unicode-range: U+0-FF, U+131, U+152-153, U+2BB-2BC, U+2C6, U+2DA, U+2DC, U=
-+304, U+308, U+329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+=
-2215, U+FEFF, U+FFFD; }
-------MultipartBoundary--pqVWGZYAlmYUEHVBtl146QxXZ8WCZpJWjBqNsGmgAR----
-Content-Type: text/css
-Content-Transfer-Encoding: quoted-printable
-Content-Location: cid:css-1ea03d03-67e2-4354-9f2c-5a25a4c9c059@mhtml.blink
-
-@charset "utf-8";
-
-:root { --taxi-yellow: #FFE600; --taxi-yellow-dark: #E6CF00; --taxi-yellow-=
-light: #FFF176; --taxi-blue-dark: #122B62; --taxi-blue: #1B3F8B; --taxi-blu=
-e-light: #2A55B8; --white: #ffffff; --black: #0a0a0a; --green: #22c55e; --g=
-ray2: #2a2a2a; --text-muted: #6B7280; }
-
-* { box-sizing: border-box; margin: 0px; padding: 0px; }
-
-body { background: var(--taxi-yellow); color: var(--taxi-blue-dark); font-f=
-amily: Barlow, sans-serif; min-height: 100vh; overflow-x: hidden; }
-
-header { background: transparent; padding: 0px 20px; position: sticky; top:=
- 0px; z-index: 100; }
-
-.header-inner { display: flex; align-items: center; justify-content: space-=
-between; width: 100%; padding: 8px 0px 14px; }
-
-.logo { font-family: "Barlow Condensed", sans-serif; font-weight: 900; font=
--size: 1.4rem; letter-spacing: 1px; color: var(--white); text-transform: up=
-percase; display: flex; align-items: center; white-space: nowrap; }
-
-.logo span { color: var(--taxi-yellow); }
-
-.badge { background: var(--taxi-yellow); color: var(--taxi-blue-dark); font=
--size: 0.65rem; font-weight: 800; padding: 4px 12px; border-radius: 4px; le=
-tter-spacing: 2px; text-transform: uppercase; font-family: "Barlow Condense=
-d", sans-serif; }
-
-.hero { text-align: center; padding: 16px 24px 12px; position: relative; }
-
-.hero h1 { font-family: "Barlow Condensed", sans-serif; font-size: clamp(1.=
-6rem, 3.5vw, 2.4rem); font-weight: 900; line-height: 1.1; margin-bottom: 10=
-px; white-space: nowrap; color: var(--taxi-blue-dark); text-transform: uppe=
-rcase; letter-spacing: 1px; display: block; }
-
-.main { max-width: 1100px; margin: 0px auto; padding: 12px 16px 16px; displ=
-ay: grid; grid-template-columns: 1fr; gap: 16px; align-items: start; }
-
-.card { background: var(--taxi-blue-dark); border: 1px solid rgba(27, 63, 1=
-39, 0.5); border-radius: 12px; padding: 16px; box-shadow: rgba(13, 27, 62, =
-0.2) 0px 4px 16px; }
-
-.card-title { font-family: "Barlow Condensed", sans-serif; font-weight: 800=
-; font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase; margin=
--bottom: 12px; display: flex; align-items: center; gap: 8px; }
-
-.addr-group { margin-bottom: 10px; }
-
-.addr-group label { display: flex; align-items: center; gap: 8px; font-size=
-: 0.78rem; font-weight: 700; color: var(--taxi-yellow); text-transform: upp=
-ercase; letter-spacing: 1.5px; margin-bottom: 8px; font-family: "Barlow Con=
-densed", sans-serif; }
-
-.dot-origin { width: 10px; height: 10px; border-radius: 50%; background: va=
-r(--taxi-yellow); flex-shrink: 0; }
-
-.dot-dest { width: 10px; height: 10px; border-radius: 50%; background: var(=
---green); flex-shrink: 0; }
-
-.addr-row { display: flex; gap: 8px; align-items: center; }
-
-.addr-row .addr-input { flex: 1 1 0%; }
-
-.addr-input { background: rgb(255, 255, 255) !important; border: 2px solid =
-transparent !important; border-radius: 14px !important; padding: 10px 14px =
-!important; color: var(--taxi-blue-dark) !important; font-family: Barlow, s=
-ans-serif !important; font-size: 1.05rem !important; font-weight: 500 !impo=
-rtant; outline: none !important; transition: 0.25s !important; box-shadow: =
-rgba(0, 0, 0, 0.12) 0px 2px 12px !important; width: 100% !important; }
-
-.addr-input:focus { border-color: var(--taxi-yellow) !important; box-shadow=
-: rgba(255, 230, 0, 0.25) 0px 0px 0px 4px, rgba(0, 0, 0, 0.12) 0px 2px 12px=
- !important; }
-
-.addr-input::placeholder { color: rgb(156, 163, 175) !important; font-weigh=
-t: 400 !important; }
-
-.loc-btn-big { width: 100%; margin-top: 10px; background: var(--taxi-yellow=
-); border: 2px solid var(--taxi-yellow); border-radius: 14px; padding: 10px=
- 14px; color: var(--taxi-blue-dark); font-family: "Barlow Condensed", sans-=
-serif; font-size: 1.05rem; font-weight: 800; letter-spacing: 1px; cursor: p=
-ointer; display: flex; align-items: center; justify-content: center; gap: 1=
-0px; transition: 0.25s; box-shadow: rgba(255, 230, 0, 0.3) 0px 2px 12px; te=
-xt-transform: uppercase; }
-
-.loc-btn-big:hover { transform: translateY(-2px); box-shadow: rgba(255, 230=
-, 0, 0.4) 0px 6px 20px; }
-
-.loc-btn-big.locating { pointer-events: none; opacity: 0.7; }
-
-.loc-btn-big.locating .loc-icon { display: none; }
-
-.loc-btn-big .loc-spinner { display: none; width: 16px; height: 16px; borde=
-r-width: 2px; border-style: solid; border-right-color: rgba(18, 43, 98, 0.3=
-); border-bottom-color: rgba(18, 43, 98, 0.3); border-left-color: rgba(18, =
-43, 98, 0.3); border-image: initial; border-top-color: var(--taxi-blue-dark=
-); border-radius: 50%; animation: 0.6s linear 0s infinite normal none runni=
-ng spin; }
-
-.loc-btn-big.locating .loc-spinner { display: inline-block; }
-
-.loc-btn-big.located { border-color: var(--green); color: var(--green); bac=
-kground: rgba(34, 197, 94, 0.08); }
-
-.add-stop-btn { background: transparent; border: 2px dashed rgba(255, 255, =
-255, 0.3); color: rgba(255, 255, 255, 0.6); border-radius: 10px; padding: 8=
-px 16px; font-family: Barlow, sans-serif; font-size: 0.85rem; cursor: point=
-er; width: 100%; margin-bottom: 8px; transition: 0.2s; display: flex; align=
--items: center; justify-content: center; gap: 6px; }
-
-.add-stop-btn:hover { border-color: var(--taxi-yellow); color: var(--taxi-y=
-ellow); }
-
-.remove-stop-btn { flex-shrink: 0; width: 32px; height: 32px; background: r=
-gba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.15); bord=
-er-radius: 8px; color: var(--text-muted); cursor: pointer; font-size: 0.8re=
-m; display: flex; align-items: center; justify-content: center; transition:=
- 0.2s; }
-
-.remove-stop-btn:hover { background: rgba(239, 68, 68, 0.15); color: rgb(23=
-9, 68, 68); border-color: rgb(239, 68, 68); }
-
-.calc-btn { width: 100%; background: var(--taxi-yellow); color: var(--taxi-=
-blue-dark); border: 3px solid var(--taxi-blue-dark); border-radius: 14px; p=
-adding: 12px; font-family: "Barlow Condensed", sans-serif; font-weight: 800=
-; font-size: 1.15rem; cursor: pointer; transition: 0.25s; letter-spacing: 2=
-px; text-transform: uppercase; box-shadow: rgba(13, 27, 62, 0.3) 0px 4px 16=
-px; }
-
-.calc-btn:hover { background: var(--taxi-blue); transform: translateY(-2px)=
-; }
-
-.calc-btn:active { transform: translateY(0px); }
-
-.calc-btn.loading .btn-text { display: none; }
-
-.calc-btn .spinner { display: none; width: 18px; height: 18px; border-width=
-: 2px; border-style: solid; border-right-color: rgba(255, 230, 0, 0.3); bor=
-der-bottom-color: rgba(255, 230, 0, 0.3); border-left-color: rgba(255, 230,=
- 0, 0.3); border-image: initial; border-top-color: var(--taxi-yellow); bord=
-er-radius: 50%; animation: 0.6s linear 0s infinite normal none running spin=
-; margin: 0px auto; }
-
-.calc-btn.loading .spinner { display: block; }
-
-.result-card { background: var(--taxi-yellow); border: 1px solid var(--taxi=
--yellow-dark); border-radius: 12px; padding: 14px; text-align: center; posi=
-tion: relative; overflow: hidden; }
-
-.result-label { font-size: 1.1rem; letter-spacing: 2px; text-transform: upp=
-ercase; color: var(--taxi-blue-dark); margin-bottom: 6px; font-weight: 700;=
- font-family: "Barlow Condensed", sans-serif; }
-
-.result-value { font-family: "Barlow Condensed", sans-serif; font-size: 2re=
-m; font-weight: 900; color: var(--taxi-blue-dark); line-height: 1; margin-b=
-ottom: 2px; }
-
-.result-sub { font-size: 0.8rem; color: var(--taxi-blue); }
-
-.sidebar { display: flex; flex-direction: column; gap: 12px; }
-
-.divider { height: 1px; background: rgba(255, 255, 255, 0.08); }
-
-.notif { position: fixed; bottom: 24px; left: 50%; transform: translateX(-5=
-0%) translateY(20px); background: rgb(26, 26, 46); color: var(--white); pad=
-ding: 12px 24px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; =
-opacity: 0; transition: 0.3s; z-index: 999; white-space: nowrap; box-shadow=
-: rgba(0, 0, 0, 0.3) 0px 8px 24px; }
-
-.notif.show { opacity: 1; transform: translateX(-50%) translateY(0px); }
-
-.install-banner { display: none; position: fixed; bottom: 0px; left: 0px; r=
-ight: 0px; background: var(--taxi-blue-dark); border-top: 2px solid var(--t=
-axi-yellow); padding: 14px 20px; align-items: center; gap: 12px; z-index: 5=
-00; }
-
-.banner-text { flex: 1 1 0%; font-size: 0.9rem; color: var(--white); }
-
-.banner-install { background: var(--taxi-yellow); color: var(--taxi-blue-da=
-rk); border: none; border-radius: 8px; padding: 8px 16px; font-weight: 800;=
- font-family: "Barlow Condensed", sans-serif; cursor: pointer; font-size: 0=
-.9rem; }
-
-.banner-close { background: transparent; border: none; color: rgba(255, 255=
-, 255, 0.5); font-size: 1.2rem; cursor: pointer; }
-
-.modal-overlay { position: fixed; inset: 0px; background: rgba(13, 27, 62, =
-0.92); backdrop-filter: blur(6px); z-index: 2000; display: flex; align-item=
-s: center; justify-content: center; padding: 20px; }
-
-.modal-box { background: var(--taxi-blue-dark); border: 2px solid var(--tax=
-i-yellow); border-radius: 20px; padding: 32px 28px; max-width: 500px; width=
-: 100%; text-align: center; animation: 0.4s ease 0s 1 normal none running f=
-adeIn; }
-
-.modal-title { font-family: "Barlow Condensed", sans-serif; font-size: 1.5r=
-em; font-weight: 900; color: var(--taxi-yellow); text-transform: uppercase;=
- letter-spacing: 1px; margin-bottom: 8px; }
-
-.modal-subtitle { font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); marg=
-in-bottom: 24px; }
-
-.modal-text { background: transparent; border: none; padding: 16px; font-si=
-ze: 0.95rem; color: var(--taxi-yellow); line-height: 1.6; text-align: cente=
-r; margin-bottom: 20px; font-weight: 500; }
-
-.modal-check-row { display: flex; align-items: center; gap: 12px; backgroun=
-d: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); b=
-order-radius: 10px; padding: 14px 16px; margin-bottom: 20px; cursor: pointe=
-r; transition: 0.2s; text-align: left; }
-
-.modal-check-row:hover { border-color: var(--taxi-yellow); }
-
-.modal-check-row.checked { border-color: var(--green); background: rgba(34,=
- 197, 94, 0.08); }
-
-.modal-checkbox { width: 22px; height: 22px; border: 2px solid rgba(255, 25=
-5, 255, 0.3); border-radius: 6px; flex-shrink: 0; display: flex; align-item=
-s: center; justify-content: center; transition: 0.2s; font-size: 0.9rem; co=
-lor: white; }
-
-.modal-check-row.checked .modal-checkbox { background: var(--green); border=
--color: var(--green); }
-
-.modal-check-label { font-size: 0.9rem; color: rgba(255, 255, 255, 0.8); fo=
-nt-weight: 500; line-height: 1.4; }
-
-.modal-btn { width: 100%; background: var(--taxi-yellow); color: var(--taxi=
--blue-dark); border: none; border-radius: 12px; padding: 14px; font-family:=
- "Barlow Condensed", sans-serif; font-weight: 900; font-size: 1.1rem; lette=
-r-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: 0.2=
-s; opacity: 0.4; pointer-events: none; }
-
-.modal-btn.enabled { opacity: 1; pointer-events: all; box-shadow: rgba(255,=
- 230, 0, 0.3) 0px 4px 16px; }
-
-.modal-btn.enabled:hover { background: var(--taxi-yellow-dark); transform: =
-translateY(-1px); }
-
-@keyframes fadeIn {=20
-  0% { opacity: 0; transform: translateY(10px); }
-  100% { opacity: 1; transform: translateY(0px); }
-}
-
-@keyframes spin {=20
-  100% { transform: rotate(360deg); }
-}
-
-.fade-in { animation: 0.4s ease 0s 1 normal none running fadeIn; }
-
-footer { text-align: center; padding: 12px; background: transparent; color:=
- var(--taxi-blue-dark); font-size: 0.8rem; }
-
-footer a { color: var(--taxi-blue-dark); text-decoration: none; }
-
-@media (max-width: 768px) {
-  header { padding: 0px 14px; }
-  .header-inner { padding: 10px 0px; }
-  .header-inner span[style*=3D"font-size:1.7rem"] { font-size: 1.3rem !impo=
-rtant; }
-  .header-inner div[style*=3D"padding:8px 0 18px"] { padding: 6px 0px 12px =
-!important; }
-  header h1 { text-align: center; font-size: 1rem !important; white-space: =
-normal !important; line-height: 1.3 !important; }
-  .main { padding: 10px 10px 20px; gap: 12px; grid-template-columns: 1fr !i=
-mportant; }
-  .card { padding: 14px; border-radius: 12px; }
-  .addr-input { font-size: 1rem !important; padding: 12px 14px !important; =
-}
-  .loc-btn-big { font-size: 0.95rem; padding: 12px 14px; }
-  .calc-btn { font-size: 1.1rem; padding: 14px; }
-  .add-stop-btn { font-size: 0.85rem; padding: 10px; }
-  .result-card { padding: 14px; }
-  .result-card > div[style*=3D"display:flex"] { flex-direction: column !imp=
-ortant; gap: 10px !important; align-items: center !important; }
-  .result-value { font-size: 2.4rem !important; }
-  .result-label { font-size: 1rem !important; }
-  #result-info div[style*=3D"font-size:0.9rem"] { font-size: 0.85rem !impor=
-tant; }
-  .sidebar { grid-template-columns: 1fr !important; }
-  footer { font-size: 0.78rem; padding: 14px 12px; }
-  .modal-box { padding: 24px 18px; border-radius: 16px; }
-  .modal-title { font-size: 1.3rem; }
-  .modal-text { font-size: 0.88rem; }
-  .modal-btn { font-size: 1rem; padding: 14px; }
-  .install-banner { padding: 12px 14px; }
-}
-
-@media (max-width: 400px) {
-  .header-inner span[style*=3D"font-size:1.7rem"] { font-size: 1.1rem !impo=
-rtant; }
-  header h1 { font-size: 0.9rem !important; }
-  .result-value { font-size: 2rem !important; }
-}
-
-.zebrinha { width: 100%; height: 36px; background-color: var(--taxi-yellow)=
-; background-image: repeating-conic-gradient(var(--taxi-blue-dark) 0% 25%, =
-var(--taxi-yellow) 0% 50%); background-size: 36px 36px; flex-shrink: 0; mar=
-gin: 10px 0px; }
-------MultipartBoundary--pqVWGZYAlmYUEHVBtl146QxXZ8WCZpJWjBqNsGmgAR------
+<script>
+  const TARIFAS = { bandeirada: 6.83, kmB1: 3.83, kmB2: 4.10, horaParada: 30.72 };
+  let bandeira = 1;
+
+  function detectarBandeira() {
+    // Antecipa 15 minutos — lastro para embarque próximo da virada de bandeira
+    const now = new Date(new Date().getTime() + 15 * 60 * 1000);
+    const hora = now.getHours();
+    const dia = now.getDay(); // 0=domingo, 1=seg... 6=sab
+    const FERIADOS = ['01-01','21-04','01-05','07-09','12-10','02-11','15-11','25-12','08-12','20-11'];
+    const mmdd = String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+    const feriado = FERIADOS.includes(mmdd);
+
+    // B2: domingo o dia todo (0h–23h59)
+    // B2: feriado nacional o dia todo
+    // B2: seg–sab das 22h às 6h
+    // B2: segunda 0h–6h (continuação do domingo)
+    const domingoOuFeriado = dia === 0 || feriado;
+    const noturnoSegSab = (dia >= 1 && dia <= 6) && (hora >= 22 || hora < 6);
+
+    bandeira = (domingoOuFeriado || noturnoSegSab) ? 2 : 1;
+  }
+  detectarBandeira();
+
+  // ── PONTOS DE TÁXI ────────────────────────────
+  const PONTOS = {
+    'ponto51': {
+      nome: 'PONTO DE TÁXI DA RODOVIÁRIA',
+      lat: -21.738045,
+      lon: -43.374371
+    },
+    'ponto01md': {
+      nome: 'Ponto 01 — Marechal Deodoro',
+      lat: -21.7614,
+      lon: -43.3496
+    }
+  };
+
+  // Lê parâmetro do link e preenche origem automaticamente
+  function carregarPontoDeOrigem() {
+    const params = new URLSearchParams(window.location.search);
+    const ponto = params.get('ponto');
+    if (ponto && PONTOS[ponto]) {
+      // Armazena coordenadas fixas — sem necessidade de geocodificar
+      window._origemFixa = { lat: PONTOS[ponto].lat, lon: PONTOS[ponto].lon };
+      document.getElementById('origin').value = PONTOS[ponto].nome;
+      document.getElementById('origin-display').textContent = PONTOS[ponto].nome;
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', carregarPontoDeOrigem);
+
+  function fmt(v) { return 'R$ ' + v.toFixed(2).replace('.', ','); }
+  function appendJF(a) { return a.toLowerCase().includes('juiz de fora') ? a : a + ', Juiz de Fora, MG'; }
+
+  const GOOGLE_API_KEY = 'AIzaSyC6M_XhgT-xqltyObVbmanmzSiqCH_AlD0';
+
+  // Limites aproximados do município de Juiz de Fora
+  const JF_BOUNDS = { latMin: -21.87, latMax: -21.62, lonMin: -43.50, lonMax: -43.27 };
+
+  async function geocodeFresh(addr) {
+    // Força busca dentro de Juiz de Fora usando components filter
+    const q = encodeURIComponent(addr + ', Juiz de Fora, MG');
+    const r = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${q}&region=br&language=pt-BR&components=administrative_area:MG|country:BR&key=${GOOGLE_API_KEY}`);
+    const d = await r.json();
+    if (d.status !== 'OK' || !d.results.length) throw new Error('Endereço não encontrado em Juiz de Fora: ' + addr);
+    const result = d.results[0];
+    const loc = result.geometry.location;
+
+    // Verifica se o resultado contém Juiz de Fora no endereço formatado
+    const formattedAddress = (result.formatted_address || '').toLowerCase();
+    const components = result.address_components || [];
+    const inJF = formattedAddress.includes('juiz de fora') ||
+      components.some(c =>
+        c.long_name.toLowerCase().includes('juiz de fora') ||
+        c.short_name.toLowerCase().includes('juiz de fora')
+      );
+
+    if (!inJF) {
+      throw new Error('Destino fora do perímetro urbano de Juiz de Fora. Para outros municípios consulte o taxista.');
+    }
+
+    // Verifica também pelos limites geográficos
+    if (loc.lat < JF_BOUNDS.latMin || loc.lat > JF_BOUNDS.latMax ||
+        loc.lng < JF_BOUNDS.lonMin || loc.lng > JF_BOUNDS.lonMax) {
+      throw new Error('Destino fora do perímetro urbano de Juiz de Fora. Para outros municípios consulte o taxista.');
+    }
+    return { lat: loc.lat, lon: loc.lng };
+  }
+
+  async function geocode(addr) {
+    // Bounding box de Juiz de Fora: garante resultados apenas dentro da cidade
+    const JF_BBOX = '-43.6500,-21.8500,-43.2500,-21.5500'; // lon_min,lat_min,lon_max,lat_max
+    const q = encodeURIComponent(appendJF(addr));
+    // Primeira tentativa: com bounding box restrito a JF
+    let r = await fetch(`https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1&accept-language=pt-BR&countrycodes=br&viewbox=${JF_BBOX}&bounded=1`);
+    let d = await r.json();
+    // Se não achar dentro do bbox, tenta sem bounded mas ainda filtra por JF
+    if (!d.length) {
+      r = await fetch(`https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=5&accept-language=pt-BR&countrycodes=br`);
+      d = await r.json();
+      // Filtra resultados que mencionam Juiz de Fora
+      d = d.filter(item => item.display_name.toLowerCase().includes('juiz de fora'));
+    }
+    if (!d.length) throw new Error('Endereço não encontrado em Juiz de Fora: ' + addr);
+    return { lat: parseFloat(d[0].lat), lon: parseFloat(d[0].lon) };
+  }
+
+  async function calcularRota(coords) {
+    const s = coords.map(c => `${c.lon},${c.lat}`).join(';');
+    const r = await fetch(`https://router.project-osrm.org/route/v1/driving/${s}?overview=false`);
+    const d = await r.json();
+    if (d.code !== 'Ok') throw new Error('Rota não encontrada');
+    return { distKm: d.routes[0].distance/1000, durMin: d.routes[0].duration/60 };
+  }
+
+  function mostrarResultado(distKm, paradoMin, distText, durText) {
+    const kmRate = bandeira === 2 ? TARIFAS.kmB2 : TARIFAS.kmB1;
+    const total = TARIFAS.bandeirada + distKm * kmRate + (paradoMin/60) * TARIFAS.horaParada;
+    const hora = new Date().getHours();
+    const horaCritica = hora >= 17 && hora < 20;
+    const totalMin = horaCritica ? total : total * 0.95;
+    const totalMax = total * (horaCritica ? 1.20 : 1.10);
+    const arredondar = v => Math.ceil(v);
+    document.getElementById('total-price').textContent = 'R$ ' + arredondar(totalMin) + ' a R$ ' + arredondar(totalMax);
+    const now = new Date();
+    document.getElementById('result-info').style.display = 'flex';
+    document.getElementById('add-stop-btn').style.display = 'block';
+  }
+
+  async function calcularPorMapa() {
+    const originVal = document.getElementById('origin').value.trim();
+    if (!originVal) { showNotif('⚠️ Informe a origem!'); return; }
+    const filled = Array.from(document.querySelectorAll('.stop-input')).map(i => i.value.trim()).filter(Boolean);
+    if (!filled.length) { showNotif('⚠️ Informe ao menos um destino!'); return; }
+    const btn = document.getElementById('calc-map-btn');
+    btn.classList.add('loading');
+    try {
+      // Use fixed origin coordinates if available, otherwise geocode
+      let originCoord;
+      if (window._origemFixa) {
+        originCoord = window._origemFixa;
+      } else {
+        originCoord = await geocodeFresh(originVal);
+      }
+      const destCoords = await Promise.all(filled.map(addr => geocodeFresh(addr)));
+      const coords = [originCoord, ...destCoords];
+      const { distKm, durMin } = await calcularRota(coords);
+      const distText = distKm.toFixed(1) + ' km';
+      const durText = durMin >= 60 ? Math.floor(durMin/60) + 'h ' + Math.round(durMin%60) + 'min' : Math.round(durMin) + ' min';
+      mostrarResultado(distKm, durMin*0.15, distText, durText + (filled.length > 1 ? ' · ' + filled.length + ' paradas' : ''));
+      showNotif('✅ Estimativa calculada!');
+    } catch(e) {
+      showNotif('❌ ' + (e.message || 'Erro ao calcular rota.'));
+    } finally {
+      btn.classList.remove('loading');
+    }
+  }
+
+  function usarLocalizacao() {
+    const btn = document.getElementById('loc-btn');
+    const status = document.getElementById('loc-status');
+    if (!navigator.geolocation) { showNotif('❌ Geolocalização não suportada.'); return; }
+    btn.classList.add('locating');
+    status.style.display = 'block';
+    status.textContent = '📡 Obtendo localização...';
+    navigator.geolocation.getCurrentPosition(async pos => {
+      try {
+        const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json&accept-language=pt-BR`);
+        const d = await r.json();
+        document.getElementById('origin').value = d.display_name.split(', Juiz de Fora')[0] + ', Juiz de Fora';
+        btn.classList.add('located'); btn.classList.remove('locating');
+        btn.querySelector('.loc-icon').style.display = 'none';
+        btn.querySelector('.loc-success').style.display = 'inline';
+        status.textContent = '✅ Localização detectada!';
+        status.style.color = 'var(--green)';
+        showNotif('📍 Localização preenchida!');
+      } catch(e) { btn.classList.remove('locating'); showNotif('❌ Erro ao converter localização.'); }
+    }, () => { btn.classList.remove('locating'); showNotif('❌ Permissão negada.'); }, {enableHighAccuracy:true, timeout:10000});
+  }
+
+  let stopCount = 1;
+  function adicionarParada() {
+    if (stopCount >= 5) { showNotif('⚠️ Máximo de 5 paradas.'); return; }
+    stopCount++;
+    const div = document.createElement('div');
+    div.className = 'addr-group';
+    div.innerHTML = `<label><span class="dot-dest"></span> Parada ${stopCount}</label><div class="addr-row"><input class="addr-input stop-input" data-index="${stopCount-1}" type="text" placeholder="Ex: Rua, número, bairro" style="flex:1"/><button class="remove-stop-btn" onclick="removerParada(this)">✕</button></div>`;
+    document.getElementById('stops-container').appendChild(div);
+    if (stopCount >= 5) document.getElementById('add-stop-btn').style.display = 'none';
+  }
+
+  function removerParada(btn) {
+    btn.closest('.addr-group').remove();
+    stopCount--;
+    document.getElementById('add-stop-btn').style.display = 'flex';
+  }
+
+  // MODAL
+  let termoAceito = false;
+  function toggleCheck() {
+    termoAceito = !termoAceito;
+    document.getElementById('check-row').classList.toggle('checked', termoAceito);
+    document.getElementById('modal-checkbox').textContent = termoAceito ? '✓' : '';
+    document.getElementById('modal-btn').classList.toggle('enabled', termoAceito);
+  }
+  function entrarNoApp() {
+    if (!termoAceito) return;
+    const modal = document.getElementById('modal-termos');
+    modal.style.opacity = '0'; modal.style.transition = 'opacity 0.4s';
+    setTimeout(() => modal.style.display = 'none', 400);
+  }
+
+  // NOTIF
+  function showNotif(msg) {
+    const n = document.getElementById('notif');
+    n.textContent = msg; n.classList.add('show');
+    setTimeout(() => n.classList.remove('show'), 3000);
+  }
+
+  // PWA
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt = e; document.getElementById('install-banner').style.display = 'flex'; });
+  function instalarApp() { if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then(() => { deferredPrompt = null; fecharBanner(); }); } }
+  function fecharBanner() { document.getElementById('install-banner').style.display = 'none'; }
+</script>
+</body>
+</html>
