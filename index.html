@@ -715,16 +715,23 @@ CÁLCULO VÁLIDO PARA CORRIDAS NO PERÍMETRO URBANO DE JUIZ DE FORA
     const result = d.results[0];
     const loc = result.geometry.location;
 
-    // Verifica se o resultado contém Juiz de Fora no endereço formatado
+    // Verifica se o resultado é em Juiz de Fora
     const formattedAddress = (result.formatted_address || '').toLowerCase();
     const components = result.address_components || [];
-    const inJF = formattedAddress.includes('juiz de fora') ||
-      components.some(c =>
-        c.long_name.toLowerCase().includes('juiz de fora') ||
-        c.short_name.toLowerCase().includes('juiz de fora')
-      );
 
-    if (!inJF) {
+    // Pega o nome do município no resultado
+    const municipio = components.find(c =>
+      c.types.includes('administrative_area_level_2')
+    );
+    const nomeMunicipio = (municipio ? municipio.long_name : '').toLowerCase();
+
+    // Bloqueia se o município não for Juiz de Fora
+    if (nomeMunicipio && !nomeMunicipio.includes('juiz de fora')) {
+      throw new Error('Destino fora do perímetro urbano de Juiz de Fora. Para outros municípios consulte o taxista.');
+    }
+
+    // Se não encontrou município, verifica pelo endereço formatado
+    if (!nomeMunicipio && !formattedAddress.includes('juiz de fora')) {
       throw new Error('Destino fora do perímetro urbano de Juiz de Fora. Para outros municípios consulte o taxista.');
     }
 
