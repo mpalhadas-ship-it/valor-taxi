@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0046)file:///C:/Users/marce/Downloads/index_56.html -->
+<!-- saved from url=(0046)file:///C:/Users/marce/Downloads/index_57.html -->
 <html lang="pt-BR"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -674,19 +674,23 @@ CÁLCULO VÁLIDO PARA CORRIDAS NO PERÍMETRO URBANO DE JUIZ DE FORA
   const JF_BOUNDS = { latMin: -21.87, latMax: -21.62, lonMin: -43.50, lonMax: -43.27 };
 
   async function geocodeFresh(addr) {
-    const q = encodeURIComponent(appendJF(addr));
-    const r = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${q}&region=br&language=pt-BR&key=${GOOGLE_API_KEY}`);
+    // Força busca dentro de Juiz de Fora usando components filter
+    const q = encodeURIComponent(addr + ', Juiz de Fora, MG');
+    const r = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${q}&region=br&language=pt-BR&components=administrative_area:MG|country:BR&key=${GOOGLE_API_KEY}`);
     const d = await r.json();
-    if (d.status !== 'OK' || !d.results.length) throw new Error('Endereço não encontrado: ' + addr);
+    if (d.status !== 'OK' || !d.results.length) throw new Error('Endereço não encontrado em Juiz de Fora: ' + addr);
     const result = d.results[0];
     const loc = result.geometry.location;
 
-    // Verifica se o resultado é em Juiz de Fora pela cidade no endereço
+    // Verifica se o resultado contém Juiz de Fora no endereço formatado
+    const formattedAddress = (result.formatted_address || '').toLowerCase();
     const components = result.address_components || [];
-    const inJF = components.some(c =>
-      c.long_name.toLowerCase().includes('juiz de fora') ||
-      c.short_name.toLowerCase().includes('juiz de fora')
-    );
+    const inJF = formattedAddress.includes('juiz de fora') ||
+      components.some(c =>
+        c.long_name.toLowerCase().includes('juiz de fora') ||
+        c.short_name.toLowerCase().includes('juiz de fora')
+      );
+
     if (!inJF) {
       throw new Error('Destino fora do perímetro urbano de Juiz de Fora. Para outros municípios consulte o taxista.');
     }
