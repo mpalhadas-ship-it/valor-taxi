@@ -674,7 +674,25 @@ CÁLCULO VÁLIDO PARA CORRIDAS NO PERÍMETRO URBANO DE JUIZ DE FORA
   // Limites aproximados do município de Juiz de Fora
   const JF_BOUNDS = { latMin: -21.87, latMax: -21.62, lonMin: -43.50, lonMax: -43.27 };
 
+  const TERMOS_BLOQUEADOS = [
+    'aeroporto zona da mata',
+    'aeroporto itamar franco',
+    'aeroporto de goianá',
+    'aeroporto de goiana',
+    'aeroporto iza',
+    'aeroporto de rio novo',
+    'aeroporto rio novo',
+    'goianá',
+    'goiana',
+    'rio novo'
+  ];
+
   async function geocodeFresh(addr) {
+    // Bloqueia termos fora de JF
+    const addrLower = addr.toLowerCase().trim();
+    if (TERMOS_BLOQUEADOS.some(t => addrLower.includes(t))) {
+      throw new Error('Destino fora do perímetro urbano de Juiz de Fora. Para outros municípios consulte o taxista.');
+    }
     // Força busca dentro de Juiz de Fora usando components filter
     const q = encodeURIComponent(addr + ', Juiz de Fora, MG');
     const r = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${q}&region=br&language=pt-BR&components=administrative_area:MG|country:BR&key=${GOOGLE_API_KEY}`);
