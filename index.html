@@ -744,6 +744,33 @@ CÁLCULO VÁLIDO PARA CORRIDAS NO PERÍMETRO URBANO DE JUIZ DE FORA
     return { lat: loc.lat, lon: loc.lng };
   }
 
+  async function geocodeFreshWithAddress(addr) {
+    const result = await geocodeFreshFull(addr);
+    return result;
+  }
+
+  async function geocodeFreshFull(addr) {
+    const addrLower = addr.toLowerCase().trim();
+    if (TERMOS_BLOQUEADOS.some(t => addrLower.includes(t))) {
+      throw new Error('Destino fora do perímetro urbano de Juiz de Fora. Para outros municípios consulte o taxista.');
+    }
+    const q = encodeURIComponent(addr + ', Juiz de Fora, MG');
+    const r = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${q}&region=br&language=pt-BR&components=administrative_area:MG|country:BR&key=${GOOGLE_API_KEY}`);
+    const d = await r.json();
+    if (d.status !== 'OK' || !d.results.length) throw new Error('Endereço não encontrado: ' + addr);
+    const result = d.results[0];
+    const loc = result.geometry.location;
+    const components = result.address_components || [];
+    const municipio = components.find(c => c.types.includes('administrative_area_level_2'));
+    const nomeMunicipio = (municipio ? municipio.long_name : '').toLowerCase();
+    if (nomeMunicipio && !nomeMunicipio.includes('juiz de fora')) {
+      throw new Error('Destino fora do perímetro urbano de Juiz de Fora. Para outros municípios consulte o taxista.');
+    }
+    // Formata endereço limpo para exibir
+    const formatted = result.formatted_address.replace(', Brasil', '').replace(', Brazil', '');
+    return { lat: loc.lat, lon: loc.lng, formatted };
+  }
+
   // Centro de JF (Rodoviária)
   const JF_CENTRO = { lat: -21.738045, lon: -43.374371 };
 
@@ -812,14 +839,28 @@ CÁLCULO VÁLIDO PARA CORRIDAS NO PERÍMETRO URBANO DE JUIZ DE FORA
       } else {
         originCoord = await geocodeFresh(originVal);
       }
-      const destCoords = await Promise.all(filled.map(addr => geocodeFresh(addr)));
+      // Geocodifica destinos e confirma endereço com o usuário
+      const destResults = await Promise.all(filled.map(addr => geocodeFreshWithAddress(addr)));
+      
       // Verifica raio máximo de 25km a partir do centro de JF
-      for (const coord of destCoords) {
-        const dist = distanciaKm(JF_CENTRO.lat, JF_CENTRO.lon, coord.lat, coord.lon);
+      for (const res of destResults) {
+        const dist = distanciaKm(JF_CENTRO.lat, JF_CENTRO.lon, res.lat, res.lon);
         if (dist > 25) {
           throw new Error('Destino fora do perímetro urbano de Juiz de Fora. Para outros municípios consulte o taxista.');
         }
       }
+
+      // Confirma endereço encontrado com o usuário
+      for (const res of destResults) {
+        const confirmado = confirm('📍 Endereço encontrado:\n\n' + res.formatted + '\n\nEste é o destino correto?');
+        if (!confirmado) {
+          mostrarNotif('Por favor, informe o endereço com mais detalhes.');
+          setLoading(false);
+          return;
+        }
+      }
+
+      const destCoords = destResults;
       const coords = [originCoord, ...destCoords];
       const { distKm, durMin } = await calcularRota(coords);
       const distText = distKm.toFixed(1) + ' km';
