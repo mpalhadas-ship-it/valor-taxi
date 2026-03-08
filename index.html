@@ -221,6 +221,23 @@
   .autocomplete-item:hover { background: var(--taxi-yellow); color: var(--taxi-blue-dark); font-weight: 600; }
   .addr-group { position: relative; }
 
+  /* SHORT ADDRESS MODAL */
+  .short-addr-box {
+    background: var(--taxi-blue-dark); border-radius: 16px; padding: 24px;
+    max-width: 340px; width: 100%; text-align: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+  .short-addr-box .short-icon { font-size: 2rem; margin-bottom: 12px; }
+  .short-addr-box .short-msg {
+    color: var(--taxi-yellow); font-weight: 700; font-size: 1rem;
+    margin-bottom: 20px; line-height: 1.4;
+  }
+  .short-addr-box .btn-ok-conferir {
+    width: 100%; background: var(--taxi-yellow); color: var(--taxi-blue-dark);
+    border: none; border-radius: 8px; padding: 13px;
+    font-weight: 700; font-size: 1rem; cursor: pointer;
+  }
+
   /* CONFIRM MODAL */
   .confirm-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.6);
@@ -821,6 +838,27 @@ CÁLCULO VÁLIDO PARA CORRIDAS NO PERÍMETRO URBANO DE JUIZ DE FORA
     return { lat: loc.lat, lon: loc.lng, formatted };
   }
 
+  // Short address warning
+  function avisarEnderecoIncompleto(input) {
+    return new Promise((resolve) => {
+      const overlay = document.createElement('div');
+      overlay.className = 'confirm-overlay';
+      overlay.innerHTML = `
+        <div class="short-addr-box">
+          <div class="short-icon">⚠️</div>
+          <div class="short-msg">Seu endereço parece incorreto ou incompleto, Favor verificar!</div>
+          <button class="btn-ok-conferir">OK, VOU CONFERIR</button>
+        </div>`;
+      document.body.appendChild(overlay);
+      overlay.querySelector('.btn-ok-conferir').onclick = () => {
+        overlay.remove();
+        input.value = '';
+        input.focus();
+        resolve();
+      };
+    });
+  }
+
   // Custom confirmation dialog
   function confirmarEndereco(formatted) {
     return new Promise((resolve) => {
@@ -911,6 +949,17 @@ CÁLCULO VÁLIDO PARA CORRIDAS NO PERÍMETRO URBANO DE JUIZ DE FORA
       } else {
         originCoord = await geocodeFresh(originVal);
       }
+      // Verifica endereços muito curtos (menos de 8 caracteres)
+      for (const addr of filled) {
+        if (addr.trim().length < 8) {
+          const input = Array.from(document.querySelectorAll('.addr-input'))
+            .find(el => el.value.trim() === addr.trim());
+          await avisarEnderecoIncompleto(input || document.querySelector('.addr-input'));
+          setLoading(false);
+          return;
+        }
+      }
+
       // Geocodifica destinos e confirma endereço com o usuário
       const destResults = await Promise.all(filled.map(addr => geocodeFreshWithAddress(addr)));
       
