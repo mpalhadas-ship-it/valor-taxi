@@ -740,6 +740,7 @@ CÁLCULO VÁLIDO PARA CORRIDAS NO PERÍMETRO URBANO DE JUIZ DE FORA
         loc.lng < JF_BOUNDS.lonMin || loc.lng > JF_BOUNDS.lonMax) {
       throw new Error('Destino fora do perímetro urbano de Juiz de Fora. Para outros municípios consulte o taxista.');
     }
+    console.log('Endereço encontrado:', result.formatted_address, '| Município:', nomeMunicipio, '| Coords:', loc.lat, loc.lng);
     return { lat: loc.lat, lon: loc.lng };
   }
 
