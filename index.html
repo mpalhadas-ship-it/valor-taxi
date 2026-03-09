@@ -821,8 +821,8 @@ CÁLCULO VÁLIDO PARA CORRIDAS NO PERÍMETRO URBANO DE JUIZ DE FORA
     if (TERMOS_BLOQUEADOS.some(t => addrLower.includes(t))) {
       throw new Error('Destino fora do perímetro urbano de Juiz de Fora. Para outros municípios consulte o taxista.');
     }
-    const q = encodeURIComponent(addr + ', Juiz de Fora, MG');
-    const r = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${q}&region=br&language=pt-BR&components=administrative_area:MG|country:BR&key=${GOOGLE_API_KEY}`);
+    const q = encodeURIComponent(addr + ', Juiz de Fora, MG, Brasil');
+    const r = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${q}&region=br&language=pt-BR&key=${GOOGLE_API_KEY}`);
     const d = await r.json();
     if (d.status !== 'OK' || !d.results.length) throw new Error('Endereço não encontrado: ' + addr);
     const result = d.results[0];
