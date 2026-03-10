@@ -451,11 +451,11 @@
   <div class="modal-box">
     <div style="margin-bottom:16px;"></div>
     <div class="modal-text">
-      <span style="font-size:1.1rem;font-weight:700;text-align:center;display:block;line-height:1.6;">Os valores são uma estimativa, podendo sofrer variação para mais ou para menos conforme condições do trânsito.<br><br>Informe o destino corretamente para maior precisão do cálculo.</span>
+      <span style="font-size:1.1rem;font-weight:700;text-align:center;display:block;line-height:1.7;">Os valores são uma estimativa, podendo variar para mais ou para menos conforme condições de trânsito.<br><br>O valor cobrado será o do taxímetro ao final da corrida.<br><br>Cálculos válidos somente para Juiz de Fora.</span>
     </div>
     <div class="modal-check-row" id="check-row" onclick="toggleCheck()">
       <div class="modal-checkbox" id="modal-checkbox"></div>
-      <span class="modal-check-label">Li e concordo que o valor pode variar conforme informado.</span>
+      <span class="modal-check-label">Li e concordo com os termos.</span>
     </div>
     <button class="modal-btn" id="modal-btn" onclick="entrarNoApp()">
       Ir para o valor aproximado
@@ -497,10 +497,8 @@
         <div class="result-value" id="total-price">R$</div>
       </div>
       <div id="result-info" style="display:none;margin-top:8px;flex-direction:column;gap:4px;text-align:center;">
-        <div style="font-size:1.05rem;color:#ffffff;font-weight:500;line-height:1.8;padding:10px 4px;font-family:'Barlow',sans-serif;">
-          O valor cobrado será sempre o do taxímetro ao final da corrida — essa estimativa é pra te dar uma noção do valor aproximado.<br><br>
-          Fique à vontade também pra consultar o taxista sobre o valor antes de embarcar.<br><br>
-          <strong>Boa corrida! 🚕</strong>
+        <div style="font-size:1.05rem;color:var(--taxi-blue-dark);font-weight:500;line-height:1.8;padding:10px 4px;font-family:'Barlow',sans-serif;">
+          Esse é o valor provável de sua corrida. Fique à vontade também pra consultar o taxista aí no ponto se preferir. Boa corrida! 🚕
         </div>
       </div>
     </div>
