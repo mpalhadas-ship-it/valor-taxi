@@ -826,6 +826,11 @@
     input.addEventListener('input', () => {
       clearTimeout(autocompleteTimer);
       removeAutocompleteList(getWrapper());
+      // Limpa cache ao editar — evita usar coordenadas de endereço anterior
+      delete input.dataset.lat;
+      delete input.dataset.lon;
+      delete input.dataset.formatted;
+      delete input.dataset.ehLocal;
       const val = input.value.trim();
       if (val.length < 3) return;
       autocompleteTimer = setTimeout(() => fetchSuggestions(val, input, getWrapper()), 400);
