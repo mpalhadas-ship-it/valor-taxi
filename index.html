@@ -58,7 +58,6 @@
     align-items: center;
     white-space: nowrap;
   }
-
   .logo span { color: var(--taxi-yellow); }
 
   .badge {
@@ -138,7 +137,7 @@
   }
 
   .dot-origin { width: 10px; height: 10px; border-radius: 50%; background: var(--taxi-yellow); flex-shrink:0; }
-  .dot-dest { width: 10px; height: 10px; border-radius: 50%; background: var(--green); flex-shrink:0; }
+  .dot-dest   { width: 10px; height: 10px; border-radius: 50%; background: var(--green); flex-shrink:0; }
 
   .addr-row { display: flex; gap: 8px; align-items: center; }
   .addr-row .addr-input { flex: 1; }
@@ -165,67 +164,22 @@
 
   .addr-input::placeholder { color: #9CA3AF !important; font-weight: 400 !important; }
 
-  /* Estiliza o dropdown do Google Places para combinar com o app */
-  .pac-container {
-    border-radius: 0 0 12px 12px !important;
-    border: 2px solid var(--taxi-yellow) !important;
-    border-top: none !important;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.2) !important;
-    font-family: 'Barlow', sans-serif !important;
-    margin-top: -2px;
+  /* AUTOCOMPLETE */
+  .autocomplete-list {
+    position: absolute; top: 100%; left: 0; right: 0;
+    background: white; border: 2px solid var(--taxi-yellow);
+    border-top: none; border-radius: 0 0 8px 8px;
+    z-index: 200; max-height: 200px; overflow-y: auto;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   }
-  .pac-item {
-    padding: 10px 14px !important;
-    font-size: 0.9rem !important;
-    color: var(--taxi-blue-dark) !important;
-    cursor: pointer !important;
-    border-bottom: 1px solid #eee !important;
+  .autocomplete-item {
+    padding: 10px 14px; font-size: 0.9rem; color: #333;
+    cursor: pointer; border-bottom: 1px solid #eee;
   }
-  .pac-item:hover, .pac-item-selected {
-    background: var(--taxi-yellow) !important;
-    color: var(--taxi-blue-dark) !important;
-    font-weight: 600 !important;
-  }
-  .pac-item-query { color: var(--taxi-blue-dark) !important; font-weight: 600 !important; }
-  .pac-icon { display: none !important; }
-  .pac-logo::after { display: none !important; }
+  .autocomplete-item:last-child { border-bottom: none; }
+  .autocomplete-item:hover { background: var(--taxi-yellow); color: var(--taxi-blue-dark); font-weight: 600; }
 
-  .loc-btn-big {
-    width: 100%;
-    margin-top: 10px;
-    background: var(--taxi-yellow);
-    border: 2px solid var(--taxi-yellow);
-    border-radius: 14px;
-    padding: 10px 14px;
-    color: var(--taxi-blue-dark);
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1.05rem;
-    font-weight: 800;
-    letter-spacing: 1px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    transition: all 0.25s;
-    box-shadow: 0 2px 12px rgba(255,230,0,0.3);
-    text-transform: uppercase;
-  }
-
-  .loc-btn-big:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,230,0,0.4); }
-  .loc-btn-big.locating { pointer-events: none; opacity: 0.7; }
-  .loc-btn-big.locating .loc-icon { display: none; }
-  .loc-btn-big .loc-spinner {
-    display: none;
-    width: 16px; height: 16px;
-    border: 2px solid rgba(18,43,98,0.3);
-    border-top-color: var(--taxi-blue-dark);
-    border-radius: 50%;
-    animation: spin 0.6s linear infinite;
-  }
-  .loc-btn-big.locating .loc-spinner { display: inline-block; }
-  .loc-btn-big.located { border-color: var(--green); color: var(--green); background: rgba(34,197,94,0.08); }
-
+  /* SHORT ADDRESS MODAL */
   .short-addr-box {
     background: var(--taxi-blue-dark); border-radius: 16px; padding: 24px;
     max-width: 340px; width: 100%; text-align: center;
@@ -242,6 +196,7 @@
     font-weight: 700; font-size: 1rem; cursor: pointer;
   }
 
+  /* CONFIRM MODAL */
   .confirm-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.6);
     display: flex; align-items: center; justify-content: center;
@@ -276,6 +231,7 @@
     font-weight: 600; font-size: 0.95rem; cursor: pointer;
   }
 
+  /* ADD STOP */
   .add-stop-btn {
     background: transparent;
     border: 2px dashed rgba(255,255,255,0.3);
@@ -306,6 +262,7 @@
   }
   .remove-stop-btn:hover { background: rgba(239,68,68,0.15); color: #ef4444; border-color: #ef4444; }
 
+  /* CALC BUTTON */
   .calc-btn {
     width: 100%;
     background: var(--taxi-yellow);
@@ -328,6 +285,7 @@
   .calc-btn .spinner { display: none; width: 18px; height: 18px; border: 2px solid rgba(255,230,0,0.3); border-top-color: var(--taxi-yellow); border-radius: 50%; animation: spin 0.6s linear infinite; margin: 0 auto; }
   .calc-btn.loading .spinner { display: block; }
 
+  /* RESULT CARD */
   .result-card {
     background: var(--taxi-yellow);
     border: 1px solid var(--taxi-yellow-dark);
@@ -360,9 +318,9 @@
   .result-sub { font-size: 0.8rem; color: var(--taxi-blue); }
 
   .sidebar { display: flex; flex-direction: column; gap: 12px; }
-
   .divider { height: 1px; background: rgba(255,255,255,0.08); }
 
+  /* NOTIF */
   .notif {
     position: fixed;
     bottom: 24px; left: 50%;
@@ -381,6 +339,7 @@
   }
   .notif.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+  /* INSTALL BANNER */
   .install-banner {
     display: none;
     position: fixed;
@@ -396,6 +355,7 @@
   .banner-install { background: var(--taxi-yellow); color: var(--taxi-blue-dark); border: none; border-radius: 8px; padding: 8px 16px; font-weight: 800; font-family: 'Barlow Condensed', sans-serif; cursor: pointer; font-size: 0.9rem; }
   .banner-close { background: transparent; border: none; color: rgba(255,255,255,0.5); font-size: 1.2rem; cursor: pointer; }
 
+  /* MODAL TERMOS */
   .modal-overlay {
     position: fixed; inset: 0;
     background: rgba(13,27,62,0.92);
@@ -427,6 +387,7 @@
   .modal-btn.enabled { opacity: 1; pointer-events: all; box-shadow: 0 4px 16px rgba(255,230,0,0.3); }
   .modal-btn.enabled:hover { background: var(--taxi-yellow-dark); transform: translateY(-1px); }
 
+  /* ANIMATIONS */
   @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes spin { to { transform: rotate(360deg); } }
   .fade-in { animation: fadeIn 0.4s ease; }
@@ -442,7 +403,7 @@
 
   @media (max-width: 768px) {
     header { padding: 0 14px; }
-    .header-inner { padding: 10px 0 10px; }
+    .header-inner { padding: 10px 0; }
     .header-inner span[style*="font-size:1.7rem"] { font-size: 1.3rem !important; }
     .header-inner div[style*="padding:8px 0 18px"] { padding: 6px 0 12px !important; }
     header h1 { font-size: 1rem !important; white-space: normal !important; line-height: 1.3 !important; text-align: center; }
@@ -541,14 +502,13 @@
     </div>
   </div>
 
-  <!-- SIDEBAR -->
   <div class="sidebar"></div>
 </div>
 
 <div class="zebrinha"></div>
 <footer>
   <p style="font-family:'Barlow Condensed',sans-serif;font-size:0.9rem;font-weight:700;color:var(--taxi-blue-dark);text-align:center;line-height:1.8;padding:8px 16px;">
-CÁLCULO VÁLIDO PARA CORRIDAS NO PERÍMETRO URBANO DE JUIZ DE FORA
+    CÁLCULO VÁLIDO PARA CORRIDAS NO PERÍMETRO URBANO DE JUIZ DE FORA
   </p>
 </footer>
 
@@ -560,10 +520,8 @@ CÁLCULO VÁLIDO PARA CORRIDAS NO PERÍMETRO URBANO DE JUIZ DE FORA
   <button class="banner-close" onclick="fecharBanner()">✕</button>
 </div>
 
-<!-- Google Maps JS API com Places library -->
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC6M_XhgT-xqltyObVbmanmzSiqCH_AlD0&libraries=places&language=pt-BR&callback=initAutocomplete" async defer></script>
-
 <script>
+  // ── TARIFAS ──────────────────────────────────────────────────────────────
   const TARIFAS = { bandeirada: 6.83, kmB1: 3.83, kmB2: 4.10, horaParada: 30.72 };
   let bandeira = 1;
 
@@ -580,9 +538,10 @@ CÁLCULO VÁLIDO PARA CORRIDAS NO PERÍMETRO URBANO DE JUIZ DE FORA
   }
   detectarBandeira();
 
+  // ── PONTOS DE TÁXI ────────────────────────────────────────────────────────
   const PONTOS = {
-    'ponto51': { nome: 'PONTO DE TÁXI DA RODOVIÁRIA', lat: -21.738045, lon: -43.374371 },
-    'ponto01md': { nome: 'Ponto 01 — Marechal Deodoro', lat: -21.7614, lon: -43.3496 }
+    'ponto51':   { nome: 'PONTO DE TÁXI DA RODOVIÁRIA',   lat: -21.738045, lon: -43.374371 },
+    'ponto01md': { nome: 'Ponto 01 — Marechal Deodoro',   lat: -21.7614,   lon: -43.3496   }
   };
 
   function carregarPontoDeOrigem() {
@@ -595,57 +554,9 @@ CÁLCULO VÁLIDO PARA CORRIDAS NO PERÍMETRO URBANO DE JUIZ DE FORA
     }
   }
 
-  window.addEventListener('DOMContentLoaded', carregarPontoDeOrigem);
-
-  // ── AUTOCOMPLETE com Google Places ────────────────────────────────────────
-  // Bounding box de Juiz de Fora para restringir sugestões
-  const JF_BOUNDS = new google.maps.LatLngBounds
-    ? null // será criado dentro de initAutocomplete
-    : null;
-
-  // Lista de instâncias do Autocomplete para reutilizar
-  const autocompleteInstances = new Map();
-
-  function initAutocomplete() {
-    // Aplica autocomplete a todos os inputs de destino já existentes
-    document.querySelectorAll('.stop-input').forEach(input => {
-      aplicarAutocomplete(input);
-    });
-  }
-
-  function aplicarAutocomplete(input) {
-    if (autocompleteInstances.has(input)) return; // já tem autocomplete
-
-    const bounds = new google.maps.LatLngBounds(
-      new google.maps.LatLng(-21.87, -43.50), // sudoeste JF
-      new google.maps.LatLng(-21.62, -43.27)  // nordeste JF
-    );
-
-    const autocomplete = new google.maps.places.Autocomplete(input, {
-      bounds: bounds,
-      strictBounds: false, // mostra JF primeiro, mas não bloqueia digitação
-      componentRestrictions: { country: 'br' },
-      fields: ['formatted_address', 'geometry', 'address_components'],
-      types: ['geocode', 'establishment']
-    });
-
-    // Quando o usuário seleciona uma sugestão, guarda as coordenadas
-    autocomplete.addListener('place_changed', () => {
-      const place = autocomplete.getPlace();
-      if (place.geometry && place.geometry.location) {
-        // Guarda coords no dataset do input para usar no cálculo
-        input.dataset.lat = place.geometry.location.lat();
-        input.dataset.lon = place.geometry.location.lng();
-        input.dataset.formatted = place.formatted_address || input.value;
-      }
-    });
-
-    autocompleteInstances.set(input, autocomplete);
-  }
-
-  // ── GEOCODING (fallback quando não selecionou sugestão) ───────────────────
+  // ── GEOCODING ─────────────────────────────────────────────────────────────
   const GOOGLE_API_KEY = 'AIzaSyC6M_XhgT-xqltyObVbmanmzSiqCH_AlD0';
-  const JF_GEO_BOUNDS = { latMin: -21.87, latMax: -21.62, lonMin: -43.50, lonMax: -43.27 };
+  const JF_BOUNDS = { latMin: -21.87, latMax: -21.62, lonMin: -43.50, lonMax: -43.27 };
 
   const TERMOS_BLOQUEADOS = [
     'aeroporto zona da mata','aeroporto itamar franco','aeroporto de goianá','aeroporto de goiana',
@@ -672,10 +583,15 @@ CÁLCULO VÁLIDO PARA CORRIDAS NO PERÍMETRO URBANO DE JUIZ DE FORA
     if (nomeMunicipio && !nomeMunicipio.includes('juiz de fora')) {
       throw new Error('Destino fora do perímetro urbano de Juiz de Fora. Para outros municípios consulte o taxista.');
     }
+    if (loc.lat < JF_BOUNDS.latMin || loc.lat > JF_BOUNDS.latMax ||
+        loc.lng < JF_BOUNDS.lonMin || loc.lng > JF_BOUNDS.lonMax) {
+      throw new Error('Destino fora do perímetro urbano de Juiz de Fora. Para outros municípios consulte o taxista.');
+    }
     const formatted = result.formatted_address.replace(', Brasil', '').replace(', Brazil', '');
     return { lat: loc.lat, lon: loc.lng, formatted };
   }
 
+  // ── POPUPS ────────────────────────────────────────────────────────────────
   function avisarEnderecoIncompleto(input) {
     return new Promise((resolve) => {
       const overlay = document.createElement('div');
@@ -689,10 +605,6 @@ CÁLCULO VÁLIDO PARA CORRIDAS NO PERÍMETRO URBANO DE JUIZ DE FORA
       document.body.appendChild(overlay);
       overlay.querySelector('.btn-ok-conferir').onclick = () => {
         overlay.remove();
-        // Limpa dados cacheados do autocomplete
-        delete input.dataset.lat;
-        delete input.dataset.lon;
-        delete input.dataset.formatted;
         input.value = '';
         input.focus();
         resolve();
@@ -706,7 +618,6 @@ CÁLCULO VÁLIDO PARA CORRIDAS NO PERÍMETRO URBANO DE JUIZ DE FORA
       overlay.className = 'confirm-overlay';
       overlay.innerHTML = `
         <div class="confirm-box">
-          <div class="confirm-icon">📍</div>
           <div class="confirm-title">O local informado está em Juiz de Fora?</div>
           <div class="confirm-address">${formatted}</div>
           <div class="confirm-warning">⚠️ Válido apenas para destinos em Juiz de Fora - MG</div>
@@ -717,19 +628,18 @@ CÁLCULO VÁLIDO PARA CORRIDAS NO PERÍMETRO URBANO DE JUIZ DE FORA
         </div>`;
       document.body.appendChild(overlay);
       overlay.querySelector('.btn-confirmar').onclick = () => { overlay.remove(); resolve(true); };
-      overlay.querySelector('.btn-cancelar').onclick = () => { overlay.remove(); resolve(false); };
+      overlay.querySelector('.btn-cancelar').onclick  = () => { overlay.remove(); resolve(false); };
     });
   }
 
+  // ── CÁLCULO DE ROTA ───────────────────────────────────────────────────────
   const JF_CENTRO = { lat: -21.738045, lon: -43.374371 };
 
   function distanciaKm(lat1, lon1, lat2, lon2) {
     const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   }
 
@@ -754,93 +664,72 @@ CÁLCULO VÁLIDO PARA CORRIDAS NO PERÍMETRO URBANO DE JUIZ DE FORA
     document.getElementById('add-stop-btn').style.display = 'block';
   }
 
+  const CIDADES_VIZINHAS = [
+    'matias barbosa','bicas','mar de espanha','santos dumont','rio novo',
+    'três rios','tres rios','são joão nepomuceno','sao joao nepomuceno',
+    'paraíba do sul','paraiba do sul','lima duarte','sapucaia',
+    'rio pomba','areal','valença','valenca','além paraíba','alem paraiba',
+    'astolfo dutra','tocantins','barbacena','paty do alferes',
+    'leopoldina','miguel pereira','vassouras','carmo','cataguases',
+    'teresópolis','teresopolis','petrópolis','petropolis',
+    'volta redonda','barra mansa','resende','itatiaia',
+    'lavras','são joão del rei','sao joao del rei','tiradentes',
+    'ubá','uba','muriaé','muriae','viçosa','vicosa',
+    'conselheiro lafaiete','ouro preto','mariana',
+    'coronel pacheco','ewbank da camara','ewbank da câmara',
+    'chácara','chacara','simão pereira','simao pereira','piau',
+    'goianá','goiana','tabuleiro','bias fortes',
+    'belmiro braga','chiador','descoberto','guarani','guarará',
+    'guarara','maripá de minas','maripa de minas',
+    'mercês','merces','olaria','oliveira fortes','paiva',
+    'pequeri','piraúba','pirauba','rio das flores','rio preto',
+    'santana do deserto','santa bárbara do monte verde',
+    'santa barbara do monte verde','aracitaba','argirita',
+    'levy gasparian','rio de janeiro','são paulo','sao paulo',
+    'belo horizonte','brasília','brasilia','niterói','niteroi',
+    'angra dos reis','paraty','cabo frio','búzios','buzios'
+  ];
+
   async function calcularPorMapa() {
     const originVal = document.getElementById('origin').value.trim();
     if (!originVal) { showNotif('⚠️ Informe a origem!'); return; }
-
-    const stopInputs = Array.from(document.querySelectorAll('.stop-input'));
-    const filled = stopInputs.filter(i => i.value.trim());
+    const filled = Array.from(document.querySelectorAll('.stop-input')).map(i => i.value.trim()).filter(Boolean);
     if (!filled.length) { showNotif('⚠️ Informe ao menos um destino!'); return; }
 
     const btn = document.getElementById('calc-map-btn');
     btn.classList.add('loading');
 
     try {
-      // Origem fixa via parâmetro de URL
-      let originCoord;
-      if (window._origemFixa) {
-        originCoord = window._origemFixa;
-      } else {
+      let originCoord = window._origemFixa || null;
+      if (!originCoord) {
         const res = await geocodeFreshFull(originVal);
-        originCoord = res;
+        originCoord = { lat: res.lat, lon: res.lon };
       }
 
-      // Verifica endereços muito curtos (mínimo 6 caracteres — "centro" tem 6)
-      for (const input of filled) {
-        if (input.value.trim().length < 6) {
+      // FIX: mínimo 6 caracteres (permite "centro")
+      for (const addr of filled) {
+        if (addr.trim().length < 6) {
+          const input = Array.from(document.querySelectorAll('.stop-input')).find(el => el.value.trim() === addr.trim())
+                        || document.querySelector('.stop-input');
           await avisarEnderecoIncompleto(input);
           btn.classList.remove('loading');
           return;
         }
       }
 
-      // Resolve coordenadas de cada destino
-      // Prioriza coords já capturadas pelo Places Autocomplete
-      const destResults = await Promise.all(filled.map(async input => {
-        const val = input.value.trim();
-        if (input.dataset.lat && input.dataset.lon) {
-          // Usuário selecionou sugestão do autocomplete — usa direto
-          return {
-            lat: parseFloat(input.dataset.lat),
-            lon: parseFloat(input.dataset.lon),
-            formatted: input.dataset.formatted || val
-          };
-        }
-        // Digitou manualmente sem selecionar — geocodifica
-        return await geocodeFreshFull(val);
-      }));
+      const destResults = await Promise.all(filled.map(addr => geocodeFreshFull(addr)));
 
-      // Verifica raio máximo de 25km a partir do centro de JF
       for (const res of destResults) {
-        const dist = distanciaKm(JF_CENTRO.lat, JF_CENTRO.lon, res.lat, res.lon);
-        if (dist > 25) {
+        if (distanciaKm(JF_CENTRO.lat, JF_CENTRO.lon, res.lat, res.lon) > 25) {
           throw new Error('Destino fora do perímetro urbano de Juiz de Fora. Para outros municípios consulte o taxista.');
         }
       }
 
-      // Popup de confirmação para cidades vizinhas
-      const CIDADES_VIZINHAS = [
-        'matias barbosa','bicas','mar de espanha','santos dumont','rio novo',
-        'três rios','tres rios','são joão nepomuceno','sao joao nepomuceno',
-        'paraíba do sul','paraiba do sul','lima duarte','sapucaia',
-        'rio pomba','areal','valença','valenca','além paraíba','alem paraiba',
-        'astolfo dutra','tocantins','barbacena','paty do alferes',
-        'leopoldina','miguel pereira','vassouras','carmo','cataguases',
-        'teresópolis','teresopolis','petrópolis','petropolis',
-        'volta redonda','barra mansa','resende','itatiaia',
-        'lavras','são joão del rei','sao joao del rei','tiradentes',
-        'ubá','uba','muriaé','muriae','viçosa','vicosa',
-        'conselheiro lafaiete','ouro preto','mariana',
-        'coronel pacheco','ewbank da camara','ewbank da câmara',
-        'chácara','chacara','simão pereira','simao pereira','piau',
-        'goianá','goiana','tabuleiro','bias fortes',
-        'belmiro braga','chiador','descoberto','guarani','guarará',
-        'guarara','maripá de minas','maripa de minas',
-        'mercês','merces','olaria','oliveira fortes','paiva',
-        'pequeri','piraúba','pirauba','rio das flores','rio preto',
-        'santana do deserto','santa bárbara do monte verde',
-        'santa barbara do monte verde','aracitaba','argirita',
-        'levy gasparian','rio de janeiro','são paulo','sao paulo',
-        'belo horizonte','brasília','brasilia','niterói','niteroi',
-        'angra dos reis','paraty','cabo frio','búzios','buzios'
-      ];
-
       for (let i = 0; i < destResults.length; i++) {
-        const res = destResults[i];
-        const digitado = filled[i].value.trim().toLowerCase();
+        const digitado = filled[i].toLowerCase().trim();
         const pareceCidade = CIDADES_VIZINHAS.some(c => digitado.includes(c) || c.includes(digitado));
         if (pareceCidade) {
-          const confirmado = await confirmarEndereco(res.formatted);
+          const confirmado = await confirmarEndereco(destResults[i].formatted);
           if (!confirmado) {
             showNotif('Por favor, informe o endereço com mais detalhes.');
             btn.classList.remove('loading');
@@ -861,7 +750,9 @@ CÁLCULO VÁLIDO PARA CORRIDAS NO PERÍMETRO URBANO DE JUIZ DE FORA
     }
   }
 
+  // ── PARADAS ───────────────────────────────────────────────────────────────
   let stopCount = 1;
+
   function adicionarParada() {
     if (stopCount >= 5) { showNotif('⚠️ Máximo de 5 paradas.'); return; }
     stopCount++;
@@ -874,57 +765,116 @@ CÁLCULO VÁLIDO PARA CORRIDAS NO PERÍMETRO URBANO DE JUIZ DE FORA
         <button class="remove-stop-btn" onclick="removerParada(this)">✕</button>
       </div>`;
     document.getElementById('stops-container').appendChild(div);
-
-    // Aplica autocomplete ao novo input
-    const novoInput = div.querySelector('.stop-input');
-    if (window.google && window.google.maps) {
-      aplicarAutocomplete(novoInput);
-    }
-
+    // FIX: inicializa autocomplete no novo input
+    setupAutocomplete(div.querySelector('.stop-input'));
     if (stopCount >= 5) document.getElementById('add-stop-btn').style.display = 'none';
   }
 
   function removerParada(btn) {
-    const group = btn.closest('.addr-group');
-    const input = group.querySelector('.stop-input');
-    autocompleteInstances.delete(input);
-    group.remove();
+    btn.closest('.addr-group').remove();
     stopCount--;
     document.getElementById('add-stop-btn').style.display = 'flex';
   }
 
-  // MODAL
+  // ── AUTOCOMPLETE (Geocoding API) ──────────────────────────────────────────
+  let autocompleteTimer = null;
+
+  function setupAutocomplete(input) {
+    const getWrapper = () => input.closest('.addr-group') || input.parentElement;
+
+    input.addEventListener('input', () => {
+      clearTimeout(autocompleteTimer);
+      const val = input.value.trim();
+      removeAutocompleteList(getWrapper());
+      if (val.length < 3) return;
+      autocompleteTimer = setTimeout(() => fetchSuggestions(val, input, getWrapper()), 600);
+    });
+
+    input.addEventListener('blur', () => {
+      setTimeout(() => removeAutocompleteList(getWrapper()), 200);
+    });
+  }
+
+  async function fetchSuggestions(query, input, wrapper) {
+    try {
+      const q = encodeURIComponent(query + ', Juiz de Fora, MG, Brasil');
+      const r = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${q}&region=br&language=pt-BR&key=${GOOGLE_API_KEY}`);
+      const d = await r.json();
+      if (d.status !== 'OK' || !d.results.length) return;
+      const jfResults = d.results.filter(res =>
+        res.formatted_address.toLowerCase().includes('juiz de fora')
+      ).slice(0, 4);
+      if (!jfResults.length) return;
+      showAutocompleteList(jfResults, input, wrapper);
+    } catch(e) {}
+  }
+
+  function showAutocompleteList(results, input, wrapper) {
+    removeAutocompleteList(wrapper);
+    const list = document.createElement('div');
+    list.className = 'autocomplete-list';
+    results.forEach(res => {
+      const item = document.createElement('div');
+      item.className = 'autocomplete-item';
+      const parts = res.formatted_address.split(',');
+      item.textContent = parts.slice(0, 2).join(',').trim();
+      item.addEventListener('mousedown', () => {
+        input.value = item.textContent;
+        removeAutocompleteList(wrapper);
+      });
+      list.appendChild(item);
+    });
+    wrapper.appendChild(list);
+  }
+
+  function removeAutocompleteList(wrapper) {
+    const existing = wrapper ? wrapper.querySelector('.autocomplete-list') : null;
+    if (existing) existing.remove();
+  }
+
+  // ── MODAL TERMOS ──────────────────────────────────────────────────────────
   let termoAceito = false;
+
   function toggleCheck() {
     termoAceito = !termoAceito;
     document.getElementById('check-row').classList.toggle('checked', termoAceito);
     document.getElementById('modal-checkbox').textContent = termoAceito ? '✓' : '';
     document.getElementById('modal-btn').classList.toggle('enabled', termoAceito);
   }
+
   function entrarNoApp() {
     if (!termoAceito) return;
     const modal = document.getElementById('modal-termos');
-    modal.style.opacity = '0'; modal.style.transition = 'opacity 0.4s';
+    modal.style.opacity = '0';
+    modal.style.transition = 'opacity 0.4s';
     setTimeout(() => modal.style.display = 'none', 400);
   }
 
-  // NOTIF
+  // ── NOTIF ─────────────────────────────────────────────────────────────────
   function showNotif(msg) {
     const n = document.getElementById('notif');
-    n.textContent = msg; n.classList.add('show');
+    n.textContent = msg;
+    n.classList.add('show');
     setTimeout(() => n.classList.remove('show'), 3000);
   }
 
-  // PWA
+  // ── PWA ───────────────────────────────────────────────────────────────────
   let deferredPrompt;
   window.addEventListener('beforeinstallprompt', e => {
-    e.preventDefault(); deferredPrompt = e;
+    e.preventDefault();
+    deferredPrompt = e;
     document.getElementById('install-banner').style.display = 'flex';
   });
   function instalarApp() {
     if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then(() => { deferredPrompt = null; fecharBanner(); }); }
   }
   function fecharBanner() { document.getElementById('install-banner').style.display = 'none'; }
+
+  // ── INIT ──────────────────────────────────────────────────────────────────
+  window.addEventListener('DOMContentLoaded', () => {
+    carregarPontoDeOrigem();
+    document.querySelectorAll('.stop-input').forEach(inp => setupAutocomplete(inp));
+  });
 </script>
 </body>
 </html>
