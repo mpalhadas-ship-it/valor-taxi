@@ -609,6 +609,42 @@
     });
   }
 
+  function perguntarNumero(input) {
+    return new Promise((resolve) => {
+      const overlay = document.createElement('div');
+      overlay.className = 'confirm-overlay';
+      overlay.innerHTML = `
+        <div class="confirm-box">
+          <div class="confirm-title" style="font-size:1.05rem;">📍 Gostaria de informar o número?</div>
+          <div style="color:#fff;font-size:0.95rem;line-height:1.6;margin:14px 0 20px;">
+            Seu cálculo pode ficar mais preciso.
+          </div>
+          <div class="confirm-btns" style="flex-direction:column;gap:10px;">
+            <button class="btn-confirmar">Sim, vou informar</button>
+            <button class="btn-cancelar" style="font-size:0.85rem;padding:10px;">Não sei o número, entendo que terei menos precisão</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+
+      overlay.querySelector('.btn-confirmar').onclick = () => {
+        overlay.remove();
+        // Foca no campo para o usuário completar com o número
+        input.focus();
+        const val = input.value;
+        input.value = '';
+        input.value = val; // reposiciona cursor no final
+        resolve(false);
+      };
+
+      overlay.querySelector('.btn-cancelar').onclick = () => {
+        overlay.remove();
+        // Calcula mesmo sem número
+        setTimeout(() => calcularPorMapa(), 150);
+        resolve(true);
+      };
+    });
+  }
+
   function alertarCidadeSemDetalhes() {
     return new Promise((resolve) => {
       const overlay = document.createElement('div');
@@ -923,6 +959,7 @@
         input.value = item.textContent;
         removeAutocompleteList(wrapper);
         const sel = item.textContent.toLowerCase();
+
         // Se selecionou "Centro, Juiz de Fora" — exibe valor fixo direto
         if (sel.includes('centro') && sel.includes('juiz de fora')) {
           setTimeout(() => {
@@ -930,9 +967,17 @@
             document.getElementById('result-info').style.display = 'flex';
             document.getElementById('add-stop-btn').style.display = 'block';
           }, 100);
-        } else {
-          // Para qualquer outro endereço selecionado, calcula automaticamente
+          return;
+        }
+
+        // Verifica se o endereço selecionado tem número
+        const temNumero = /\d/.test(item.textContent);
+        if (temNumero) {
+          // Tem número — calcula direto
           setTimeout(() => calcularPorMapa(), 150);
+        } else {
+          // Sem número — pergunta se quer informar
+          setTimeout(() => perguntarNumero(input), 150);
         }
       });
       list.appendChild(item);
