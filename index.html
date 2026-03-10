@@ -620,13 +620,16 @@
   }
 
   // ── RESULTADO ─────────────────────────────────────────────────────────────
-  function mostrarResultado(distKm, paradoMin) {
+  function mostrarResultado(distKm, paradoMin, ruaSemNumero) {
     const kmRate = bandeira === 2 ? TARIFAS.kmB2 : TARIFAS.kmB1;
     const total = TARIFAS.bandeirada + distKm * kmRate + (paradoMin/60) * TARIFAS.horaParada;
     const hora = new Date().getHours();
     const horaCritica = hora >= 17 && hora < 20;
-    const vMin = Math.ceil(horaCritica ? total : total * 0.95);
-    const vMax = Math.ceil(total * (horaCritica ? 1.20 : 1.10));
+    // Rua sem número → margem mais ampla para refletir incerteza do ponto exato
+    const fatorMin = ruaSemNumero ? 0.85 : (horaCritica ? 1.00 : 0.95);
+    const fatorMax = ruaSemNumero ? 1.35 : (horaCritica ? 1.20 : 1.10);
+    const vMin = Math.ceil(total * fatorMin);
+    const vMax = Math.ceil(total * fatorMax);
     document.getElementById('total-price').textContent = 'R$ ' + vMin + ' a R$ ' + vMax;
     document.getElementById('result-info').style.display = 'flex';
     document.getElementById('add-stop-btn').style.display = 'block';
@@ -708,7 +711,9 @@
           return Promise.resolve({
             lat: parseFloat(inp.dataset.lat),
             lon: parseFloat(inp.dataset.lon),
-            formatted: inp.dataset.formatted || addr
+            formatted: inp.dataset.formatted || addr,
+            ehLocal: inp.dataset.ehLocal === '1',
+            temNumero: /\d/.test(addr)
           });
         }
         return geocodeFreshFull(addr);
@@ -716,6 +721,9 @@
 
       // Calcula rota
       const { distKm, durMin } = await calcularRota([originCoord, ...destResults]);
+
+      // Margem maior se rua sem número (não é local e não tem número)
+      const ruaSemNumero = destResults.some(r => !r.ehLocal && !r.temNumero && !/\d/.test(filled[destResults.indexOf(r)] || ''));
 
       // Trajeto longo = distância real da rota >= 25km — não mostra valor, abre popup
       if (distKm >= 25) {
@@ -733,7 +741,7 @@
         btn.classList.remove('loading');
         return;
       }
-      const { vMin, vMax } = mostrarResultado(distKm, durMin * 0.15);
+      const { vMin, vMax } = mostrarResultado(distKm, durMin * 0.15, ruaSemNumero);
 
       // Registro
       const destFormatados = destResults.map(r => r.formatted).join(' → ');
@@ -823,10 +831,15 @@
         input.dataset.lat = res.geometry.location.lat;
         input.dataset.lon = res.geometry.location.lng;
         input.dataset.formatted = res.formatted_address;
+        // Verifica se é estabelecimento/local (ponto exato) ou rua genérica
+        const tipos = res.types || [];
+        const ehLocal = tipos.some(t => ['establishment','point_of_interest','premise','subpremise','natural_feature','airport','park','place_of_worship'].includes(t));
+        input.dataset.ehLocal = ehLocal ? '1' : '0';
         input.value = item.textContent;
         removeAutocompleteList(wrapper);
-        // Com número → calcula direto; sem número → pergunta
-        if (/\d/.test(item.textContent)) {
+        // Local conhecido ou tem número → calcula direto
+        // Rua sem número → pergunta
+        if (ehLocal || /\d/.test(item.textContent)) {
           setTimeout(() => calcularPorMapa(), 150);
         } else {
           setTimeout(() => perguntarNumero(input), 150);
