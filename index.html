@@ -627,7 +627,7 @@
     const horaCritica = hora >= 17 && hora < 20;
     // Rua sem número → margem mais ampla para refletir incerteza do ponto exato
     const fatorMin = ruaSemNumero ? 0.85 : (horaCritica ? 1.00 : 0.95);
-    const fatorMax = ruaSemNumero ? 1.35 : (horaCritica ? 1.20 : 1.10);
+    const fatorMax = ruaSemNumero ? 2.00 : (horaCritica ? 1.20 : 1.10);
     const vMin = Math.ceil(total * fatorMin);
     const vMax = Math.ceil(total * fatorMax);
     document.getElementById('total-price').textContent = 'R$ ' + vMin + ' a R$ ' + vMax;
