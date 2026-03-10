@@ -199,6 +199,8 @@
 
   /* SHORT ADDRESS MODAL */
   .short-addr-box {
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,230,0,0.2) !important;
     background: var(--taxi-blue-dark); border-radius: 16px; padding: 24px;
     max-width: 340px; width: 100%; text-align: center;
     box-shadow: 0 8px 32px rgba(0,0,0,0.3);
@@ -216,14 +218,26 @@
 
   /* CONFIRM MODAL */
   .confirm-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+    position: fixed; inset: 0;
+    background: linear-gradient(135deg, #122B62 0%, #1B3F8B 30%, #1a6b8a 55%, #e6b800 80%, #FFE600 100%);
     display: flex; align-items: center; justify-content: center;
     z-index: 9999; padding: 20px;
   }
+  .confirm-overlay::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 60%, rgba(255,230,0,0.2) 0%, transparent 55%),
+      radial-gradient(ellipse at 80% 20%, rgba(18,43,98,0.35) 0%, transparent 55%);
+    pointer-events: none;
+  }
   .confirm-box {
-    background: var(--taxi-blue-dark); border-radius: 16px; padding: 24px;
+    background: rgba(18,43,98,0.85); border-radius: 16px; padding: 24px;
     max-width: 380px; width: 100%; text-align: center;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    box-shadow: 0 12px 48px rgba(0,0,0,0.4);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,230,0,0.2);
+    position: relative; z-index: 1;
   }
   .confirm-box .confirm-icon { display: none; }
   .confirm-box .confirm-address {
@@ -501,7 +515,7 @@
   <!-- FORM CARD -->
   <div class="card">
     <div class="addr-group">
-      <div id="origin-display" style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:900;color:var(--taxi-yellow);text-transform:uppercase;letter-spacing:0.5px;padding:2px 0 10px;line-height:1.2;text-align:center;">—</div>
+      <div id="origin-display" style="font-family:'Barlow Condensed',sans-serif;font-size:1.35rem;font-weight:900;color:var(--taxi-yellow);text-transform:uppercase;letter-spacing:1.5px;padding:2px 0 10px;line-height:1.2;text-align:center;text-shadow:0 0 18px rgba(255,230,0,0.4);">—</div>
       <input type="hidden" id="origin" />
     </div>
 
