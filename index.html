@@ -476,7 +476,7 @@
       <div class="addr-group">
         <label style="color:var(--taxi-yellow);"><span class="dot-dest"></span> PARA ONDE VAMOS?</label>
         <div class="addr-row">
-          <input class="addr-input stop-input" data-index="0" type="text" placeholder="Informe o Local ou Rua com o Número" autocomplete="off" />
+          <input class="addr-input stop-input" data-index="0" type="text" placeholder="Local ou Rua, com número se possível..." autocomplete="off" />
         </div>
       </div>
     </div>
@@ -497,10 +497,10 @@
         <div class="result-value" id="total-price">R$</div>
       </div>
       <div id="result-info" style="display:none;margin-top:8px;flex-direction:column;gap:4px;text-align:center;">
-        <div style="font-size:0.95rem;color:var(--taxi-blue-dark);font-weight:500;line-height:1.7;padding:10px 4px;font-family:'Barlow',sans-serif;">
-          Seu táxi tá no ponto te esperando! 🚕<br>
-          O valor cobrado será sempre o do taxímetro ao final da corrida — essa estimativa é pra te dar uma noção do valor aproximado.<br>
-          Caso queira, fique à vontade pra consultar também o taxista sobre o possível valor antes de embarcar.
+        <div style="font-size:1.05rem;color:#ffffff;font-weight:500;line-height:1.8;padding:10px 4px;font-family:'Barlow',sans-serif;">
+          O valor cobrado será sempre o do taxímetro ao final da corrida — essa estimativa é pra te dar uma noção do valor aproximado.<br><br>
+          Fique à vontade também pra consultar o taxista sobre o valor antes de embarcar.<br><br>
+          <strong>Boa corrida! 🚕</strong>
         </div>
       </div>
     </div>
@@ -850,7 +850,7 @@
     div.innerHTML = `
       <label><span class="dot-dest"></span> Parada ${stopCount}</label>
       <div class="addr-row">
-        <input class="addr-input stop-input" data-index="${stopCount-1}" type="text" placeholder="Ex: Rua, número, bairro" autocomplete="off" style="flex:1"/>
+        <input class="addr-input stop-input" data-index="${stopCount-1}" type="text" placeholder="Local ou Rua, com número se possível..." autocomplete="off" style="flex:1"/>
         <button class="remove-stop-btn" onclick="removerParada(this)">✕</button>
       </div>`;
     document.getElementById('stops-container').appendChild(div);
@@ -924,6 +924,15 @@
       item.addEventListener('mousedown', () => {
         input.value = item.textContent;
         removeAutocompleteList(wrapper);
+        // Se selecionou "Centro" como destino, exibe valor fixo para a área central
+        const sel = item.textContent.toLowerCase();
+        if (sel.includes('centro') && sel.includes('juiz de fora')) {
+          setTimeout(() => {
+            document.getElementById('total-price').textContent = 'R$ 25 a R$ 35';
+            document.getElementById('result-info').style.display = 'flex';
+            document.getElementById('add-stop-btn').style.display = 'block';
+          }, 100);
+        }
       });
       list.appendChild(item);
     });
