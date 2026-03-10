@@ -825,8 +825,12 @@
         input.dataset.formatted = res.formatted_address;
         input.value = item.textContent;
         removeAutocompleteList(wrapper);
-        // Calcula direto ao selecionar
-        setTimeout(() => calcularPorMapa(), 150);
+        // Com número → calcula direto; sem número → pergunta
+        if (/\d/.test(item.textContent)) {
+          setTimeout(() => calcularPorMapa(), 150);
+        } else {
+          setTimeout(() => perguntarNumero(input), 150);
+        }
       });
       list.appendChild(item);
     });
