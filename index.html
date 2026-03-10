@@ -24,11 +24,28 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    background: var(--taxi-yellow);
+    background: linear-gradient(135deg, #122B62 0%, #1B3F8B 30%, #1a6b8a 55%, #e6b800 80%, #FFE600 100%);
     color: var(--taxi-blue-dark);
     font-family: 'Barlow', sans-serif;
     min-height: 100vh;
     overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(255,230,0,0.18) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(18,43,98,0.35) 0%, transparent 55%),
+      radial-gradient(ellipse at 60% 90%, rgba(255,200,0,0.12) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  header, .main, .zebrinha, .notif, .install-banner, #modal-termos {
+    position: relative;
+    z-index: 1;
   }
 
   header {
@@ -102,11 +119,12 @@
   }
 
   .card {
-    background: var(--taxi-blue-dark);
-    border: 1px solid rgba(27,63,139,0.5);
+    background: rgba(18,43,98,0.85);
+    border: 1px solid rgba(255,230,0,0.15);
     border-radius: 12px;
     padding: 16px;
-    box-shadow: 0 4px 16px rgba(13,27,62,0.2);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+    backdrop-filter: blur(14px);
   }
 
   .card-title {
@@ -287,13 +305,15 @@
 
   /* RESULT CARD */
   .result-card {
-    background: var(--taxi-yellow);
-    border: 1px solid var(--taxi-yellow-dark);
+    background: rgba(255,230,0,0.90);
+    border: 1px solid rgba(255,215,0,0.6);
     border-radius: 12px;
     padding: 14px;
     text-align: center;
     position: relative;
     overflow: hidden;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(18,43,98,0.25);
   }
 
   .result-label {
@@ -854,9 +874,18 @@
         input.dataset.ehLocal = ehLocal ? '1' : '0';
         input.value = item.textContent;
         removeAutocompleteList(wrapper);
-        // Local conhecido ou tem número → calcula direto
-        // Rua sem número → pergunta
-        if (ehLocal || /\d/.test(item.textContent)) {
+        // Verifica distância em linha reta até o centro de JF
+        const lat = res.geometry.location.lat;
+        const lon = res.geometry.location.lng;
+        const dLat = (lat - JF_CENTRO.lat) * Math.PI / 180;
+        const dLon = (lon - JF_CENTRO.lon) * Math.PI / 180;
+        const a = Math.sin(dLat/2)**2 + Math.cos(JF_CENTRO.lat * Math.PI/180) * Math.cos(lat * Math.PI/180) * Math.sin(dLon/2)**2;
+        const distLinhReta = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        const pareceForaDoRaio = distLinhReta >= 20; // margem antes dos 25km reais
+
+        // Local, com número ou fora do raio → calcula direto (sem perguntar número)
+        // Rua sem número dentro do raio → pergunta
+        if (ehLocal || /\d/.test(item.textContent) || pareceForaDoRaio) {
           setTimeout(() => calcularPorMapa(), 150);
         } else {
           setTimeout(() => perguntarNumero(input), 150);
