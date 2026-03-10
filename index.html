@@ -628,11 +628,17 @@
 
       overlay.querySelector('.btn-confirmar').onclick = () => {
         overlay.remove();
-        // Foca no campo para o usuário completar com o número
+        // Limpa cache pois o usuário vai complementar o endereço
+        delete input.dataset.lat;
+        delete input.dataset.lon;
+        delete input.dataset.formatted;
+        // Adiciona espaço e remove para forçar o autocomplete a disparar
         input.focus();
         const val = input.value;
-        input.value = '';
-        input.value = val; // reposiciona cursor no final
+        input.value = val + ' ';
+        setTimeout(() => {
+          input.dispatchEvent(new Event('input'));
+        }, 50);
         resolve(false);
       };
 
@@ -805,7 +811,16 @@
         }
       }
 
-      const destResults = await Promise.all(filled.map(addr => geocodeFreshFull(addr)));
+      // Usa coordenadas do cache do autocomplete se disponíveis — evita segunda chamada à API
+      const inputs = Array.from(document.querySelectorAll('.stop-input'));
+      const destResults = await Promise.all(filled.map(addr => {
+        const inp = inputs.find(el => el.value.trim() === addr.trim());
+        if (inp && inp.dataset.lat && inp.dataset.lon) {
+          const formatted = inp.dataset.formatted || addr;
+          return Promise.resolve({ lat: parseFloat(inp.dataset.lat), lon: parseFloat(inp.dataset.lon), formatted });
+        }
+        return geocodeFreshFull(addr);
+      }));
 
       for (const res of destResults) {
         if (distanciaKm(JF_CENTRO.lat, JF_CENTRO.lon, res.lat, res.lon) > 25) {
@@ -956,6 +971,10 @@
       const parts = res.formatted_address.split(',');
       item.textContent = parts.slice(0, 2).join(',').trim();
       item.addEventListener('mousedown', () => {
+        // Guarda coordenadas no input para evitar segunda chamada à API
+        input.dataset.lat = res.geometry.location.lat;
+        input.dataset.lon = res.geometry.location.lng;
+        input.dataset.formatted = res.formatted_address;
         input.value = item.textContent;
         removeAutocompleteList(wrapper);
         const sel = item.textContent.toLowerCase();
@@ -973,10 +992,8 @@
         // Verifica se o endereço selecionado tem número
         const temNumero = /\d/.test(item.textContent);
         if (temNumero) {
-          // Tem número — calcula direto
           setTimeout(() => calcularPorMapa(), 150);
         } else {
-          // Sem número — pergunta se quer informar
           setTimeout(() => perguntarNumero(input), 150);
         }
       });
