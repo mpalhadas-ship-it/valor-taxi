@@ -715,13 +715,11 @@
         return geocodeFreshFull(addr);
       }));
 
-      // Verifica se é trajeto longo (25km+ em linha reta) para aplicar km especial
-      const trajLongo = destResults.some(res =>
-        distanciaKm(JF_CENTRO.lat, JF_CENTRO.lon, res.lat, res.lon) >= 25
-      );
-
       // Calcula rota
       const { distKm, durMin } = await calcularRota([originCoord, ...destResults]);
+
+      // Trajeto longo = distância real da rota >= 25km
+      const trajLongo = distKm >= 25;
       const { vMin, vMax } = mostrarResultado(distKm, durMin * 0.15, trajLongo);
 
       // Popup informativo para trajetos longos
