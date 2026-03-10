@@ -632,6 +632,25 @@
     });
   }
 
+  // ── REGISTRO GOOGLE SHEETS ────────────────────────────────────────────────
+  const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwcMh244zukx-p2llStfCVo3znYeiXxUIeXb91Uq4uqQ5QjFsUu37Az1eUa_VSe3jUI/exec';
+
+  function registrarEvento(digitado, enderecoGoogle, acao, resultado) {
+    try {
+      const agora = new Date();
+      const dataHora = agora.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+      const params = new URLSearchParams(window.location.search);
+      const ponto = params.get('ponto') || 'direto';
+      const pontoNome = (PONTOS[ponto] ? PONTOS[ponto].nome : ponto).toUpperCase();
+      fetch(SHEETS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dataHora, ponto: pontoNome, digitado, enderecoGoogle, acao, resultado }),
+        mode: 'no-cors'
+      });
+    } catch(e) {}
+  }
+
   // ── CÁLCULO DE ROTA ───────────────────────────────────────────────────────
   const JF_CENTRO = { lat: -21.738045, lon: -43.374371 };
 
@@ -721,25 +740,48 @@
 
       for (const res of destResults) {
         if (distanciaKm(JF_CENTRO.lat, JF_CENTRO.lon, res.lat, res.lon) > 25) {
+          // Registra tentativa de destino fora do raio
+          registrarEvento(res.formatted || '?', res.formatted || '?', 'Fora do raio 25km', '—');
           throw new Error('Destino fora do perímetro urbano de Juiz de Fora. Para outros municípios consulte o taxista.');
         }
       }
 
       for (let i = 0; i < destResults.length; i++) {
-        const digitado = filled[i].toLowerCase().trim();
-        const pareceCidade = CIDADES_VIZINHAS.some(c => digitado.includes(c) || c.includes(digitado));
+        const digitado = filled[i];
+        const digitadoLower = digitado.toLowerCase().trim();
+        const endFormatado = destResults[i].formatted || digitado;
+        const pareceCidade = CIDADES_VIZINHAS.some(c => digitadoLower.includes(c) || c.includes(digitadoLower));
         if (pareceCidade) {
-          const confirmado = await confirmarEndereco(destResults[i].formatted);
+          const confirmado = await confirmarEndereco(endFormatado);
           if (!confirmado) {
+            // Passageiro viu o endereço e escolheu corrigir
+            registrarEvento(digitado, endFormatado, 'Popup — Cancelado pelo passageiro', '—');
             showNotif('Por favor, informe o endereço com mais detalhes.');
             btn.classList.remove('loading');
             return;
+          } else {
+            // Passageiro viu o endereço e confirmou
+            registrarEvento(digitado, endFormatado, 'Popup — Confirmado pelo passageiro', 'aguardando cálculo');
           }
         }
       }
 
       const coords = [originCoord, ...destResults];
       const { distKm, durMin } = await calcularRota(coords);
+
+      // Calcula valor para registrar
+      const kmRate = bandeira === 2 ? TARIFAS.kmB2 : TARIFAS.kmB1;
+      const totalBase = TARIFAS.bandeirada + distKm * kmRate + ((durMin*0.15)/60) * TARIFAS.horaParada;
+      const hora = new Date().getHours();
+      const horaCritica = hora >= 17 && hora < 20;
+      const vMin = Math.ceil(horaCritica ? totalBase : totalBase * 0.95);
+      const vMax = Math.ceil(totalBase * (horaCritica ? 1.20 : 1.10));
+      const resultadoStr = `R$ ${vMin} a R$ ${vMax} | B${bandeira} | ${distKm.toFixed(1)}km`;
+
+      // Registra corrida calculada normalmente
+      const destFormatados = destResults.map(r => r.formatted).join(' → ');
+      registrarEvento(filled.join(' → '), destFormatados, 'Calculado', resultadoStr);
+
       mostrarResultado(distKm, durMin * 0.15);
       showNotif('✅ Estimativa calculada!');
 
