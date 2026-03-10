@@ -874,7 +874,7 @@
       const val = input.value.trim();
       removeAutocompleteList(getWrapper());
       if (val.length < 3) return;
-      autocompleteTimer = setTimeout(() => fetchSuggestions(val, input, getWrapper()), 600);
+      autocompleteTimer = setTimeout(() => fetchSuggestions(val, input, getWrapper()), 400);
     });
 
     input.addEventListener('blur', () => {
@@ -922,14 +922,17 @@
       item.addEventListener('mousedown', () => {
         input.value = item.textContent;
         removeAutocompleteList(wrapper);
-        // Se selecionou "Centro" como destino, exibe valor fixo para a área central
         const sel = item.textContent.toLowerCase();
+        // Se selecionou "Centro, Juiz de Fora" — exibe valor fixo direto
         if (sel.includes('centro') && sel.includes('juiz de fora')) {
           setTimeout(() => {
             document.getElementById('total-price').textContent = 'R$ 25 a R$ 35';
             document.getElementById('result-info').style.display = 'flex';
             document.getElementById('add-stop-btn').style.display = 'block';
           }, 100);
+        } else {
+          // Para qualquer outro endereço selecionado, calcula automaticamente
+          setTimeout(() => calcularPorMapa(), 150);
         }
       });
       list.appendChild(item);
