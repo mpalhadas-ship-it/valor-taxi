@@ -643,11 +643,23 @@
 
   // ── ROTA ──────────────────────────────────────────────────────────────────
   async function calcularRota(coords) {
-    const s = coords.map(c => `${c.lon},${c.lat}`).join(';');
-    const r = await fetch(`https://router.project-osrm.org/route/v1/driving/${s}?overview=false`);
+    // Google Distance Matrix API — mais rápido e preciso que OSRM
+    const origem = coords[0].lat + ',' + coords[0].lon;
+    const destino = coords[coords.length-1].lat + ',' + coords[coords.length-1].lon;
+    // Waypoints intermediários (paradas), se houver
+    const waypoints = coords.slice(1, -1).map(c => c.lat + ',' + c.lon).join('|');
+    let url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${origem}&destinations=${destino}&mode=driving&language=pt-BR&key=${GOOGLE_API_KEY}`;
+    if (waypoints) url += `&waypoints=${encodeURIComponent(waypoints)}`;
+    const r = await fetch(url);
     const d = await r.json();
-    if (d.code !== 'Ok') throw new Error('Rota não encontrada');
-    return { distKm: d.routes[0].distance/1000, durMin: d.routes[0].duration/60 };
+    if (d.status !== 'OK' || !d.rows[0].elements[0] || d.rows[0].elements[0].status !== 'OK') {
+      throw new Error('Rota não encontrada');
+    }
+    const el = d.rows[0].elements[0];
+    return {
+      distKm: el.distance.value / 1000,
+      durMin: el.duration.value / 60
+    };
   }
 
   // ── RESULTADO ─────────────────────────────────────────────────────────────
