@@ -378,21 +378,34 @@
   /* MODAL TERMOS */
   .modal-overlay {
     position: fixed; inset: 0;
-    background: rgba(13,27,62,0.92);
-    backdrop-filter: blur(6px);
+    background: linear-gradient(135deg, #122B62 0%, #1B3F8B 30%, #1a6b8a 55%, #e6b800 80%, #FFE600 100%);
     z-index: 2000;
     display: flex; align-items: center; justify-content: center;
     padding: 20px;
   }
+  .modal-overlay::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 15% 60%, rgba(255,230,0,0.22) 0%, transparent 55%),
+      radial-gradient(ellipse at 85% 15%, rgba(18,43,98,0.4) 0%, transparent 55%),
+      radial-gradient(ellipse at 55% 85%, rgba(255,200,0,0.15) 0%, transparent 50%);
+    pointer-events: none;
+  }
   .modal-box {
-    background: var(--taxi-blue-dark);
-    border: 2px solid var(--taxi-yellow);
+    background: rgba(18,43,98,0.82);
+    border: 2px solid rgba(255,230,0,0.5);
     border-radius: 20px;
     padding: 32px 28px;
     max-width: 500px;
     width: 100%;
     text-align: center;
     animation: fadeIn 0.4s ease;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 12px 48px rgba(0,0,0,0.4);
+    position: relative;
+    z-index: 1;
   }
   .modal-title { font-family: 'Barlow Condensed', sans-serif; font-size: 1.5rem; font-weight: 900; color: var(--taxi-yellow); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
   .modal-subtitle { font-size: 0.85rem; color: rgba(255,255,255,0.6); margin-bottom: 24px; }
@@ -471,7 +484,7 @@
   <div class="modal-box">
     <div style="margin-bottom:16px;"></div>
     <div class="modal-text">
-      <span style="font-size:1.1rem;font-weight:700;text-align:center;display:block;line-height:1.7;">Os valores são uma estimativa, podendo variar para mais ou para menos conforme condições de trânsito.<br><br>O valor cobrado será o do taxímetro ao final da corrida.<br><br>Cálculos válidos somente para Juiz de Fora.</span>
+      <span style="font-size:1.1rem;font-weight:700;text-align:center;display:block;line-height:1.7;">Os valores são uma estimativa, podendo variar para mais ou para menos conforme condições de trânsito.<br><br>O valor cobrado será o do taxímetro ao final da corrida.</span>
     </div>
     <div class="modal-check-row" id="check-row" onclick="toggleCheck()">
       <div class="modal-checkbox" id="modal-checkbox"></div>
