@@ -518,7 +518,7 @@
 </div>
 
 <script>
-  // ── TARIFAS ──────────────────────────────────────────────────────────────
+  // ── TARIFAS ───────────────────────────────────────────────────────────────
   const TARIFAS = { bandeirada: 6.83, kmB1: 3.83, kmB2: 4.10, horaParada: 30.72 };
   let bandeira = 1;
 
@@ -528,17 +528,16 @@
     const dia = now.getDay();
     const FERIADOS = ['01-01','21-04','01-05','07-09','12-10','02-11','15-11','25-12','08-12','20-11'];
     const mmdd = String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
-    const feriado = FERIADOS.includes(mmdd);
-    const domingoOuFeriado = dia === 0 || feriado;
+    const domingoOuFeriado = dia === 0 || FERIADOS.includes(mmdd);
     const noturnoSegSab = (dia >= 1 && dia <= 6) && (hora >= 22 || hora < 6);
     bandeira = (domingoOuFeriado || noturnoSegSab) ? 2 : 1;
   }
   detectarBandeira();
 
-  // ── PONTOS DE TÁXI ────────────────────────────────────────────────────────
+  // ── PONTOS ────────────────────────────────────────────────────────────────
   const PONTOS = {
-    'ponto51':   { nome: 'PONTO DE TÁXI DA RODOVIÁRIA',   lat: -21.738045, lon: -43.374371 },
-    'ponto01md': { nome: 'Ponto 01 — Marechal Deodoro',   lat: -21.7614,   lon: -43.3496   }
+    'ponto51':   { nome: 'PONTO DE TÁXI DA RODOVIÁRIA', lat: -21.738045, lon: -43.374371 },
+    'ponto01md': { nome: 'Ponto 01 — Marechal Deodoro', lat: -21.7614,   lon: -43.3496   }
   };
 
   function carregarPontoDeOrigem() {
@@ -551,9 +550,11 @@
     }
   }
 
-  // ── GEOCODING ─────────────────────────────────────────────────────────────
+  // ── CONFIG ────────────────────────────────────────────────────────────────
   const GOOGLE_API_KEY = 'AIzaSyC6M_XhgT-xqltyObVbmanmzSiqCH_AlD0';
+  const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwcMh244zukx-p2llStfCVo3znYeiXxUIeXb91Uq4uqQ5QjFsUu37Az1eUa_VSe3jUI/exec';
   const JF_BOUNDS = { latMin: -21.87, latMax: -21.62, lonMin: -43.50, lonMax: -43.27 };
+  const JF_CENTRO = { lat: -21.738045, lon: -43.374371 };
 
   const TERMOS_BLOQUEADOS = [
     'aeroporto zona da mata','aeroporto itamar franco','aeroporto de goianá','aeroporto de goiana',
@@ -563,188 +564,7 @@
     'goianá','goiana','rio novo','galeão','santos dumont','congonhas','guarulhos','confins'
   ];
 
-  async function geocodeFreshFull(addr) {
-    const addrLower = addr.toLowerCase().trim();
-    if (TERMOS_BLOQUEADOS.some(t => addrLower.includes(t))) {
-      throw new Error('Destino fora do perímetro urbano de Juiz de Fora. Para outros municípios consulte o taxista.');
-    }
-    const q = encodeURIComponent(addr + ', Juiz de Fora, MG, Brasil');
-    const r = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${q}&region=br&language=pt-BR&key=${GOOGLE_API_KEY}`);
-    const d = await r.json();
-    if (d.status !== 'OK' || !d.results.length) throw new Error('Endereço não encontrado: ' + addr);
-    const result = d.results[0];
-    const loc = result.geometry.location;
-    const components = result.address_components || [];
-    const municipio = components.find(c => c.types.includes('administrative_area_level_2'));
-    const nomeMunicipio = (municipio ? municipio.long_name : '').toLowerCase();
-    if (nomeMunicipio && !nomeMunicipio.includes('juiz de fora')) {
-      throw new Error('Destino fora do perímetro urbano de Juiz de Fora. Para outros municípios consulte o taxista.');
-    }
-    if (loc.lat < JF_BOUNDS.latMin || loc.lat > JF_BOUNDS.latMax ||
-        loc.lng < JF_BOUNDS.lonMin || loc.lng > JF_BOUNDS.lonMax) {
-      throw new Error('Destino fora do perímetro urbano de Juiz de Fora. Para outros municípios consulte o taxista.');
-    }
-    const formatted = result.formatted_address.replace(', Brasil', '').replace(', Brazil', '');
-    return { lat: loc.lat, lon: loc.lng, formatted };
-  }
-
-  // ── POPUPS ────────────────────────────────────────────────────────────────
-  function avisarEnderecoIncompleto(input) {
-    return new Promise((resolve) => {
-      const overlay = document.createElement('div');
-      overlay.className = 'confirm-overlay';
-      overlay.innerHTML = `
-        <div class="short-addr-box">
-          <div class="short-icon">⚠️</div>
-          <div class="short-msg">Seu endereço parece incorreto ou incompleto, Favor verificar!</div>
-          <button class="btn-ok-conferir">OK, VOU CONFERIR</button>
-        </div>`;
-      document.body.appendChild(overlay);
-      overlay.querySelector('.btn-ok-conferir').onclick = () => {
-        overlay.remove();
-        input.value = '';
-        input.focus();
-        resolve();
-      };
-    });
-  }
-
-  function perguntarNumero(input) {
-    return new Promise((resolve) => {
-      const overlay = document.createElement('div');
-      overlay.className = 'confirm-overlay';
-      overlay.innerHTML = `
-        <div class="confirm-box">
-          <div class="confirm-title" style="font-size:1.05rem;">📍 Gostaria de informar o número?</div>
-          <div style="color:#fff;font-size:0.95rem;line-height:1.6;margin:14px 0 20px;">
-            Seu cálculo pode ficar mais preciso.
-          </div>
-          <div class="confirm-btns" style="flex-direction:column;gap:10px;">
-            <button class="btn-confirmar">Sim, vou informar</button>
-            <button class="btn-cancelar" style="font-size:0.85rem;padding:10px;">Não sei o número, entendo que terei menos precisão</button>
-          </div>
-        </div>`;
-      document.body.appendChild(overlay);
-
-      overlay.querySelector('.btn-confirmar').onclick = () => {
-        overlay.remove();
-        // Limpa cache pois o usuário vai complementar o endereço
-        delete input.dataset.lat;
-        delete input.dataset.lon;
-        delete input.dataset.formatted;
-        // Adiciona espaço e remove para forçar o autocomplete a disparar
-        input.focus();
-        const val = input.value;
-        input.value = val + ' ';
-        setTimeout(() => {
-          input.dispatchEvent(new Event('input'));
-        }, 50);
-        resolve(false);
-      };
-
-      overlay.querySelector('.btn-cancelar').onclick = () => {
-        overlay.remove();
-        // Calcula mesmo sem número
-        setTimeout(() => calcularPorMapa(), 150);
-        resolve(true);
-      };
-    });
-  }
-
-  function alertarCidadeSemDetalhes() {
-    return new Promise((resolve) => {
-      const overlay = document.createElement('div');
-      overlay.className = 'confirm-overlay';
-      overlay.innerHTML = `
-        <div class="confirm-box">
-          <div class="confirm-title" style="font-size:1.1rem;">⚠️ Endereço incompleto</div>
-          <div style="color:#fff;font-size:0.95rem;line-height:1.6;margin:14px 0 20px;">
-            O destino informado parece ser apenas o nome de uma cidade.<br><br>
-            Para calcular, informe a rua, número ou nome do local dentro de Juiz de Fora.
-          </div>
-          <button class="btn-confirmar">OK, vou corrigir</button>
-        </div>`;
-      document.body.appendChild(overlay);
-      overlay.querySelector('.btn-confirmar').onclick = () => {
-        overlay.remove();
-        // Limpa o input e foca
-        const inputs = document.querySelectorAll('.stop-input');
-        inputs.forEach(inp => { if (inp.value.trim()) { inp.value = ''; inp.focus(); } });
-        resolve();
-      };
-    });
-  }
-
-  function confirmarEndereco(formatted) {
-    return new Promise((resolve) => {
-      const overlay = document.createElement('div');
-      overlay.className = 'confirm-overlay';
-      overlay.innerHTML = `
-        <div class="confirm-box">
-          <div class="confirm-title">O local informado está em Juiz de Fora?</div>
-          <div class="confirm-address">${formatted}</div>
-          <div class="confirm-warning">⚠️ Válido apenas para destinos em Juiz de Fora - MG</div>
-          <div class="confirm-btns">
-            <button class="btn-cancelar">Não está<br>preciso corrigir</button>
-            <button class="btn-confirmar">Está sim<br>pode calcular</button>
-          </div>
-        </div>`;
-      document.body.appendChild(overlay);
-      overlay.querySelector('.btn-confirmar').onclick = () => { overlay.remove(); resolve(true); };
-      overlay.querySelector('.btn-cancelar').onclick  = () => { overlay.remove(); resolve(false); };
-    });
-  }
-
-  // ── REGISTRO GOOGLE SHEETS ────────────────────────────────────────────────
-  const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwcMh244zukx-p2llStfCVo3znYeiXxUIeXb91Uq4uqQ5QjFsUu37Az1eUa_VSe3jUI/exec';
-
-  function registrarEvento(digitado, enderecoGoogle, acao, resultado) {
-    try {
-      const agora = new Date();
-      const dataHora = agora.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
-      const params = new URLSearchParams(window.location.search);
-      const ponto = params.get('ponto') || 'direto';
-      const pontoNome = (PONTOS[ponto] ? PONTOS[ponto].nome : ponto).toUpperCase();
-      fetch(SHEETS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dataHora, ponto: pontoNome, digitado, enderecoGoogle, acao, resultado }),
-        mode: 'no-cors'
-      });
-    } catch(e) {}
-  }
-
-  // ── CÁLCULO DE ROTA ───────────────────────────────────────────────────────
-  const JF_CENTRO = { lat: -21.738045, lon: -43.374371 };
-
-  function distanciaKm(lat1, lon1, lat2, lon2) {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  }
-
-  async function calcularRota(coords) {
-    const s = coords.map(c => `${c.lon},${c.lat}`).join(';');
-    const r = await fetch(`https://router.project-osrm.org/route/v1/driving/${s}?overview=false`);
-    const d = await r.json();
-    if (d.code !== 'Ok') throw new Error('Rota não encontrada');
-    return { distKm: d.routes[0].distance/1000, durMin: d.routes[0].duration/60 };
-  }
-
-  function mostrarResultado(distKm, paradoMin) {
-    const kmRate = bandeira === 2 ? TARIFAS.kmB2 : TARIFAS.kmB1;
-    const total = TARIFAS.bandeirada + distKm * kmRate + (paradoMin/60) * TARIFAS.horaParada;
-    const hora = new Date().getHours();
-    const horaCritica = hora >= 17 && hora < 20;
-    const totalMin = horaCritica ? total : total * 0.95;
-    const totalMax = total * (horaCritica ? 1.20 : 1.10);
-    const arredondar = v => Math.ceil(v);
-    document.getElementById('total-price').textContent = 'R$ ' + arredondar(totalMin) + ' a R$ ' + arredondar(totalMax);
-    document.getElementById('result-info').style.display = 'flex';
-    document.getElementById('add-stop-btn').style.display = 'block';
-  }
+  const TERMOS_VAGOS = ['centro', 'centro de jf', 'centro jf', 'o centro', 'no centro', 'o centro de jf'];
 
   const CIDADES_VIZINHAS = [
     'matias barbosa','bicas','mar de espanha','santos dumont','rio novo',
@@ -772,64 +592,219 @@
     'angra dos reis','paraty','cabo frio','búzios','buzios'
   ];
 
+  // ── REGISTRO SHEETS ───────────────────────────────────────────────────────
+  function registrarEvento(digitado, enderecoGoogle, acao, resultado) {
+    try {
+      const dataHora = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+      const params = new URLSearchParams(window.location.search);
+      const ponto = params.get('ponto') || 'direto';
+      const pontoNome = (PONTOS[ponto] ? PONTOS[ponto].nome : ponto).toUpperCase();
+      fetch(SHEETS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dataHora, ponto: pontoNome, digitado, enderecoGoogle, acao, resultado }),
+        mode: 'no-cors'
+      });
+    } catch(e) {}
+  }
+
+  // ── GEOCODING ─────────────────────────────────────────────────────────────
+  async function geocodeFreshFull(addr) {
+    const addrLower = addr.toLowerCase().trim();
+    if (TERMOS_BLOQUEADOS.some(t => addrLower.includes(t))) {
+      throw new Error('Destino fora do perímetro urbano de Juiz de Fora. Para outros municípios consulte o taxista.');
+    }
+    const q = encodeURIComponent(addr + ', Juiz de Fora, MG, Brasil');
+    const r = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${q}&region=br&language=pt-BR&key=${GOOGLE_API_KEY}`);
+    const d = await r.json();
+    if (d.status !== 'OK' || !d.results.length) throw new Error('Endereço não encontrado: ' + addr);
+    const result = d.results[0];
+    const loc = result.geometry.location;
+    const municipio = (result.address_components || []).find(c => c.types.includes('administrative_area_level_2'));
+    const nomeMunicipio = (municipio ? municipio.long_name : '').toLowerCase();
+    if (nomeMunicipio && !nomeMunicipio.includes('juiz de fora')) {
+      throw new Error('Destino fora do perímetro urbano de Juiz de Fora. Para outros municípios consulte o taxista.');
+    }
+    if (loc.lat < JF_BOUNDS.latMin || loc.lat > JF_BOUNDS.latMax ||
+        loc.lng < JF_BOUNDS.lonMin || loc.lng > JF_BOUNDS.lonMax) {
+      throw new Error('Destino fora do perímetro urbano de Juiz de Fora. Para outros municípios consulte o taxista.');
+    }
+    const formatted = result.formatted_address.replace(', Brasil','').replace(', Brazil','');
+    return { lat: loc.lat, lon: loc.lng, formatted };
+  }
+
+  // ── DISTÂNCIA ─────────────────────────────────────────────────────────────
+  function distanciaKm(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2-lat1)*Math.PI/180, dLon = (lon2-lon1)*Math.PI/180;
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+
+  // ── ROTA ──────────────────────────────────────────────────────────────────
+  async function calcularRota(coords) {
+    const s = coords.map(c => `${c.lon},${c.lat}`).join(';');
+    const r = await fetch(`https://router.project-osrm.org/route/v1/driving/${s}?overview=false`);
+    const d = await r.json();
+    if (d.code !== 'Ok') throw new Error('Rota não encontrada');
+    return { distKm: d.routes[0].distance/1000, durMin: d.routes[0].duration/60 };
+  }
+
+  // ── RESULTADO ─────────────────────────────────────────────────────────────
+  function mostrarResultado(distKm, paradoMin) {
+    const kmRate = bandeira === 2 ? TARIFAS.kmB2 : TARIFAS.kmB1;
+    const total = TARIFAS.bandeirada + distKm * kmRate + (paradoMin/60) * TARIFAS.horaParada;
+    const hora = new Date().getHours();
+    const horaCritica = hora >= 17 && hora < 20;
+    const vMin = Math.ceil(horaCritica ? total : total * 0.95);
+    const vMax = Math.ceil(total * (horaCritica ? 1.20 : 1.10));
+    document.getElementById('total-price').textContent = 'R$ ' + vMin + ' a R$ ' + vMax;
+    document.getElementById('result-info').style.display = 'flex';
+    document.getElementById('add-stop-btn').style.display = 'block';
+    return { vMin, vMax };
+  }
+
+  // ── POPUPS ────────────────────────────────────────────────────────────────
+  function criarOverlay(html) {
+    const overlay = document.createElement('div');
+    overlay.className = 'confirm-overlay';
+    overlay.innerHTML = html;
+    document.body.appendChild(overlay);
+    return overlay;
+  }
+
+  function avisarEnderecoIncompleto(input) {
+    return new Promise(resolve => {
+      const overlay = criarOverlay(`
+        <div class="short-addr-box">
+          <div class="short-icon">⚠️</div>
+          <div class="short-msg">Seu endereço parece incorreto ou incompleto, favor verificar!</div>
+          <button class="btn-ok-conferir">OK, VOU CONFERIR</button>
+        </div>`);
+      overlay.querySelector('.btn-ok-conferir').onclick = () => {
+        overlay.remove(); input.value = ''; input.focus(); resolve();
+      };
+    });
+  }
+
+  function alertarCidadeSemDetalhes() {
+    return new Promise(resolve => {
+      const overlay = criarOverlay(`
+        <div class="confirm-box">
+          <div class="confirm-title" style="font-size:1.1rem;">⚠️ Endereço incompleto</div>
+          <div style="color:#fff;font-size:0.95rem;line-height:1.6;margin:14px 0 20px;">
+            O destino informado parece ser apenas o nome de uma cidade.<br><br>
+            Para calcular, informe a rua, número ou nome do local dentro de Juiz de Fora.
+          </div>
+          <button class="btn-confirmar">OK, vou corrigir</button>
+        </div>`);
+      overlay.querySelector('.btn-confirmar').onclick = () => {
+        overlay.remove();
+        const inputs = document.querySelectorAll('.stop-input');
+        inputs.forEach(inp => { if (inp.value.trim()) { inp.value = ''; inp.focus(); } });
+        resolve();
+      };
+    });
+  }
+
+  function confirmarEndereco(formatted) {
+    return new Promise(resolve => {
+      const overlay = criarOverlay(`
+        <div class="confirm-box">
+          <div class="confirm-title">O local informado está em Juiz de Fora?</div>
+          <div class="confirm-address">${formatted}</div>
+          <div class="confirm-warning">⚠️ Válido apenas para destinos em Juiz de Fora - MG</div>
+          <div class="confirm-btns">
+            <button class="btn-cancelar">Não está<br>preciso corrigir</button>
+            <button class="btn-confirmar">Está sim<br>pode calcular</button>
+          </div>
+        </div>`);
+      overlay.querySelector('.btn-confirmar').onclick = () => { overlay.remove(); resolve(true); };
+      overlay.querySelector('.btn-cancelar').onclick  = () => { overlay.remove(); resolve(false); };
+    });
+  }
+
+  function perguntarNumero(input) {
+    return new Promise(resolve => {
+      const overlay = criarOverlay(`
+        <div class="confirm-box">
+          <div class="confirm-title" style="font-size:1.05rem;">📍 Gostaria de informar o número?</div>
+          <div style="color:#fff;font-size:0.95rem;line-height:1.6;margin:14px 0 20px;">
+            Seu cálculo pode ficar mais preciso.
+          </div>
+          <div class="confirm-btns" style="flex-direction:column;gap:10px;">
+            <button class="btn-confirmar">Sim, vou informar</button>
+            <button class="btn-cancelar" style="font-size:0.85rem;padding:10px;">Não sei o número, entendo que terei menos precisão</button>
+          </div>
+        </div>`);
+      overlay.querySelector('.btn-confirmar').onclick = () => {
+        overlay.remove();
+        delete input.dataset.lat; delete input.dataset.lon; delete input.dataset.formatted;
+        input.focus();
+        input.value = input.value + ' ';
+        setTimeout(() => input.dispatchEvent(new Event('input')), 50);
+        resolve(false);
+      };
+      overlay.querySelector('.btn-cancelar').onclick = () => {
+        overlay.remove();
+        setTimeout(() => calcularPorMapa(), 150);
+        resolve(true);
+      };
+    });
+  }
+
+  // ── CALCULAR ──────────────────────────────────────────────────────────────
   async function calcularPorMapa() {
     const originVal = document.getElementById('origin').value.trim();
     if (!originVal) { showNotif('⚠️ Informe a origem!'); return; }
-    const filled = Array.from(document.querySelectorAll('.stop-input')).map(i => i.value.trim()).filter(Boolean);
+    const inputs = Array.from(document.querySelectorAll('.stop-input'));
+    const filled = inputs.map(i => i.value.trim()).filter(Boolean);
     if (!filled.length) { showNotif('⚠️ Informe ao menos um destino!'); return; }
 
     const btn = document.getElementById('calc-map-btn');
     btn.classList.add('loading');
 
     try {
-      let originCoord = window._origemFixa || null;
-      if (!originCoord) {
-        const res = await geocodeFreshFull(originVal);
-        originCoord = { lat: res.lat, lon: res.lon };
-      }
+      // Origem — usa coordenada fixa do ponto se disponível
+      const originCoord = window._origemFixa || (await geocodeFreshFull(originVal));
 
-      // Termos vagos que exigem mais detalhes
-      const TERMOS_VAGOS = ['centro', 'centro de jf', 'centro jf', 'o centro', 'no centro', 'o centro de jf'];
-
+      // Valida destinos
       for (const addr of filled) {
         const addrLower = addr.trim().toLowerCase();
-        const input = Array.from(document.querySelectorAll('.stop-input')).find(el => el.value.trim() === addr.trim())
-                      || document.querySelector('.stop-input');
+        const inp = inputs.find(el => el.value.trim() === addr.trim()) || inputs[0];
 
-        // Bloqueia termos vagos como "centro"
         if (TERMOS_VAGOS.includes(addrLower)) {
-          await avisarEnderecoIncompleto(input);
-          btn.classList.remove('loading');
-          return;
+          await avisarEnderecoIncompleto(inp);
+          btn.classList.remove('loading'); return;
         }
-
-        // Mínimo 6 caracteres
         if (addr.trim().length < 6) {
-          await avisarEnderecoIncompleto(input);
-          btn.classList.remove('loading');
-          return;
+          await avisarEnderecoIncompleto(inp);
+          btn.classList.remove('loading'); return;
         }
       }
 
-      // Usa coordenadas do cache do autocomplete se disponíveis — evita segunda chamada à API
-      const inputs = Array.from(document.querySelectorAll('.stop-input'));
+      // Geocoding — usa cache do autocomplete se disponível
       const destResults = await Promise.all(filled.map(addr => {
         const inp = inputs.find(el => el.value.trim() === addr.trim());
         if (inp && inp.dataset.lat && inp.dataset.lon) {
-          const formatted = inp.dataset.formatted || addr;
-          return Promise.resolve({ lat: parseFloat(inp.dataset.lat), lon: parseFloat(inp.dataset.lon), formatted });
+          return Promise.resolve({
+            lat: parseFloat(inp.dataset.lat),
+            lon: parseFloat(inp.dataset.lon),
+            formatted: inp.dataset.formatted || addr
+          });
         }
         return geocodeFreshFull(addr);
       }));
 
+      // Verifica raio 25km
       for (const res of destResults) {
         if (distanciaKm(JF_CENTRO.lat, JF_CENTRO.lon, res.lat, res.lon) > 25) {
-          // Registra tentativa de destino fora do raio
-          registrarEvento(res.formatted || '?', res.formatted || '?', 'Fora do raio 25km', '—');
+          registrarEvento(res.formatted, res.formatted, 'Fora do raio 25km', '—');
           throw new Error('Destino fora do perímetro urbano de Juiz de Fora. Para outros municípios consulte o taxista.');
         }
       }
 
+      // Verifica cidades vizinhas
       for (let i = 0; i < destResults.length; i++) {
         const digitado = filled[i];
         const digitadoLower = digitado.toLowerCase().trim();
@@ -837,48 +812,34 @@
         const pareceCidade = CIDADES_VIZINHAS.some(c => digitadoLower.includes(c) || c.includes(digitadoLower));
 
         if (pareceCidade) {
-          // Verifica se digitou SÓ o nome da cidade — sem rua, número ou estabelecimento
           const temDetalhes = /\d/.test(digitado) ||
-            /(rua|r\.|av\.|avenida|travessa|alameda|estrada|rodovia|praça|largo|beco|viela|qd|quadra|bloco|apto|lote|setor|bairro)/i.test(digitado);
+            /(rua|r\.|av\.|avenida|travessa|alameda|estrada|rodovia|praça|largo|beco|qd|quadra|bloco)/i.test(digitado);
 
           if (!temDetalhes) {
-            // Bloqueia — só nome de cidade, sem detalhes
             registrarEvento(digitado, endFormatado, 'Bloqueado — só nome de cidade', '—');
             await alertarCidadeSemDetalhes();
-            btn.classList.remove('loading');
-            return;
+            btn.classList.remove('loading'); return;
           }
 
-          // Tem detalhes mas parece cidade vizinha — mostra popup de confirmação
           const confirmado = await confirmarEndereco(endFormatado);
           if (!confirmado) {
             registrarEvento(digitado, endFormatado, 'Popup — Cancelado pelo passageiro', '—');
             showNotif('Por favor, informe o endereço com mais detalhes.');
-            btn.classList.remove('loading');
-            return;
-          } else {
-            registrarEvento(digitado, endFormatado, 'Popup — Confirmado pelo passageiro', 'aguardando cálculo');
+            btn.classList.remove('loading'); return;
           }
+          registrarEvento(digitado, endFormatado, 'Popup — Confirmado pelo passageiro', 'aguardando cálculo');
         }
       }
 
-      const coords = [originCoord, ...destResults];
-      const { distKm, durMin } = await calcularRota(coords);
+      // Calcula rota
+      const { distKm, durMin } = await calcularRota([originCoord, ...destResults]);
+      const { vMin, vMax } = mostrarResultado(distKm, durMin * 0.15);
 
-      // Calcula valor para registrar
-      const kmRate = bandeira === 2 ? TARIFAS.kmB2 : TARIFAS.kmB1;
-      const totalBase = TARIFAS.bandeirada + distKm * kmRate + ((durMin*0.15)/60) * TARIFAS.horaParada;
-      const hora = new Date().getHours();
-      const horaCritica = hora >= 17 && hora < 20;
-      const vMin = Math.ceil(horaCritica ? totalBase : totalBase * 0.95);
-      const vMax = Math.ceil(totalBase * (horaCritica ? 1.20 : 1.10));
-      const resultadoStr = `R$ ${vMin} a R$ ${vMax} | B${bandeira} | ${distKm.toFixed(1)}km`;
-
-      // Registra corrida calculada normalmente
+      // Registro
       const destFormatados = destResults.map(r => r.formatted).join(' → ');
+      const resultadoStr = `R$ ${vMin} a R$ ${vMax} | B${bandeira} | ${distKm.toFixed(1)}km`;
       registrarEvento(filled.join(' → '), destFormatados, 'Calculado', resultadoStr);
 
-      mostrarResultado(distKm, durMin * 0.15);
       showNotif('✅ Estimativa calculada!');
 
     } catch(e) {
@@ -899,11 +860,11 @@
     div.innerHTML = `
       <label><span class="dot-dest"></span> Parada ${stopCount}</label>
       <div class="addr-row">
-        <input class="addr-input stop-input" data-index="${stopCount-1}" type="text" placeholder="Local ou Rua, com número se possível..." autocomplete="off" style="flex:1"/>
+        <input class="addr-input stop-input" data-index="${stopCount-1}" type="text"
+          placeholder="Local ou Rua, com número se possível..." autocomplete="off" style="flex:1"/>
         <button class="remove-stop-btn" onclick="removerParada(this)">✕</button>
       </div>`;
     document.getElementById('stops-container').appendChild(div);
-    // FIX: inicializa autocomplete no novo input
     setupAutocomplete(div.querySelector('.stop-input'));
     if (stopCount >= 5) document.getElementById('add-stop-btn').style.display = 'none';
   }
@@ -914,20 +875,21 @@
     document.getElementById('add-stop-btn').style.display = 'flex';
   }
 
-  // ── AUTOCOMPLETE (Geocoding API) ──────────────────────────────────────────
+  // ── AUTOCOMPLETE ──────────────────────────────────────────────────────────
   let autocompleteTimer = null;
 
   function setupAutocomplete(input) {
     const getWrapper = () => input.closest('.addr-group') || input.parentElement;
-
     input.addEventListener('input', () => {
       clearTimeout(autocompleteTimer);
-      const val = input.value.trim();
       removeAutocompleteList(getWrapper());
+      const val = input.value.trim();
       if (val.length < 3) return;
       autocompleteTimer = setTimeout(() => fetchSuggestions(val, input, getWrapper()), 400);
     });
-
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { removeAutocompleteList(getWrapper()); calcularPorMapa(); }
+    });
     input.addEventListener('blur', () => {
       setTimeout(() => removeAutocompleteList(getWrapper()), 200);
     });
@@ -935,27 +897,19 @@
 
   async function fetchSuggestions(query, input, wrapper) {
     try {
-      // Não mostra sugestões se o texto digitado parece nome de cidade vizinha
       const queryLower = query.toLowerCase().trim();
-      const pareceCidade = CIDADES_VIZINHAS.some(c => queryLower.includes(c) || c.includes(queryLower));
-      if (pareceCidade) return;
-
+      if (CIDADES_VIZINHAS.some(c => queryLower.includes(c) || c.includes(queryLower))) return;
       const q = encodeURIComponent(query + ', Juiz de Fora, MG, Brasil');
       const r = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${q}&region=br&language=pt-BR&key=${GOOGLE_API_KEY}`);
       const d = await r.json();
       if (d.status !== 'OK' || !d.results.length) return;
-
       const jfResults = d.results.filter(res => {
-        const addr = res.formatted_address.toLowerCase();
-        if (!addr.includes('juiz de fora')) return false;
-        // Remove resultados que são apenas cidade/estado (sem rua ou bairro)
-        // Esses têm tipos como locality, administrative_area — sem route ou premise
+        if (!res.formatted_address.toLowerCase().includes('juiz de fora')) return false;
         const types = res.types || [];
         const isCityOnly = types.some(t => ['locality','administrative_area_level_2','administrative_area_level_1','country','postal_code'].includes(t))
                         && !types.some(t => ['route','street_address','premise','subpremise','point_of_interest','establishment','neighborhood','sublocality'].includes(t));
         return !isCityOnly;
       }).slice(0, 4);
-
       if (!jfResults.length) return;
       showAutocompleteList(jfResults, input, wrapper);
     } catch(e) {}
@@ -968,28 +922,22 @@
     results.forEach(res => {
       const item = document.createElement('div');
       item.className = 'autocomplete-item';
-      const parts = res.formatted_address.split(',');
-      item.textContent = parts.slice(0, 2).join(',').trim();
+      item.textContent = res.formatted_address.split(',').slice(0, 2).join(',').trim();
       item.addEventListener('mousedown', () => {
-        // Guarda coordenadas no input para evitar segunda chamada à API
+        // Guarda coords no input — evita segunda chamada à API no cálculo
         input.dataset.lat = res.geometry.location.lat;
         input.dataset.lon = res.geometry.location.lng;
         input.dataset.formatted = res.formatted_address;
         input.value = item.textContent;
         removeAutocompleteList(wrapper);
-        const sel = item.textContent.toLowerCase();
 
-        // Se selecionou "Centro, Juiz de Fora" — exibe valor fixo direto
+        const sel = item.textContent.toLowerCase();
         if (sel.includes('centro') && sel.includes('juiz de fora')) {
-          setTimeout(() => {
-            document.getElementById('total-price').textContent = 'R$ 25 a R$ 35';
-            document.getElementById('result-info').style.display = 'flex';
-            document.getElementById('add-stop-btn').style.display = 'block';
-          }, 100);
+          document.getElementById('total-price').textContent = 'R$ 25 a R$ 35';
+          document.getElementById('result-info').style.display = 'flex';
+          document.getElementById('add-stop-btn').style.display = 'block';
           return;
         }
-
-        // Verifica se o endereço selecionado tem número
         const temNumero = /\d/.test(item.textContent);
         if (temNumero) {
           setTimeout(() => calcularPorMapa(), 150);
@@ -1007,7 +955,7 @@
     if (existing) existing.remove();
   }
 
-  // ── MODAL TERMOS ──────────────────────────────────────────────────────────
+  // ── MODAL ─────────────────────────────────────────────────────────────────
   let termoAceito = false;
 
   function toggleCheck() {
@@ -1020,24 +968,21 @@
   function entrarNoApp() {
     if (!termoAceito) return;
     const modal = document.getElementById('modal-termos');
-    modal.style.opacity = '0';
-    modal.style.transition = 'opacity 0.4s';
+    modal.style.opacity = '0'; modal.style.transition = 'opacity 0.4s';
     setTimeout(() => modal.style.display = 'none', 400);
   }
 
   // ── NOTIF ─────────────────────────────────────────────────────────────────
   function showNotif(msg) {
     const n = document.getElementById('notif');
-    n.textContent = msg;
-    n.classList.add('show');
+    n.textContent = msg; n.classList.add('show');
     setTimeout(() => n.classList.remove('show'), 3000);
   }
 
   // ── PWA ───────────────────────────────────────────────────────────────────
   let deferredPrompt;
   window.addEventListener('beforeinstallprompt', e => {
-    e.preventDefault();
-    deferredPrompt = e;
+    e.preventDefault(); deferredPrompt = e;
     document.getElementById('install-banner').style.display = 'flex';
   });
   function instalarApp() {
