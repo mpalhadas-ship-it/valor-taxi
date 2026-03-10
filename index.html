@@ -797,13 +797,27 @@
 
   async function fetchSuggestions(query, input, wrapper) {
     try {
+      // Não mostra sugestões se o texto digitado parece nome de cidade vizinha
+      const queryLower = query.toLowerCase().trim();
+      const pareceCidade = CIDADES_VIZINHAS.some(c => queryLower.includes(c) || c.includes(queryLower));
+      if (pareceCidade) return;
+
       const q = encodeURIComponent(query + ', Juiz de Fora, MG, Brasil');
       const r = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${q}&region=br&language=pt-BR&key=${GOOGLE_API_KEY}`);
       const d = await r.json();
       if (d.status !== 'OK' || !d.results.length) return;
-      const jfResults = d.results.filter(res =>
-        res.formatted_address.toLowerCase().includes('juiz de fora')
-      ).slice(0, 4);
+
+      const jfResults = d.results.filter(res => {
+        const addr = res.formatted_address.toLowerCase();
+        if (!addr.includes('juiz de fora')) return false;
+        // Remove resultados que são apenas cidade/estado (sem rua ou bairro)
+        // Esses têm tipos como locality, administrative_area — sem route ou premise
+        const types = res.types || [];
+        const isCityOnly = types.some(t => ['locality','administrative_area_level_2','administrative_area_level_1','country','postal_code'].includes(t))
+                        && !types.some(t => ['route','street_address','premise','subpremise','point_of_interest','establishment','neighborhood','sublocality'].includes(t));
+        return !isCityOnly;
+      }).slice(0, 4);
+
       if (!jfResults.length) return;
       showAutocompleteList(jfResults, input, wrapper);
     } catch(e) {}
