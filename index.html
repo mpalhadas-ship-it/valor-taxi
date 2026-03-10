@@ -556,7 +556,6 @@
   const JF_BOUNDS = { latMin: -21.87, latMax: -21.62, lonMin: -43.50, lonMax: -43.27 };
   const JF_CENTRO = { lat: -21.738045, lon: -43.374371 };
 
-  const TERMOS_VAGOS = ['centro', 'centro de jf', 'centro jf', 'o centro', 'no centro', 'o centro de jf'];
 
   // ── REGISTRO SHEETS ───────────────────────────────────────────────────────
   function registrarEvento(digitado, enderecoGoogle, acao, resultado) {
@@ -701,15 +700,6 @@
       // Origem fixa do ponto
       const originCoord = window._origemFixa || (await geocodeFreshFull(originVal));
 
-      // Valida endereços vagos
-      for (const addr of filled) {
-        const addrLower = addr.trim().toLowerCase();
-        const inp = inputs.find(el => el.value.trim() === addr.trim()) || inputs[0];
-        if (addr.trim().length < 6 || TERMOS_VAGOS.includes(addrLower)) {
-          await avisarEnderecoIncompleto(inp);
-          btn.classList.remove('loading'); return;
-        }
-      }
 
       // Geocoding — usa cache do autocomplete se disponível
       const destResults = await Promise.all(filled.map(addr => {
@@ -794,19 +784,11 @@
 
   async function fetchSuggestions(query, input, wrapper) {
     try {
-      const q = encodeURIComponent(query + ', Juiz de Fora, MG, Brasil');
+      const q = encodeURIComponent(query + ', Brasil');
       const r = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${q}&region=br&language=pt-BR&key=${GOOGLE_API_KEY}`);
       const d = await r.json();
       if (d.status !== 'OK' || !d.results.length) return;
-      const jfResults = d.results.filter(res => {
-        if (!res.formatted_address.toLowerCase().includes('juiz de fora')) return false;
-        const types = res.types || [];
-        const isCityOnly = types.some(t => ['locality','administrative_area_level_2','administrative_area_level_1','country','postal_code'].includes(t))
-                        && !types.some(t => ['route','street_address','premise','subpremise','point_of_interest','establishment','neighborhood','sublocality'].includes(t));
-        return !isCityOnly;
-      }).slice(0, 4);
-      if (!jfResults.length) return;
-      showAutocompleteList(jfResults, input, wrapper);
+      showAutocompleteList(d.results.slice(0, 4), input, wrapper);
     } catch(e) {}
   }
 
@@ -824,21 +806,8 @@
         input.dataset.formatted = res.formatted_address;
         input.value = item.textContent;
         removeAutocompleteList(wrapper);
-
-        // Centro → valor fixo
-        if (item.textContent.toLowerCase().includes('centro') && item.textContent.toLowerCase().includes('juiz de fora')) {
-          document.getElementById('total-price').textContent = 'R$ 25 a R$ 35';
-          document.getElementById('result-info').style.display = 'flex';
-          document.getElementById('add-stop-btn').style.display = 'block';
-          return;
-        }
-        // Com número → calcula direto
-        if (/\d/.test(item.textContent)) {
-          setTimeout(() => calcularPorMapa(), 150);
-        } else {
-          // Sem número → pergunta
-          setTimeout(() => perguntarNumero(input), 150);
-        }
+        // Calcula direto ao selecionar
+        setTimeout(() => calcularPorMapa(), 150);
       });
       list.appendChild(item);
     });
