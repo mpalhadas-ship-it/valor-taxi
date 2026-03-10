@@ -620,14 +620,26 @@
   }
 
   // ── RESULTADO ─────────────────────────────────────────────────────────────
-  function mostrarResultado(distKm, paradoMin, ruaSemNumero) {
+  // Avenidas longas com variação máxima especial (sem número)
+  const AVENIDAS_LONGAS = [
+    { nome: 'rio branco', fatorMax: 4.00 }
+  ];
+
+  function mostrarResultado(distKm, paradoMin, ruaSemNumero, enderecoDigitado) {
     const kmRate = bandeira === 2 ? TARIFAS.kmB2 : TARIFAS.kmB1;
     const total = TARIFAS.bandeirada + distKm * kmRate + (paradoMin/60) * TARIFAS.horaParada;
     const hora = new Date().getHours();
     const horaCritica = hora >= 17 && hora < 20;
-    // Rua sem número → margem mais ampla para refletir incerteza do ponto exato
-    const fatorMin = ruaSemNumero ? 0.85 : (horaCritica ? 1.00 : 0.95);
-    const fatorMax = ruaSemNumero ? 2.00 : (horaCritica ? 1.20 : 1.10);
+    let fatorMin = horaCritica ? 1.00 : 0.95;
+    let fatorMax = horaCritica ? 1.20 : 1.10;
+    if (ruaSemNumero) {
+      fatorMin = 0.85;
+      fatorMax = 2.00;
+      // Verifica se é uma avenida longa especial
+      const endLower = (enderecoDigitado || '').toLowerCase();
+      const avenidaEspecial = AVENIDAS_LONGAS.find(a => endLower.includes(a.nome));
+      if (avenidaEspecial) fatorMax = avenidaEspecial.fatorMax;
+    }
     const vMin = Math.ceil(total * fatorMin);
     const vMax = Math.ceil(total * fatorMax);
     document.getElementById('total-price').textContent = 'R$ ' + vMin + ' a R$ ' + vMax;
@@ -741,7 +753,23 @@
         btn.classList.remove('loading');
         return;
       }
-      const { vMin, vMax } = mostrarResultado(distKm, durMin * 0.15, ruaSemNumero);
+      const { vMin, vMax } = mostrarResultado(distKm, durMin * 0.15, ruaSemNumero, filled.join(' '));
+
+      // Mensagem explicativa quando rua sem número
+      if (ruaSemNumero) {
+        setTimeout(() => {
+          const overlay = criarOverlay(`
+            <div class="confirm-box" style="text-align:center;">
+              <div class="confirm-title" style="font-size:0.95rem;line-height:1.7;">
+                COMO NÃO HOUVE NÚMERO PARA CÁLCULO, O VALOR ESTÁ CONSIDERANDO UM PONTO MAIS PERTO E UM PONTO MAIS LONGE DA RUA INFORMADA.
+              </div>
+              <div style="margin-top:20px;">
+                <button class="btn-confirmar">Ok, entendi</button>
+              </div>
+            </div>`);
+          overlay.querySelector('.btn-confirmar').onclick = () => overlay.remove();
+        }, 400);
+      }
 
       // Registro
       const destFormatados = destResults.map(r => r.formatted).join(' → ');
