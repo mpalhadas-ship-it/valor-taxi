@@ -575,19 +575,20 @@
 
   // ── GEOCODING ─────────────────────────────────────────────────────────────
   async function geocodeFreshFull(addr) {
-    const q = encodeURIComponent(addr + ', Juiz de Fora, MG, Brasil');
-    const r = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${q}&region=br&language=pt-BR&key=${GOOGLE_API_KEY}`);
-    const d = await r.json();
-    if (d.status !== 'OK' || !d.results.length) throw new Error('Endereço não encontrado. Tente ser mais específico.');
-    const result = d.results[0];
-    const loc = result.geometry.location;
-    // Verifica se está dentro dos limites geográficos de JF
-    if (loc.lat < JF_BOUNDS.latMin || loc.lat > JF_BOUNDS.latMax ||
-        loc.lng < JF_BOUNDS.lonMin || loc.lng > JF_BOUNDS.lonMax) {
-      throw new Error('Esse destino parece estar fora do perímetro urbano. Favor consultar o taxista no ponto sobre o valor para esse local.');
+    const q = encodeURIComponent(addr + ', Brasil');
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    try {
+      const r = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${q}&region=br&language=pt-BR&key=${GOOGLE_API_KEY}`, { signal: controller.signal });
+      const d = await r.json();
+      if (d.status !== 'OK' || !d.results.length) throw new Error('Endereço não encontrado. Tente usar o autocomplete.');
+      const result = d.results[0];
+      const loc = result.geometry.location;
+      const formatted = result.formatted_address.replace(', Brasil','').replace(', Brazil','');
+      return { lat: loc.lat, lon: loc.lng, formatted };
+    } finally {
+      clearTimeout(timeout);
     }
-    const formatted = result.formatted_address.replace(', Brasil','').replace(', Brazil','');
-    return { lat: loc.lat, lon: loc.lng, formatted };
   }
 
   // ── DISTÂNCIA (para validar raio) ─────────────────────────────────────────
