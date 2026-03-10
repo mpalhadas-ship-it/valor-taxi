@@ -634,7 +634,7 @@
     let fatorMax = horaCritica ? 1.20 : 1.10;
     if (ruaSemNumero) {
       fatorMin = 0.85;
-      fatorMax = 2.00;
+      fatorMax = 1.50;
       // Verifica se é uma avenida longa especial
       const endLower = (enderecoDigitado || '').toLowerCase();
       const avenidaEspecial = AVENIDAS_LONGAS.find(a => endLower.includes(a.nome));
