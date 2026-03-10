@@ -487,7 +487,7 @@
   <!-- FORM CARD -->
   <div class="card">
     <div class="addr-group">
-      <div id="origin-display" style="font-family:'Barlow Condensed',sans-serif;font-size:1.35rem;font-weight:900;color:var(--taxi-yellow);text-transform:uppercase;letter-spacing:1.5px;padding:2px 0 10px;line-height:1.2;text-align:center;text-shadow:0 0 18px rgba(255,230,0,0.4);">—</div>
+      <div id="origin-display" style="font-family:'Barlow Condensed',sans-serif;font-size:1.35rem;font-weight:900;color:var(--taxi-yellow);text-transform:uppercase;letter-spacing:1.5px;padding:2px 0 10px;line-height:1.2;text-align:center;">—</div>
       <input type="hidden" id="origin" />
     </div>
 
@@ -519,6 +519,9 @@
         <div id="result-msg" style="font-size:1.05rem;color:var(--taxi-blue-dark);font-weight:500;line-height:1.8;padding:10px 4px;font-family:'Barlow',sans-serif;">
           Esse é o valor provável de sua corrida. Fique à vontade também pra consultar o taxista aí no ponto se preferir. Boa corrida! 🚕
         </div>
+        <button onclick="novoCalculo()" style="margin-top:8px;background:var(--taxi-blue-dark);color:var(--taxi-yellow);border:none;border-radius:10px;padding:12px 24px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1rem;letter-spacing:2px;text-transform:uppercase;cursor:pointer;">
+          🔄 Novo Cálculo
+        </button>
       </div>
     </div>
   </div>
@@ -855,8 +858,10 @@
       const [dJF, dGeral] = await Promise.all([rJF.json(), rGeral.json()]);
       const jfResults = (dJF.status === 'OK' ? dJF.results : [])
         .filter(r => r.formatted_address.toLowerCase().includes('juiz de fora'));
-      const outrosResults = (dGeral.status === 'OK' ? dGeral.results : [])
-        .filter(r => !r.formatted_address.toLowerCase().includes('juiz de fora'));
+      // Só mostra resultados de outras cidades se não houver nenhum em JF
+      const outrosResults = jfResults.length === 0
+        ? (dGeral.status === 'OK' ? dGeral.results : []).filter(r => !r.formatted_address.toLowerCase().includes('juiz de fora'))
+        : [];
       const merged = [...jfResults, ...outrosResults].slice(0, 4);
       if (!merged.length) return;
       showAutocompleteList(merged, input, wrapper);
@@ -901,6 +906,27 @@
       list.appendChild(item);
     });
     wrapper.appendChild(list);
+  }
+
+  function novoCalculo() {
+    // Limpa campos de destino
+    document.querySelectorAll('.stop-input').forEach(inp => {
+      inp.value = '';
+      delete inp.dataset.lat;
+      delete inp.dataset.lon;
+      delete inp.dataset.formatted;
+      delete inp.dataset.ehLocal;
+    });
+    // Remove paradas extras, mantém só a primeira
+    const stops = document.querySelectorAll('#stops-container .addr-group');
+    stops.forEach((el, i) => { if (i > 0) el.remove(); });
+    stopCount = 1;
+    // Esconde resultado e botão adicionar
+    document.getElementById('result-info').style.display = 'none';
+    document.getElementById('total-price').textContent = 'R$';
+    document.getElementById('add-stop-btn').style.display = 'none';
+    // Foca no campo
+    document.querySelector('.stop-input').focus();
   }
 
   function removeAutocompleteList(wrapper) {
