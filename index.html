@@ -497,7 +497,7 @@
         <div class="result-value" id="total-price">R$</div>
       </div>
       <div id="result-info" style="display:none;margin-top:8px;flex-direction:column;gap:4px;text-align:center;">
-        <div style="font-size:1.05rem;color:var(--taxi-blue-dark);font-weight:500;line-height:1.8;padding:10px 4px;font-family:'Barlow',sans-serif;">
+        <div id="result-msg" style="font-size:1.05rem;color:var(--taxi-blue-dark);font-weight:500;line-height:1.8;padding:10px 4px;font-family:'Barlow',sans-serif;">
           Esse é o valor provável de sua corrida. Fique à vontade também pra consultar o taxista aí no ponto se preferir. Boa corrida! 🚕
         </div>
       </div>
@@ -755,21 +755,10 @@
       }
       const { vMin, vMax } = mostrarResultado(distKm, durMin * 0.15, ruaSemNumero, filled.join(' '));
 
-      // Mensagem explicativa quando rua sem número
-      if (ruaSemNumero) {
-        setTimeout(() => {
-          const overlay = criarOverlay(`
-            <div class="confirm-box" style="text-align:center;">
-              <div class="confirm-title" style="font-size:0.95rem;line-height:1.7;">
-                COMO NÃO HOUVE NÚMERO PARA CÁLCULO, O VALOR ESTÁ CONSIDERANDO UM PONTO MAIS PERTO E UM PONTO MAIS LONGE DA RUA INFORMADA.
-              </div>
-              <div style="margin-top:20px;">
-                <button class="btn-confirmar">Ok, entendi</button>
-              </div>
-            </div>`);
-          overlay.querySelector('.btn-confirmar').onclick = () => overlay.remove();
-        }, 400);
-      }
+      // Troca texto abaixo do valor quando rua sem número
+      const msgPadrao = 'Esse é o valor provável de sua corrida. Fique à vontade também pra consultar o taxista aí no ponto se preferir. Boa corrida! 🚕';
+      const msgSemNumero = 'COMO NÃO HOUVE NÚMERO PARA CÁLCULO, O VALOR ESTÁ CONSIDERANDO UM PONTO MAIS PERTO E UM PONTO MAIS LONGE DA RUA INFORMADA.';
+      document.getElementById('result-msg').textContent = ruaSemNumero ? msgSemNumero : msgPadrao;
 
       // Registro
       const destFormatados = destResults.map(r => r.formatted).join(' → ');
