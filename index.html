@@ -796,11 +796,18 @@
 
   async function fetchSuggestions(query, input, wrapper) {
     try {
-      const q = encodeURIComponent(query + ', Brasil');
-      const r = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${q}&region=br&language=pt-BR&key=${GOOGLE_API_KEY}`);
-      const d = await r.json();
-      if (d.status !== 'OK' || !d.results.length) return;
-      showAutocompleteList(d.results.slice(0, 4), input, wrapper);
+      const [rJF, rGeral] = await Promise.all([
+        fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query + ', Juiz de Fora, MG, Brasil')}&region=br&language=pt-BR&key=${GOOGLE_API_KEY}`),
+        fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query + ', Brasil')}&region=br&language=pt-BR&key=${GOOGLE_API_KEY}`)
+      ]);
+      const [dJF, dGeral] = await Promise.all([rJF.json(), rGeral.json()]);
+      const jfResults = (dJF.status === 'OK' ? dJF.results : [])
+        .filter(r => r.formatted_address.toLowerCase().includes('juiz de fora'));
+      const outrosResults = (dGeral.status === 'OK' ? dGeral.results : [])
+        .filter(r => !r.formatted_address.toLowerCase().includes('juiz de fora'));
+      const merged = [...jfResults, ...outrosResults].slice(0, 4);
+      if (!merged.length) return;
+      showAutocompleteList(merged, input, wrapper);
     } catch(e) {}
   }
 
