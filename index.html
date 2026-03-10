@@ -556,41 +556,7 @@
   const JF_BOUNDS = { latMin: -21.87, latMax: -21.62, lonMin: -43.50, lonMax: -43.27 };
   const JF_CENTRO = { lat: -21.738045, lon: -43.374371 };
 
-  const TERMOS_BLOQUEADOS = [
-    'aeroporto zona da mata','aeroporto itamar franco','aeroporto de goianá','aeroporto de goiana',
-    'aeroporto iza','aeroporto de rio novo','aeroporto rio novo','aeroporto do galeão',
-    'aeroporto galeão','aeroporto santos dumont','aeroporto congonhas','aeroporto guarulhos',
-    'aeroporto confins','aeroporto de confins','aeroporto tancredo neves','aeroporto internacional',
-    'goianá','goiana','rio novo','galeão','santos dumont','congonhas','guarulhos','confins'
-  ];
-
   const TERMOS_VAGOS = ['centro', 'centro de jf', 'centro jf', 'o centro', 'no centro', 'o centro de jf'];
-
-  const CIDADES_VIZINHAS = [
-    'matias barbosa','bicas','mar de espanha','santos dumont','rio novo',
-    'três rios','tres rios','são joão nepomuceno','sao joao nepomuceno',
-    'paraíba do sul','paraiba do sul','lima duarte','sapucaia',
-    'rio pomba','areal','valença','valenca','além paraíba','alem paraiba',
-    'astolfo dutra','tocantins','barbacena','paty do alferes',
-    'leopoldina','miguel pereira','vassouras','carmo','cataguases',
-    'teresópolis','teresopolis','petrópolis','petropolis',
-    'volta redonda','barra mansa','resende','itatiaia',
-    'lavras','são joão del rei','sao joao del rei','tiradentes',
-    'ubá','uba','muriaé','muriae','viçosa','vicosa',
-    'conselheiro lafaiete','ouro preto','mariana',
-    'coronel pacheco','ewbank da camara','ewbank da câmara',
-    'chácara','chacara','simão pereira','simao pereira','piau',
-    'goianá','goiana','tabuleiro','bias fortes',
-    'belmiro braga','chiador','descoberto','guarani','guarará',
-    'guarara','maripá de minas','maripa de minas',
-    'mercês','merces','olaria','oliveira fortes','paiva',
-    'pequeri','piraúba','pirauba','rio das flores','rio preto',
-    'santana do deserto','santa bárbara do monte verde',
-    'santa barbara do monte verde','aracitaba','argirita',
-    'levy gasparian','rio de janeiro','são paulo','sao paulo',
-    'belo horizonte','brasília','brasilia','niterói','niteroi',
-    'angra dos reis','paraty','cabo frio','búzios','buzios'
-  ];
 
   // ── REGISTRO SHEETS ───────────────────────────────────────────────────────
   function registrarEvento(digitado, enderecoGoogle, acao, resultado) {
@@ -610,30 +576,22 @@
 
   // ── GEOCODING ─────────────────────────────────────────────────────────────
   async function geocodeFreshFull(addr) {
-    const addrLower = addr.toLowerCase().trim();
-    if (TERMOS_BLOQUEADOS.some(t => addrLower.includes(t))) {
-      throw new Error('Destino fora do perímetro urbano de Juiz de Fora. Para outros municípios consulte o taxista.');
-    }
     const q = encodeURIComponent(addr + ', Juiz de Fora, MG, Brasil');
     const r = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${q}&region=br&language=pt-BR&key=${GOOGLE_API_KEY}`);
     const d = await r.json();
-    if (d.status !== 'OK' || !d.results.length) throw new Error('Endereço não encontrado: ' + addr);
+    if (d.status !== 'OK' || !d.results.length) throw new Error('Endereço não encontrado. Tente ser mais específico.');
     const result = d.results[0];
     const loc = result.geometry.location;
-    const municipio = (result.address_components || []).find(c => c.types.includes('administrative_area_level_2'));
-    const nomeMunicipio = (municipio ? municipio.long_name : '').toLowerCase();
-    if (nomeMunicipio && !nomeMunicipio.includes('juiz de fora')) {
-      throw new Error('Destino fora do perímetro urbano de Juiz de Fora. Para outros municípios consulte o taxista.');
-    }
+    // Verifica se está dentro dos limites geográficos de JF
     if (loc.lat < JF_BOUNDS.latMin || loc.lat > JF_BOUNDS.latMax ||
         loc.lng < JF_BOUNDS.lonMin || loc.lng > JF_BOUNDS.lonMax) {
-      throw new Error('Destino fora do perímetro urbano de Juiz de Fora. Para outros municípios consulte o taxista.');
+      throw new Error('Esse destino parece estar fora do perímetro urbano. Favor consultar o taxista no ponto sobre o valor para esse local.');
     }
     const formatted = result.formatted_address.replace(', Brasil','').replace(', Brazil','');
     return { lat: loc.lat, lon: loc.lng, formatted };
   }
 
-  // ── DISTÂNCIA ─────────────────────────────────────────────────────────────
+  // ── DISTÂNCIA (para validar raio) ─────────────────────────────────────────
   function distanciaKm(lat1, lon1, lat2, lon2) {
     const R = 6371;
     const dLat = (lat2-lat1)*Math.PI/180, dLon = (lon2-lon1)*Math.PI/180;
@@ -641,25 +599,21 @@
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   }
 
-  // ── ROTA ──────────────────────────────────────────────────────────────────
+  // ── ROTA (Google Directions API) ──────────────────────────────────────────
   async function calcularRota(coords) {
-    // Google Distance Matrix API — mais rápido e preciso que OSRM
-    const origem = coords[0].lat + ',' + coords[0].lon;
+    const origem  = coords[0].lat + ',' + coords[0].lon;
     const destino = coords[coords.length-1].lat + ',' + coords[coords.length-1].lon;
-    // Waypoints intermediários (paradas), se houver
     const waypoints = coords.slice(1, -1).map(c => c.lat + ',' + c.lon).join('|');
-    let url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${origem}&destinations=${destino}&mode=driving&language=pt-BR&key=${GOOGLE_API_KEY}`;
+    let url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origem}&destination=${destino}&mode=driving&language=pt-BR&key=${GOOGLE_API_KEY}`;
     if (waypoints) url += `&waypoints=${encodeURIComponent(waypoints)}`;
     const r = await fetch(url);
     const d = await r.json();
-    if (d.status !== 'OK' || !d.rows[0].elements[0] || d.rows[0].elements[0].status !== 'OK') {
-      throw new Error('Rota não encontrada');
-    }
-    const el = d.rows[0].elements[0];
-    return {
-      distKm: el.distance.value / 1000,
-      durMin: el.duration.value / 60
-    };
+    if (d.status !== 'OK' || !d.routes.length) throw new Error('Rota não encontrada.');
+    const leg = d.routes[0].legs.reduce((acc, l) => ({
+      distance: acc.distance + l.distance.value,
+      duration: acc.duration + l.duration.value
+    }), { distance: 0, duration: 0 });
+    return { distKm: leg.distance / 1000, durMin: leg.duration / 60 };
   }
 
   // ── RESULTADO ─────────────────────────────────────────────────────────────
@@ -676,7 +630,7 @@
     return { vMin, vMax };
   }
 
-  // ── POPUPS ────────────────────────────────────────────────────────────────
+  // ── POPUP GENÉRICO ────────────────────────────────────────────────────────
   function criarOverlay(html) {
     const overlay = document.createElement('div');
     overlay.className = 'confirm-overlay';
@@ -696,43 +650,6 @@
       overlay.querySelector('.btn-ok-conferir').onclick = () => {
         overlay.remove(); input.value = ''; input.focus(); resolve();
       };
-    });
-  }
-
-  function alertarCidadeSemDetalhes() {
-    return new Promise(resolve => {
-      const overlay = criarOverlay(`
-        <div class="confirm-box">
-          <div class="confirm-title" style="font-size:1.1rem;">⚠️ Endereço incompleto</div>
-          <div style="color:#fff;font-size:0.95rem;line-height:1.6;margin:14px 0 20px;">
-            O destino informado parece ser apenas o nome de uma cidade.<br><br>
-            Para calcular, informe a rua, número ou nome do local dentro de Juiz de Fora.
-          </div>
-          <button class="btn-confirmar">OK, vou corrigir</button>
-        </div>`);
-      overlay.querySelector('.btn-confirmar').onclick = () => {
-        overlay.remove();
-        const inputs = document.querySelectorAll('.stop-input');
-        inputs.forEach(inp => { if (inp.value.trim()) { inp.value = ''; inp.focus(); } });
-        resolve();
-      };
-    });
-  }
-
-  function confirmarEndereco(formatted) {
-    return new Promise(resolve => {
-      const overlay = criarOverlay(`
-        <div class="confirm-box">
-          <div class="confirm-title">O local informado está em Juiz de Fora?</div>
-          <div class="confirm-address">${formatted}</div>
-          <div class="confirm-warning">⚠️ Válido apenas para destinos em Juiz de Fora - MG</div>
-          <div class="confirm-btns">
-            <button class="btn-cancelar">Não está<br>preciso corrigir</button>
-            <button class="btn-confirmar">Está sim<br>pode calcular</button>
-          </div>
-        </div>`);
-      overlay.querySelector('.btn-confirmar').onclick = () => { overlay.remove(); resolve(true); };
-      overlay.querySelector('.btn-cancelar').onclick  = () => { overlay.remove(); resolve(false); };
     });
   }
 
@@ -777,19 +694,14 @@
     btn.classList.add('loading');
 
     try {
-      // Origem — usa coordenada fixa do ponto se disponível
+      // Origem fixa do ponto
       const originCoord = window._origemFixa || (await geocodeFreshFull(originVal));
 
-      // Valida destinos
+      // Valida endereços vagos
       for (const addr of filled) {
         const addrLower = addr.trim().toLowerCase();
         const inp = inputs.find(el => el.value.trim() === addr.trim()) || inputs[0];
-
-        if (TERMOS_VAGOS.includes(addrLower)) {
-          await avisarEnderecoIncompleto(inp);
-          btn.classList.remove('loading'); return;
-        }
-        if (addr.trim().length < 6) {
+        if (addr.trim().length < 6 || TERMOS_VAGOS.includes(addrLower)) {
           await avisarEnderecoIncompleto(inp);
           btn.classList.remove('loading'); return;
         }
@@ -808,38 +720,11 @@
         return geocodeFreshFull(addr);
       }));
 
-      // Verifica raio 25km
+      // Valida raio 25km
       for (const res of destResults) {
         if (distanciaKm(JF_CENTRO.lat, JF_CENTRO.lon, res.lat, res.lon) > 25) {
           registrarEvento(res.formatted, res.formatted, 'Fora do raio 25km', '—');
-          throw new Error('Destino fora do perímetro urbano de Juiz de Fora. Para outros municípios consulte o taxista.');
-        }
-      }
-
-      // Verifica cidades vizinhas
-      for (let i = 0; i < destResults.length; i++) {
-        const digitado = filled[i];
-        const digitadoLower = digitado.toLowerCase().trim();
-        const endFormatado = destResults[i].formatted || digitado;
-        const pareceCidade = CIDADES_VIZINHAS.some(c => digitadoLower.includes(c) || c.includes(digitadoLower));
-
-        if (pareceCidade) {
-          const temDetalhes = /\d/.test(digitado) ||
-            /(rua|r\.|av\.|avenida|travessa|alameda|estrada|rodovia|praça|largo|beco|qd|quadra|bloco)/i.test(digitado);
-
-          if (!temDetalhes) {
-            registrarEvento(digitado, endFormatado, 'Bloqueado — só nome de cidade', '—');
-            await alertarCidadeSemDetalhes();
-            btn.classList.remove('loading'); return;
-          }
-
-          const confirmado = await confirmarEndereco(endFormatado);
-          if (!confirmado) {
-            registrarEvento(digitado, endFormatado, 'Popup — Cancelado pelo passageiro', '—');
-            showNotif('Por favor, informe o endereço com mais detalhes.');
-            btn.classList.remove('loading'); return;
-          }
-          registrarEvento(digitado, endFormatado, 'Popup — Confirmado pelo passageiro', 'aguardando cálculo');
+          throw new Error('Esse destino parece estar fora do perímetro urbano. Favor consultar o taxista no ponto sobre o valor para esse local.');
         }
       }
 
@@ -849,8 +734,7 @@
 
       // Registro
       const destFormatados = destResults.map(r => r.formatted).join(' → ');
-      const resultadoStr = `R$ ${vMin} a R$ ${vMax} | B${bandeira} | ${distKm.toFixed(1)}km`;
-      registrarEvento(filled.join(' → '), destFormatados, 'Calculado', resultadoStr);
+      registrarEvento(filled.join(' → '), destFormatados, 'Calculado', `R$ ${vMin} a R$ ${vMax} | B${bandeira} | ${distKm.toFixed(1)}km`);
 
       showNotif('✅ Estimativa calculada!');
 
@@ -909,8 +793,6 @@
 
   async function fetchSuggestions(query, input, wrapper) {
     try {
-      const queryLower = query.toLowerCase().trim();
-      if (CIDADES_VIZINHAS.some(c => queryLower.includes(c) || c.includes(queryLower))) return;
       const q = encodeURIComponent(query + ', Juiz de Fora, MG, Brasil');
       const r = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${q}&region=br&language=pt-BR&key=${GOOGLE_API_KEY}`);
       const d = await r.json();
@@ -936,24 +818,24 @@
       item.className = 'autocomplete-item';
       item.textContent = res.formatted_address.split(',').slice(0, 2).join(',').trim();
       item.addEventListener('mousedown', () => {
-        // Guarda coords no input — evita segunda chamada à API no cálculo
         input.dataset.lat = res.geometry.location.lat;
         input.dataset.lon = res.geometry.location.lng;
         input.dataset.formatted = res.formatted_address;
         input.value = item.textContent;
         removeAutocompleteList(wrapper);
 
-        const sel = item.textContent.toLowerCase();
-        if (sel.includes('centro') && sel.includes('juiz de fora')) {
+        // Centro → valor fixo
+        if (item.textContent.toLowerCase().includes('centro') && item.textContent.toLowerCase().includes('juiz de fora')) {
           document.getElementById('total-price').textContent = 'R$ 25 a R$ 35';
           document.getElementById('result-info').style.display = 'flex';
           document.getElementById('add-stop-btn').style.display = 'block';
           return;
         }
-        const temNumero = /\d/.test(item.textContent);
-        if (temNumero) {
+        // Com número → calcula direto
+        if (/\d/.test(item.textContent)) {
           setTimeout(() => calcularPorMapa(), 150);
         } else {
+          // Sem número → pergunta
           setTimeout(() => perguntarNumero(input), 150);
         }
       });
