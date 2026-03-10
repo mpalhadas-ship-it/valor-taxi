@@ -620,8 +620,9 @@
   }
 
   // ── RESULTADO ─────────────────────────────────────────────────────────────
-  function mostrarResultado(distKm, paradoMin) {
-    const kmRate = bandeira === 2 ? TARIFAS.kmB2 : TARIFAS.kmB1;
+  function mostrarResultado(distKm, paradoMin, trajLongo) {
+    // Trajeto longo (25km+ em linha reta): km fixo R$ 4,00
+    const kmRate = trajLongo ? 4.00 : (bandeira === 2 ? TARIFAS.kmB2 : TARIFAS.kmB1);
     const total = TARIFAS.bandeirada + distKm * kmRate + (paradoMin/60) * TARIFAS.horaParada;
     const hora = new Date().getHours();
     const horaCritica = hora >= 17 && hora < 20;
@@ -723,17 +724,14 @@
         return geocodeFreshFull(addr);
       }));
 
-      // Valida raio 25km
-      for (const res of destResults) {
-        if (distanciaKm(JF_CENTRO.lat, JF_CENTRO.lon, res.lat, res.lon) > 25) {
-          registrarEvento(res.formatted, res.formatted, 'Fora do raio 25km', '—');
-          throw new Error('Esse destino parece estar fora do perímetro urbano. Favor consultar o taxista no ponto sobre o valor para esse local.');
-        }
-      }
+      // Verifica se é trajeto longo (25km+ em linha reta) para aplicar km especial
+      const trajLongo = destResults.some(res =>
+        distanciaKm(JF_CENTRO.lat, JF_CENTRO.lon, res.lat, res.lon) >= 25
+      );
 
       // Calcula rota
       const { distKm, durMin } = await calcularRota([originCoord, ...destResults]);
-      const { vMin, vMax } = mostrarResultado(distKm, durMin * 0.15);
+      const { vMin, vMax } = mostrarResultado(distKm, durMin * 0.15, trajLongo);
 
       // Registro
       const destFormatados = destResults.map(r => r.formatted).join(' → ');
