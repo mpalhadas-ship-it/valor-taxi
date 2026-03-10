@@ -622,7 +622,7 @@
   // ── RESULTADO ─────────────────────────────────────────────────────────────
   function mostrarResultado(distKm, paradoMin, trajLongo) {
     // Trajeto longo (25km+ em linha reta): km fixo R$ 4,00
-    const kmRate = trajLongo ? 4.00 : (bandeira === 2 ? TARIFAS.kmB2 : TARIFAS.kmB1);
+    const kmRate = trajLongo ? 5.00 : (bandeira === 2 ? TARIFAS.kmB2 : TARIFAS.kmB1);
     const total = TARIFAS.bandeirada + distKm * kmRate + (paradoMin/60) * TARIFAS.horaParada;
     const hora = new Date().getHours();
     const horaCritica = hora >= 17 && hora < 20;
@@ -723,6 +723,21 @@
       // Calcula rota
       const { distKm, durMin } = await calcularRota([originCoord, ...destResults]);
       const { vMin, vMax } = mostrarResultado(distKm, durMin * 0.15, trajLongo);
+
+      // Popup informativo para trajetos longos
+      if (trajLongo) {
+        setTimeout(() => {
+          const overlay = criarOverlay(`
+            <div class="confirm-box">
+              <div class="confirm-title" style="font-size:1rem;">📍 Destino fora do perímetro urbano</div>
+              <div style="color:#fff;font-size:0.95rem;line-height:1.6;margin:14px 0 20px;">
+                Esse destino parece estar fora do perímetro urbano e esse valor pode ser negociado com o taxista no ponto.
+              </div>
+              <button class="btn-confirmar">Ok, entendi</button>
+            </div>`);
+          overlay.querySelector('.btn-confirmar').onclick = () => overlay.remove();
+        }, 400);
+      }
 
       // Registro
       const destFormatados = destResults.map(r => r.formatted).join(' → ');
