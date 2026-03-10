@@ -517,6 +517,7 @@
   <button class="banner-close" onclick="fecharBanner()">✕</button>
 </div>
 
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC6M_XhgT-xqltyObVbmanmzSiqCH_AlD0&libraries=places&language=pt-BR" defer></script>
 <script>
   // ── TARIFAS ───────────────────────────────────────────────────────────────
   const TARIFAS = { bandeirada: 6.83, kmB1: 3.83, kmB2: 4.10, horaParada: 30.72 };
@@ -599,21 +600,29 @@
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   }
 
-  // ── ROTA (Google Directions API) ──────────────────────────────────────────
-  async function calcularRota(coords) {
-    const origem  = coords[0].lat + ',' + coords[0].lon;
-    const destino = coords[coords.length-1].lat + ',' + coords[coords.length-1].lon;
-    const waypoints = coords.slice(1, -1).map(c => c.lat + ',' + c.lon).join('|');
-    let url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origem}&destination=${destino}&mode=driving&language=pt-BR&key=${GOOGLE_API_KEY}`;
-    if (waypoints) url += `&waypoints=${encodeURIComponent(waypoints)}`;
-    const r = await fetch(url);
-    const d = await r.json();
-    if (d.status !== 'OK' || !d.routes.length) throw new Error('Rota não encontrada.');
-    const leg = d.routes[0].legs.reduce((acc, l) => ({
-      distance: acc.distance + l.distance.value,
-      duration: acc.duration + l.duration.value
-    }), { distance: 0, duration: 0 });
-    return { distKm: leg.distance / 1000, durMin: leg.duration / 60 };
+  // ── ROTA (Google Maps JS API — sem CORS) ─────────────────────────────────
+  function calcularRota(coords) {
+    return new Promise((resolve, reject) => {
+      const service = new google.maps.DistanceMatrixService();
+      const origem  = new google.maps.LatLng(coords[0].lat, coords[0].lon);
+      const destino = new google.maps.LatLng(coords[coords.length-1].lat, coords[coords.length-1].lon);
+      service.getDistanceMatrix({
+        origins: [origem],
+        destinations: [destino],
+        travelMode: google.maps.TravelMode.DRIVING,
+        language: 'pt-BR'
+      }, (response, status) => {
+        if (status !== 'OK' || !response.rows[0].elements[0] || response.rows[0].elements[0].status !== 'OK') {
+          reject(new Error('Rota não encontrada.'));
+          return;
+        }
+        const el = response.rows[0].elements[0];
+        resolve({
+          distKm: el.distance.value / 1000,
+          durMin: el.duration.value / 60
+        });
+      });
+    });
   }
 
   // ── RESULTADO ─────────────────────────────────────────────────────────────
