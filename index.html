@@ -769,8 +769,14 @@
       // Calcula rota
       const { distKm, durMin } = await calcularRota([originCoord, ...destResults]);
 
-      // Margem maior se rua sem número (não é local e não tem número)
-      const ruaSemNumero = destResults.some(r => !r.ehLocal && !r.temNumero && !/\d/.test(filled[destResults.indexOf(r)] || ''));
+      // Margem maior APENAS se: não veio do autocomplete E é rua genérica E não tem número
+      const inputs2 = Array.from(document.querySelectorAll('.stop-input'));
+      const ruaSemNumero = destResults.some((r, i) => {
+        const inp = inputs2.find(el => el.value.trim() === filled[i]);
+        const veiuDoAutocomplete = inp && inp.dataset.lat;
+        if (veiuDoAutocomplete) return false; // autocomplete = sempre preciso, nunca aplica margem
+        return !r.ehLocal && !r.temNumero;
+      });
 
       // Trajeto longo = distância real da rota >= 25km — não mostra valor, abre popup
       if (distKm >= 25) {
