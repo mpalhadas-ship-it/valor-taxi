@@ -419,59 +419,7 @@
     margin-bottom:6px;
   }
 
-  /* HISTÓRICO */
-  .historico-item {
-    background: var(--taxi-blue-dark);
-    color: var(--taxi-yellow);
-    border:none;
-    border-radius:8px;
-    padding:10px 14px;
-    font-family:'Barlow',sans-serif;
-    font-size:0.9rem;
-    font-weight:600;
-    cursor:pointer;
-    text-align:left;
-    width:100%;
-    transition: opacity 0.15s;
-  }
-  .historico-item:hover { opacity:0.85; }
-  .historico-item small {
-    display:block;
-    font-size:0.75rem;
-    opacity:0.6;
-    font-weight:400;
-    margin-top:2px;
-  }
-  #historico-section {
-    margin-top:8px;
-    display:none;
-  }
-  #historico-section h4 {
-    font-family:'Barlow Condensed',sans-serif;
-    font-size:0.8rem;
-    letter-spacing:2px;
-    color:rgba(255,255,255,0.5);
-    margin-bottom:6px;
-    text-transform:uppercase;
-  }
-  #historico-lista { display:flex; flex-direction:column; gap:6px; }
 
-  /* COMPARTILHAR */
-  #btn-compartilhar {
-    background: var(--taxi-yellow);
-    color: var(--taxi-blue-dark);
-    border:none;
-    border-radius:10px;
-    padding:12px 24px;
-    font-family:'Barlow Condensed',sans-serif;
-    font-weight:800;
-    font-size:1rem;
-    letter-spacing:2px;
-    text-transform:uppercase;
-    cursor:pointer;
-    width:100%;
-    margin-top:6px;
-  }
 
   /* ANIMATIONS */
   @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -570,10 +518,6 @@
     </div>
 
     <button class="add-stop-btn" onclick="adicionarParada()" id="add-stop-btn" style="display:none;">+ Adicionar parada ou destino</button>
-    <div id="historico-section">
-      <h4>🕐 Recentes</h4>
-      <div id="historico-lista"></div>
-    </div>
 
     <button class="calc-btn" id="calc-map-btn" onclick="calcularPorMapa()">
       <span class="btn-text">Calcular o valor aproximado</span>
@@ -593,7 +537,6 @@
         <div id="result-msg" style="font-size:1.05rem;color:var(--taxi-blue-dark);font-weight:500;line-height:1.8;padding:10px 4px;font-family:'Barlow',sans-serif;">
           Esse é o valor provável de sua corrida. Fique à vontade também pra consultar o taxista aí no ponto se preferir. Boa corrida! 🚕
         </div>
-        <button id="btn-compartilhar" onclick="compartilharResultado()">📤 COMPARTILHAR</button>
         <button onclick="novoCalculo()" style="margin-top:2px;background:var(--taxi-blue-dark);color:var(--taxi-yellow);border:none;border-radius:10px;padding:12px 24px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1rem;letter-spacing:2px;text-transform:uppercase;cursor:pointer;width:100%;">
           NOVO CÁLCULO
         </button>
@@ -646,7 +589,8 @@
       window._origemFixa = { lat: PONTOS[ponto].lat, lon: PONTOS[ponto].lon };
       document.getElementById('origin').value = PONTOS[ponto].nome;
       document.getElementById('origin-display').textContent = PONTOS[ponto].nome;
-      renderHistorico();
+      // Limpa qualquer dado antigo do localStorage
+      try { localStorage.clear(); } catch(e) {}
     }
   }
 
@@ -676,14 +620,18 @@
   function buscarBaseLocal(query) {
     const q = query.toLowerCase().trim();
     const JF_LAT = -21.7642, JF_LON = -43.3503;
-    return BASE_LOCAL.filter(l => {
+    const dentro = BASE_LOCAL.filter(l => {
       if (!l.n.toLowerCase().includes(q)) return false;
       const dLat = (l.lat - JF_LAT) * Math.PI / 180;
       const dLon = (l.lon - JF_LON) * Math.PI / 180;
       const a = Math.sin(dLat/2)**2 + Math.cos(JF_LAT*Math.PI/180)*Math.cos(l.lat*Math.PI/180)*Math.sin(dLon/2)**2;
       const dist = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
       return dist <= 25;
-    }).slice(0, 4).map(l => ({
+    });
+    // Prioriza: nome começa exatamente com o termo > nome contém o termo
+    const exatos = dentro.filter(l => l.n.toLowerCase().startsWith(q));
+    const contem = dentro.filter(l => !l.n.toLowerCase().startsWith(q));
+    return [...exatos, ...contem].slice(0, 4).map(l => ({
       geometry: { location: { lat: l.lat, lng: l.lon } },
       formatted_address: [l.n, l.r && l.num ? l.r + ', ' + l.num : l.r, l.b, 'Juiz de Fora, MG'].filter(Boolean).join(', '),
       types: ['establishment'],
@@ -927,7 +875,6 @@
       // Registro
       const destFormatados = destResults.map(r => r.formatted).join(' → ');
       registrarEvento(filled.join(' → '), destFormatados, 'Calculado', `R$ ${vMin} a R$ ${vMax} | B${bandeira} | ${distKm.toFixed(1)}km`);
-      salvarHistorico(filled.join(' → '), `R$ ${vMin} a R$ ${vMax}`);
 
       showNotif('✅ Estimativa calculada!');
 
@@ -1002,7 +949,9 @@
       }
 
       // Complementa com Google
+      // Query curta (1 palavra, sem número) = pode ser bairro/região — Google JF tem prioridade
       const pareceCity = !/\d/.test(query) && query.trim().split(' ').length <= 3;
+      const queryUmaPalavra = query.trim().split(' ').length === 1 && !/\d/.test(query);
       const [rJF, rGeral] = await Promise.all([
         fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query + ', Juiz de Fora, MG, Brasil')}&region=br&language=pt-BR&key=${GOOGLE_API_KEY}`),
         fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query + ', Brasil')}&region=br&language=pt-BR&key=${GOOGLE_API_KEY}`)
@@ -1017,7 +966,10 @@
       const ehTermoLocal = pareceTermoLocal(query);
       const temLocal = localResults.length > 0 || jfResults.length > 0;
       const extras = (ehTermoLocal || temLocal) ? [] : outrosResults;
-      const merged = [...localResults, ...jfResults, ...extras].slice(0, 4);
+      // Query de uma palavra (bairro, região) = Google JF na frente pra pegar "Centro", "Cascatinha" etc
+      const merged = queryUmaPalavra
+        ? [...jfResults, ...localResults, ...extras].slice(0, 4)
+        : [...localResults, ...jfResults, ...extras].slice(0, 4);
       if (!merged.length) return;
       showAutocompleteList(merged, input, wrapper);
     } catch(e) {}
@@ -1070,57 +1022,7 @@
     wrapper.appendChild(list);
   }
 
-  // ── HISTÓRICO ────────────────────────────────────────────────────────────
-  const HIST_KEY = 'valortaxi_hist';
-  const MAX_HIST = 5;
 
-  function salvarHistorico(destino, valor) {
-    try {
-      const hist = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
-      // Remove duplicata se existir
-      const novo = hist.filter(h => h.destino !== destino);
-      novo.unshift({ destino, valor });
-      localStorage.setItem(HIST_KEY, JSON.stringify(novo.slice(0, MAX_HIST)));
-      renderHistorico();
-    } catch(e) {}
-  }
-
-  function renderHistorico() {
-    try {
-      const hist = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
-      const lista = document.getElementById('historico-lista');
-      const section = document.getElementById('historico-section');
-      if (!hist.length) { section.style.display = 'none'; return; }
-      section.style.display = 'block';
-      lista.innerHTML = hist.map(h => `
-        <button class="historico-item" onclick="usarHistorico('${h.destino.replace(/'/g,"\'")}')">
-          ${h.destino}
-          <small>${h.valor}</small>
-        </button>`).join('');
-    } catch(e) {}
-  }
-
-  function usarHistorico(destino) {
-    const inp = document.querySelector('.stop-input');
-    if (!inp) return;
-    inp.value = destino;
-    // Limpa cache pra forçar geocoding novo
-    delete inp.dataset.lat; delete inp.dataset.lon;
-    delete inp.dataset.formatted; delete inp.dataset.ehLocal;
-    inp.focus();
-  }
-
-  // ── COMPARTILHAR ──────────────────────────────────────────────────────────
-  function compartilharResultado() {
-    const preco = document.getElementById('total-price').textContent;
-    const dest = document.querySelector('.stop-input')?.value || '';
-    const texto = `🚕 Táxi em Juiz de Fora\nDestino: ${dest}\nValor estimado: ${preco}\n\nCalculado pelo ValorTaxi`;
-    if (navigator.share) {
-      navigator.share({ title: 'ValorTaxi', text: texto }).catch(() => {});
-    } else {
-      navigator.clipboard.writeText(texto).then(() => showNotif('✅ Copiado!'));
-    }
-  }
 
   function novoCalculo() {
     // Limpa campos de destino
@@ -1141,7 +1043,6 @@
     document.getElementById('add-stop-btn').style.display = 'none';
     // Foca no campo
     document.querySelector('.stop-input').focus();
-    renderHistorico();
   }
 
   function removeAutocompleteList(wrapper) {
