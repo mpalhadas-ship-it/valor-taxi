@@ -404,6 +404,75 @@
   .modal-btn.enabled { opacity: 1; pointer-events: all; box-shadow: none; }
   .modal-btn.enabled:hover { background: var(--taxi-yellow-dark); transform: translateY(-1px); }
 
+  /* BANDEIRA BADGE */
+  #bandeira-badge {
+    display:inline-block;
+    background:#c0392b;
+    color:white;
+    font-family:'Barlow Condensed',sans-serif;
+    font-size:0.75rem;
+    font-weight:800;
+    letter-spacing:2px;
+    padding:3px 10px;
+    border-radius:20px;
+    text-transform:uppercase;
+    margin-bottom:6px;
+  }
+
+  /* HISTÓRICO */
+  .historico-item {
+    background: var(--taxi-blue-dark);
+    color: var(--taxi-yellow);
+    border:none;
+    border-radius:8px;
+    padding:10px 14px;
+    font-family:'Barlow',sans-serif;
+    font-size:0.9rem;
+    font-weight:600;
+    cursor:pointer;
+    text-align:left;
+    width:100%;
+    transition: opacity 0.15s;
+  }
+  .historico-item:hover { opacity:0.85; }
+  .historico-item small {
+    display:block;
+    font-size:0.75rem;
+    opacity:0.6;
+    font-weight:400;
+    margin-top:2px;
+  }
+  #historico-section {
+    margin-top:8px;
+    display:none;
+  }
+  #historico-section h4 {
+    font-family:'Barlow Condensed',sans-serif;
+    font-size:0.8rem;
+    letter-spacing:2px;
+    color:rgba(255,255,255,0.5);
+    margin-bottom:6px;
+    text-transform:uppercase;
+  }
+  #historico-lista { display:flex; flex-direction:column; gap:6px; }
+
+  /* COMPARTILHAR */
+  #btn-compartilhar {
+    background: var(--taxi-yellow);
+    color: var(--taxi-blue-dark);
+    border:none;
+    border-radius:10px;
+    padding:12px 24px;
+    font-family:'Barlow Condensed',sans-serif;
+    font-weight:800;
+    font-size:1rem;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    cursor:pointer;
+    width:100%;
+    margin-top:6px;
+  }
+
   /* ANIMATIONS */
   @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -501,6 +570,10 @@
     </div>
 
     <button class="add-stop-btn" onclick="adicionarParada()" id="add-stop-btn" style="display:none;">+ Adicionar parada ou destino</button>
+    <div id="historico-section">
+      <h4>🕐 Recentes</h4>
+      <div id="historico-lista"></div>
+    </div>
 
     <button class="calc-btn" id="calc-map-btn" onclick="calcularPorMapa()">
       <span class="btn-text">Calcular o valor aproximado</span>
@@ -512,6 +585,7 @@
   <div class="result-card" id="result-card">
     <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;">
       <div>
+        <div id="bandeira-badge" style="display:none;">BANDEIRA 2</div>
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;color:var(--taxi-blue-dark);text-align:center;letter-spacing:2px;">ENTRE</div>
         <div class="result-value" id="total-price">R$</div>
       </div>
@@ -519,7 +593,8 @@
         <div id="result-msg" style="font-size:1.05rem;color:var(--taxi-blue-dark);font-weight:500;line-height:1.8;padding:10px 4px;font-family:'Barlow',sans-serif;">
           Esse é o valor provável de sua corrida. Fique à vontade também pra consultar o taxista aí no ponto se preferir. Boa corrida! 🚕
         </div>
-        <button onclick="novoCalculo()" style="margin-top:8px;background:var(--taxi-blue-dark);color:var(--taxi-yellow);border:none;border-radius:10px;padding:12px 24px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1rem;letter-spacing:2px;text-transform:uppercase;cursor:pointer;">
+        <button id="btn-compartilhar" onclick="compartilharResultado()">📤 COMPARTILHAR</button>
+        <button onclick="novoCalculo()" style="margin-top:2px;background:var(--taxi-blue-dark);color:var(--taxi-yellow);border:none;border-radius:10px;padding:12px 24px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1rem;letter-spacing:2px;text-transform:uppercase;cursor:pointer;width:100%;">
           NOVO CÁLCULO
         </button>
       </div>
@@ -571,6 +646,7 @@
       window._origemFixa = { lat: PONTOS[ponto].lat, lon: PONTOS[ponto].lon };
       document.getElementById('origin').value = PONTOS[ponto].nome;
       document.getElementById('origin-display').textContent = PONTOS[ponto].nome;
+      renderHistorico();
     }
   }
 
@@ -713,6 +789,9 @@
     document.getElementById('total-price').textContent = 'R$ ' + vMin + ' a R$ ' + vMax;
     document.getElementById('result-info').style.display = 'flex';
     document.getElementById('add-stop-btn').style.display = 'block';
+    // Badge bandeira 2
+    const badge = document.getElementById('bandeira-badge');
+    if (bandeira === 2) { badge.style.display = 'inline-block'; } else { badge.style.display = 'none'; }
     return { vMin, vMax };
   }
 
@@ -848,6 +927,7 @@
       // Registro
       const destFormatados = destResults.map(r => r.formatted).join(' → ');
       registrarEvento(filled.join(' → '), destFormatados, 'Calculado', `R$ ${vMin} a R$ ${vMax} | B${bandeira} | ${distKm.toFixed(1)}km`);
+      salvarHistorico(filled.join(' → '), `R$ ${vMin} a R$ ${vMax}`);
 
       showNotif('✅ Estimativa calculada!');
 
@@ -990,6 +1070,58 @@
     wrapper.appendChild(list);
   }
 
+  // ── HISTÓRICO ────────────────────────────────────────────────────────────
+  const HIST_KEY = 'valortaxi_hist';
+  const MAX_HIST = 5;
+
+  function salvarHistorico(destino, valor) {
+    try {
+      const hist = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
+      // Remove duplicata se existir
+      const novo = hist.filter(h => h.destino !== destino);
+      novo.unshift({ destino, valor });
+      localStorage.setItem(HIST_KEY, JSON.stringify(novo.slice(0, MAX_HIST)));
+      renderHistorico();
+    } catch(e) {}
+  }
+
+  function renderHistorico() {
+    try {
+      const hist = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
+      const lista = document.getElementById('historico-lista');
+      const section = document.getElementById('historico-section');
+      if (!hist.length) { section.style.display = 'none'; return; }
+      section.style.display = 'block';
+      lista.innerHTML = hist.map(h => `
+        <button class="historico-item" onclick="usarHistorico('${h.destino.replace(/'/g,"\'")}')">
+          ${h.destino}
+          <small>${h.valor}</small>
+        </button>`).join('');
+    } catch(e) {}
+  }
+
+  function usarHistorico(destino) {
+    const inp = document.querySelector('.stop-input');
+    if (!inp) return;
+    inp.value = destino;
+    // Limpa cache pra forçar geocoding novo
+    delete inp.dataset.lat; delete inp.dataset.lon;
+    delete inp.dataset.formatted; delete inp.dataset.ehLocal;
+    inp.focus();
+  }
+
+  // ── COMPARTILHAR ──────────────────────────────────────────────────────────
+  function compartilharResultado() {
+    const preco = document.getElementById('total-price').textContent;
+    const dest = document.querySelector('.stop-input')?.value || '';
+    const texto = `🚕 Táxi em Juiz de Fora\nDestino: ${dest}\nValor estimado: ${preco}\n\nCalculado pelo ValorTaxi`;
+    if (navigator.share) {
+      navigator.share({ title: 'ValorTaxi', text: texto }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(texto).then(() => showNotif('✅ Copiado!'));
+    }
+  }
+
   function novoCalculo() {
     // Limpa campos de destino
     document.querySelectorAll('.stop-input').forEach(inp => {
@@ -1009,6 +1141,7 @@
     document.getElementById('add-stop-btn').style.display = 'none';
     // Foca no campo
     document.querySelector('.stop-input').focus();
+    renderHistorico();
   }
 
   function removeAutocompleteList(wrapper) {
