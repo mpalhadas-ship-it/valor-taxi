@@ -589,6 +589,8 @@
       window._origemFixa = { lat: PONTOS[ponto].lat, lon: PONTOS[ponto].lon };
       document.getElementById('origin').value = PONTOS[ponto].nome;
       document.getElementById('origin-display').textContent = PONTOS[ponto].nome;
+      // Limpa histórico antigo do localStorage
+      try { localStorage.removeItem('valortaxi_hist'); } catch(e) {}
     }
   }
 
