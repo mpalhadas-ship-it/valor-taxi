@@ -631,13 +631,13 @@
         const el = document.getElementById('saudacao');
         if (el) el.textContent = s;
       })();
-      // Splash screen — some após 1.5s e remove do DOM
+      // Splash screen — some após 800ms, pointerEvents desativa imediatamente
+      const splashEl = document.getElementById('splash-screen');
+      splashEl.style.pointerEvents = 'none';
       setTimeout(() => {
-        const s = document.getElementById('splash-screen');
-        s.style.opacity = '0';
-        s.style.pointerEvents = 'none';
-        setTimeout(() => s.remove(), 500);
-      }, 1500);
+        splashEl.style.opacity = '0';
+        setTimeout(() => splashEl.remove(), 500);
+      }, 800);
       // Carrega contador de corridas
     }
   }
@@ -1100,11 +1100,6 @@
       else el.textContent = 'R$ ' + vMin + ' a R$ ' + vMax;
     };
     requestAnimationFrame(tick);
-  }
-
-    } catch(e) {
-      document.getElementById('contador-corridas').textContent = '';
-    }
   }
 
   function avaliar(nota) {
