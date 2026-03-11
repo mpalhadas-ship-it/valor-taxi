@@ -510,7 +510,7 @@
     
   }
 </style>
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC6M_XhgT-xqltyObVbmanmzSiqCH_AlD0&libraries=places&language=pt-BR&callback=initGoogleMaps" async defer></script>
+
 </head>
 <body>
 
@@ -1007,94 +1007,45 @@
     });
   }
 
-  // Cache de sugestões Places
   const _placesCache = {};
-  let _autocompleteService = null;
-  let _placesService = null;
 
 
 
   async function fetchSuggestions(query, input, wrapper) {
-    // 1. Base local OSM — instantânea
+    // 1. Base local OSM — instantânea, sem API
     const localResults = buscarBaseLocal(query);
     if (localResults.length > 0) {
       showAutocompleteList(localResults, input, wrapper);
       if (localResults.length >= 4) return;
     }
 
-    // 2. Places Autocomplete via JS SDK (sem CORS)
-    if (!_autocompleteService) return; // SDK ainda não carregou
-
-    const cacheKey = query.toLowerCase().trim();
-    if (_placesCache[cacheKey]) {
-      await resolverEMostrarPredictions(_placesCache[cacheKey], localResults, input, wrapper);
-      return;
-    }
-
-    _autocompleteService.getPlacePredictions({
-      input: query,
-      componentRestrictions: { country: 'br' },
-      location: new google.maps.LatLng(-21.7605, -43.3498),
-      radius: 30000,
-      language: 'pt-BR'
-    }, async (predictions, status) => {
-      if (status !== google.maps.places.PlacesServiceStatus.OK || !predictions) return;
-      // Filtra preferencialmente JF
-      const jfPreds = predictions.filter(p =>
-        p.description.toLowerCase().includes('juiz de fora') ||
-        p.description.toLowerCase().includes(', mg')
-      ).slice(0, 5);
-      const final = jfPreds.length ? jfPreds : predictions.slice(0, 3);
-      _placesCache[cacheKey] = final;
-      await resolverEMostrarPredictions(final, localResults, input, wrapper);
-    });
-  }
-
-  // Busca detalhes (coordenadas) de cada prediction via PlacesService
-  const _detailsCache = {};
-
-  function resolverEMostrarPredictions(predictions, localResults, input, wrapper) {
-    return new Promise(resolve => {
-      const results = [];
-      let pending = predictions.length;
-      if (!pending) { resolve(); return; }
-
-      predictions.forEach(p => {
-        if (_detailsCache[p.place_id]) {
-          results.push(_detailsCache[p.place_id]);
-          pending--;
-          if (pending === 0) mostrar();
-          return;
-        }
-        _placesService.getDetails({
-          placeId: p.place_id,
-          fields: ['geometry', 'formatted_address', 'types', 'name']
-        }, (place, status) => {
-          if (status === google.maps.places.PlacesServiceStatus.OK && place) {
-            const r = {
-              geometry: { location: { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() } },
-              formatted_address: place.formatted_address || p.description,
-              types: place.types || [],
-              name: place.name || '',
-              _fromPlaces: true
-            };
-            _detailsCache[p.place_id] = r;
-            results.push(r);
-          }
-          pending--;
-          if (pending === 0) mostrar();
-        });
-      });
-
-      function mostrar() {
-        const merged = [...localResults, ...results].slice(0, 5);
+    // 2. Geocoding API — funciona direto do browser sem SDK
+    try {
+      const cacheKey = query.toLowerCase().trim();
+      if (_placesCache[cacheKey]) {
+        const merged = [...localResults, ..._placesCache[cacheKey]].slice(0, 5);
         if (merged.length) showAutocompleteList(merged, input, wrapper);
-        resolve();
+        return;
       }
-    });
+
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query + ', Juiz de Fora, MG')}&region=br&language=pt-BR&key=${GOOGLE_API_KEY}`;
+      const r = await fetch(url);
+      const d = await r.json();
+      if (d.status !== 'OK') return;
+
+      const jfResults = d.results.filter(res =>
+        res.address_components.some(c => c.long_name.toLowerCase() === 'juiz de fora')
+      ).slice(0, 4);
+
+      _placesCache[cacheKey] = jfResults;
+
+      const merged = [...localResults, ...jfResults].slice(0, 5);
+      if (merged.length) showAutocompleteList(merged, input, wrapper);
+
+    } catch(e) { /* geocode falhou — OSM já foi mostrado */ }
   }
 
-    function showAutocompleteList(results, input, wrapper) {
+      function showAutocompleteList(results, input, wrapper) {
     removeAutocompleteList(wrapper);
     const list = document.createElement('div');
     list.className = 'autocomplete-list';
@@ -1238,12 +1189,7 @@
     document.querySelectorAll('.stop-input').forEach(inp => setupAutocomplete(inp));
   });
 
-  // Callback do Google Maps SDK — inicializa serviços quando SDK estiver pronto
-  function initGoogleMaps() {
-    _autocompleteService = new google.maps.places.AutocompleteService();
-    const div = document.createElement('div');
-    _placesService = new google.maps.places.PlacesService(div);
-  }
+
 </script>
 </body>
 </html>
