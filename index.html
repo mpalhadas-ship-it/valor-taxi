@@ -1074,7 +1074,6 @@
       });
 
       const merged = [...localResults, ...googleFiltrado].slice(0, 5);
-      console.log('[ValorTaxi] merged:', merged.length, merged.map(m => m.formatted_address));
       if (merged.length) showAutocompleteList(merged, input, wrapper);
 
     } catch(e) {
