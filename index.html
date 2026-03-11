@@ -568,9 +568,9 @@
       </div>
       <div id="result-info" style="display:none;margin-top:8px;flex-direction:column;gap:4px;text-align:center;">
         <div id="aviso-pico">⚠️ Horário de pico — valor pode ser maior por trânsito</div>
-        <div id="result-dist" style="font-family:'Barlow',sans-serif;font-size:0.88rem;color:rgba(26,82,118,0.6);letter-spacing:1px;"></div>
+        <div id="result-dist" style="display:none;"></div>
         <div id="result-msg" style="font-size:1.05rem;color:var(--taxi-blue-dark);font-weight:500;line-height:1.8;padding:10px 4px;font-family:'Barlow',sans-serif;">
-          Esse é o valor provável de sua corrida. Fique à vontade também pra consultar o taxista aí no ponto se preferir. Boa corrida! 🚕
+          Valor pode estar maior em razão do Trânsito
         </div>
         <div class="avaliacao-wrap" id="avaliacao-wrap">
           <button class="btn-avaliacao" onclick="avaliar(1)" id="btn-like">👍</button>
@@ -801,13 +801,13 @@
     const aviso = document.getElementById('aviso-pico');
     aviso.style.display = horaCritica ? 'block' : 'none';
     // Distância
-    document.getElementById('result-dist').textContent = '~' + distKm.toFixed(1) + ' km de rota';
+    document.getElementById('result-dist').textContent = '';
     // Vibração
     if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
     // Reset avaliação
     document.getElementById('btn-like').classList.remove('ativo');
     document.getElementById('btn-dislike').classList.remove('ativo');
-    document.getElementById('avaliacao-wrap').style.display = 'flex';
+    document.getElementById('avaliacao-wrap').style.display = 'none';
     return { vMin, vMax };
   }
 
@@ -933,8 +933,8 @@
       const { vMin, vMax } = mostrarResultado(distKm, durMin * 0.15, ruaSemNumero, filled.join(' '));
 
       // Troca texto abaixo do valor quando rua sem número
-      const msgPadrao = 'Esse é o valor provável de sua corrida. Fique à vontade também pra consultar o taxista aí no ponto se preferir. Boa corrida! 🚕';
-      const msgSemNumero = 'A AUSÊNCIA DO NÚMERO NO ENDEREÇO GEROU UM CÁLCULO MAIS SUBJETIVO, COM UM PONTO MAIS PERTO E UM PONTO MAIS LONGE DO DESTINO INFORMADO.';
+      const msgPadrao = 'Valor pode estar maior em razão do Trânsito';
+      const msgSemNumero = 'AUSÊNCIA DO NÚMERO NO ENDEREÇO EXIBE UM VALOR MENOR PARA O INÍCIO E OUTRO MAIOR PARA O FINAL DA RUA OU AVENIDA';
       const msgEl = document.getElementById('result-msg');
       msgEl.textContent = ruaSemNumero ? msgSemNumero : msgPadrao;
       msgEl.style.color = ruaSemNumero ? '#c0392b' : 'var(--taxi-blue-dark)';
