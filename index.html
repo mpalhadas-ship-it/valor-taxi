@@ -818,25 +818,42 @@
 
   function perguntarNumero(input) {
     return new Promise(resolve => {
+      const ruaAtual = input.value.trim();
       const overlay = criarOverlay(`
         <div class="confirm-box">
-          <div class="confirm-title" style="font-size:1.05rem;">📍 Gostaria de informar o número?</div>
-          <div style="color:#fff;font-size:0.95rem;line-height:1.6;margin:14px 0 20px;">
-            Seu cálculo pode ficar mais preciso.
+          <div class="confirm-title" style="font-size:1rem;letter-spacing:1px;">INFORME O NÚMERO PARA UM CÁLCULO MAIS APROXIMADO</div>
+          <div style="display:flex;gap:8px;margin:18px 0 14px;">
+            <input id="input-numero-popup" type="number" inputmode="numeric" placeholder="Ex: 150"
+              style="flex:1;padding:12px;border-radius:10px;border:2px solid #FFE600;font-size:1.1rem;font-weight:700;text-align:center;outline:none;background:#fff;color:#1A5276;" />
+            <button class="btn-confirmar" style="padding:12px 18px;white-space:nowrap;background:#FFE600;color:#1A5276;border:none;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.95rem;letter-spacing:1px;cursor:pointer;">OK, VOU INFORMAR</button>
           </div>
-          <div class="confirm-btns" style="flex-direction:column;gap:10px;">
-            <button class="btn-confirmar">Sim, vou informar</button>
-            <button class="btn-cancelar" style="font-size:0.85rem;padding:10px;">Não sei o número, entendo que terei menos precisão</button>
-          </div>
+          <button class="btn-cancelar" style="width:100%;background:#FFE600;color:#1A5276;border:none;border-radius:10px;padding:12px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.85rem;letter-spacing:1px;cursor:pointer;">NÃO SEI O NÚMERO, CALCULE PELO QUE INFORMEI</button>
         </div>`);
+
+      // Foca no campo de número automaticamente
+      setTimeout(() => {
+        const numInput = overlay.querySelector('#input-numero-popup');
+        if (numInput) numInput.focus();
+      }, 100);
+
       overlay.querySelector('.btn-confirmar').onclick = () => {
+        const num = overlay.querySelector('#input-numero-popup').value.trim();
         overlay.remove();
-        delete input.dataset.lat; delete input.dataset.lon; delete input.dataset.formatted;
-        input.focus();
-        input.value = input.value + ' ';
-        setTimeout(() => input.dispatchEvent(new Event('input')), 50);
-        resolve(false);
+        if (num) {
+          // Insere número no endereço
+          const endComNum = ruaAtual.replace(/,\s*$/, '') + ', ' + num;
+          input.value = endComNum;
+          delete input.dataset.lat; delete input.dataset.lon; delete input.dataset.formatted;
+          input.dispatchEvent(new Event('input'));
+        }
+        resolve(!num); // se não digitou número, trata como sem número
       };
+
+      // Enter no campo de número confirma
+      overlay.querySelector('#input-numero-popup').onkeydown = (e) => {
+        if (e.key === 'Enter') overlay.querySelector('.btn-confirmar').click();
+      };
+
       overlay.querySelector('.btn-cancelar').onclick = () => {
         overlay.remove();
         setTimeout(() => calcularPorMapa(), 150);
