@@ -631,11 +631,12 @@
         const el = document.getElementById('saudacao');
         if (el) el.textContent = s;
       })();
-      // Splash screen — some após 1.5s
+      // Splash screen — some após 1.5s e remove do DOM
       setTimeout(() => {
         const s = document.getElementById('splash-screen');
         s.style.opacity = '0';
-        setTimeout(() => s.style.display = 'none', 500);
+        s.style.pointerEvents = 'none';
+        setTimeout(() => s.remove(), 500);
       }, 1500);
       // Carrega contador de corridas
     }
