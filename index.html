@@ -4,1191 +4,621 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calculadora de Táxi — Juiz de Fora</title>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<title>ValorTaxi — Painel</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --taxi-yellow: #FFE600;
-    --taxi-yellow-dark: #CCBB00;
-    --taxi-yellow-light: #FFF59D;
-    --taxi-blue-dark: #1A5276;
-    --taxi-blue: #1A5276;
-    --taxi-blue-light: #2471A3;
-    --white: #ffffff;
-    --black: #0a0a0a;
-    --green: #22c55e;
-    --gray2: #2a2a2a;
-    --text-muted: #6B7280;
+    --y: #FFE600;
+    --b: #1A5276;
+    --b2: #154360;
+    --red: #e74c3c;
+    --green: #27ae60;
+    --bg: #0f1923;
   }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * { margin:0; padding:0; box-sizing:border-box; }
 
   body {
-    background: var(--taxi-yellow);
-    color: var(--taxi-blue-dark);
+    background: var(--bg);
+    color: white;
     font-family: 'Barlow', sans-serif;
     min-height: 100vh;
-    overflow-x: hidden;
   }
 
+  /* ── LOGIN ── */
+  #login-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+  }
+  .login-box {
+    background: var(--b);
+    border-radius: 20px;
+    padding: 48px 40px;
+    width: 360px;
+    text-align: center;
+    border: 2px solid rgba(255,230,0,0.2);
+  }
+  .login-box .logo {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 2.4rem;
+    font-weight: 900;
+    color: var(--y);
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+  .login-box .sub {
+    font-size: 0.8rem;
+    letter-spacing: 3px;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+    margin-bottom: 36px;
+  }
+  .login-box input {
+    width: 100%;
+    background: rgba(0,0,0,0.3);
+    border: 2px solid rgba(255,230,0,0.2);
+    border-radius: 10px;
+    padding: 14px 16px;
+    color: white;
+    font-size: 1rem;
+    font-family: 'Barlow', sans-serif;
+    letter-spacing: 3px;
+    text-align: center;
+    margin-bottom: 16px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .login-box input:focus { border-color: var(--y); }
+  .login-box button {
+    width: 100%;
+    background: var(--y);
+    color: var(--b);
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: opacity 0.15s;
+  }
+  .login-box button:hover { opacity: 0.88; }
+  .login-error {
+    color: var(--red);
+    font-size: 0.85rem;
+    margin-top: 12px;
+    display: none;
+  }
 
+  /* ── PAINEL ── */
+  #painel-screen { display: none; }
 
   header {
-    background: transparent;
-    padding: 0 20px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-
-  .header-inner {
+    background: var(--b);
+    padding: 16px 28px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    width: 100%;
-    padding: 8px 0 14px;
+    border-bottom: 3px solid var(--y);
   }
-
-  .logo {
+  header .brand {
     font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.6rem;
     font-weight: 900;
-    font-size: 1.4rem;
-    letter-spacing: 1px;
-    color: var(--white);
-    text-transform: uppercase;
-    display: flex;
-    align-items: center;
-    white-space: nowrap;
-  }
-  .logo span { color: var(--taxi-yellow); }
-
-  .badge {
-    background: var(--taxi-yellow);
-    color: var(--taxi-blue-dark);
-    font-size: 0.65rem;
-    font-weight: 800;
-    padding: 4px 12px;
-    border-radius: 4px;
+    color: var(--y);
     letter-spacing: 2px;
-    text-transform: uppercase;
-    font-family: 'Barlow Condensed', sans-serif;
   }
-
-  .hero {
-    text-align: center;
-    padding: 16px 24px 12px;
-    position: relative;
-  }
-
-  .hero h1 {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: clamp(1.6rem, 3.5vw, 2.4rem);
-    font-weight: 900;
-    line-height: 1.1;
-    margin-bottom: 10px;
-    white-space: nowrap;
-    color: var(--taxi-blue-dark);
-    text-transform: uppercase;
-    letter-spacing: 1px;
+  header .brand span {
+    color: rgba(255,255,255,0.5);
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 3px;
     display: block;
+    text-transform: uppercase;
+  }
+  .header-actions { display: flex; gap: 10px; align-items: center; }
+  .btn-atualizar {
+    background: var(--y);
+    color: var(--b);
+    border: none;
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    text-transform: uppercase;
+  }
+  .btn-sair {
+    background: transparent;
+    color: rgba(255,255,255,0.4);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    cursor: pointer;
   }
 
   .main {
+    padding: 28px;
     max-width: 1100px;
     margin: 0 auto;
-    padding: 12px 16px 16px;
+  }
+
+  /* CARDS DE STATS */
+  .stats-grid {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 16px;
-    align-items: start;
+    margin-bottom: 28px;
   }
-
-  .card {
-    background: #1A5276;
-    border: 1px solid #FFE600;
-    border-radius: 12px;
-    padding: 16px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    
-  }
-
-  .card-title {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 800;
-    font-size: 0.9rem;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .addr-group { margin-bottom: 10px; position: relative; }
-
-  .addr-group label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: var(--taxi-yellow);
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    margin-bottom: 8px;
-    font-family: 'Barlow Condensed', sans-serif;
-  }
-
-  .dot-origin { width: 10px; height: 10px; border-radius: 50%; background: var(--taxi-yellow); flex-shrink:0; }
-  .dot-dest   { width: 10px; height: 10px; border-radius: 50%; background: var(--green); flex-shrink:0; }
-
-  .addr-row { display: flex; gap: 8px; align-items: center; }
-  .addr-row .addr-input { flex: 1; }
-
-  .addr-input {
-    background: #ffffff !important;
-    border: 2px solid transparent !important;
-    border-radius: 14px !important;
-    padding: 10px 14px !important;
-    color: var(--taxi-blue-dark) !important;
-    font-family: 'Barlow', sans-serif !important;
-    font-size: 1.05rem !important;
-    font-weight: 500 !important;
-    outline: none !important;
-    transition: all 0.25s !important;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.12) !important;
-    width: 100% !important;
-  }
-
-  .addr-input:focus {
-    border-color: var(--taxi-yellow) !important;
-    box-shadow: 0 0 0 4px rgba(255,230,0,0.25), 0 2px 12px rgba(0,0,0,0.12) !important;
-  }
-
-  .addr-input::placeholder { color: #9CA3AF !important; font-weight: 400 !important; }
-
-  /* AUTOCOMPLETE */
-  .autocomplete-list {
-    position: absolute; top: 100%; left: 0; right: 0;
-    background: white; border: 2px solid var(--taxi-yellow);
-    border-top: none; border-radius: 0 0 8px 8px;
-    z-index: 200; max-height: 200px; overflow-y: auto;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  }
-  .autocomplete-item {
-    padding: 10px 14px; font-size: 0.9rem; color: #333;
-    cursor: pointer; border-bottom: 1px solid #eee;
-  }
-  .autocomplete-item:last-child { border-bottom: none; }
-  .autocomplete-item:hover { background: var(--taxi-yellow); color: var(--taxi-blue-dark); font-weight: 600; }
-
-  /* SHORT ADDRESS MODAL */
-  .short-addr-box {
-    
-    border: 1px solid rgba(255,230,0,0.2) !important;
-    background: var(--taxi-blue-dark); border-radius: 16px; padding: 24px;
-    max-width: 340px; width: 100%; text-align: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  }
-  .short-addr-box .short-icon { font-size: 2rem; margin-bottom: 12px; }
-  .short-addr-box .short-msg {
-    color: var(--taxi-yellow); font-weight: 700; font-size: 1rem;
-    margin-bottom: 20px; line-height: 1.4;
-  }
-  .short-addr-box .btn-ok-conferir {
-    width: 100%; background: var(--taxi-yellow); color: var(--taxi-blue-dark);
-    border: none; border-radius: 8px; padding: 13px;
-    font-weight: 700; font-size: 1rem; cursor: pointer;
-  }
-
-  /* CONFIRM MODAL */
-  .confirm-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.55);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 9999; padding: 20px;
-  }
-
-  .confirm-box {
-    background: #1A5276; border-radius: 16px; padding: 24px;
-    max-width: 380px; width: 100%; text-align: center;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-    
-    border: 1px solid rgba(255,230,0,0.3);
-    position: relative; z-index: 1;
-  }
-  .confirm-box .confirm-icon { display: none; }
-  .confirm-box .confirm-address {
-    background: var(--taxi-yellow); border-radius: 8px; padding: 12px;
-    font-size: 1rem; color: var(--taxi-blue-dark); margin: 12px 0; text-align: center;
-    font-weight: 700;
-  }
-  .confirm-box .confirm-warning {
-    font-size: 0.8rem; color: var(--taxi-yellow); font-weight: 600; margin-bottom: 16px;
-  }
-  .confirm-box .confirm-title {
-    color: var(--taxi-yellow); font-weight: 700; font-size: 1rem; margin-bottom: 4px;
-  }
-  .confirm-box .confirm-btns { display: flex; gap: 10px; }
-  .confirm-box .btn-confirmar {
-    flex: 1; background: var(--taxi-yellow); color: var(--taxi-blue-dark);
-    border: none; border-radius: 8px; padding: 12px;
-    font-weight: 700; font-size: 1rem; cursor: pointer;
-  }
-  .confirm-box .btn-cancelar {
-    flex: 1; background: transparent; color: var(--taxi-yellow);
-    border: 2px solid var(--taxi-yellow); border-radius: 8px; padding: 12px;
-    font-weight: 600; font-size: 0.95rem; cursor: pointer;
-  }
-
-  /* ADD STOP */
-  .add-stop-btn {
-    background: transparent;
-    border: 2px dashed rgba(255,255,255,0.3);
-    color: rgba(255,255,255,0.6);
-    border-radius: 10px;
-    padding: 8px 16px;
-    font-family: 'Barlow', sans-serif;
-    font-size: 0.85rem;
-    cursor: pointer;
-    width: 100%;
-    margin-bottom: 8px;
-    transition: all 0.2s;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-  }
-  .add-stop-btn:hover { border-color: var(--taxi-yellow); color: var(--taxi-yellow); }
-
-  .remove-stop-btn {
-    flex-shrink: 0;
-    width: 32px; height: 32px;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 8px;
-    color: var(--text-muted);
-    cursor: pointer;
-    font-size: 0.8rem;
-    display: flex; align-items: center; justify-content: center;
-    transition: all 0.2s;
-  }
-  .remove-stop-btn:hover { background: rgba(239,68,68,0.15); color: #ef4444; border-color: #ef4444; }
-
-  /* CALC BUTTON */
-  .calc-btn {
-    width: 100%;
-    background: var(--taxi-yellow);
-    color: var(--taxi-blue-dark);
-    border: 3px solid var(--taxi-blue-dark);
+  .stat-card {
+    background: var(--b);
     border-radius: 14px;
-    padding: 12px;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 800;
-    font-size: 1.15rem;
-    cursor: pointer;
-    transition: all 0.25s;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  }
-  .calc-btn:hover { background: var(--taxi-blue); transform: translateY(-2px); }
-  .calc-btn:active { transform: translateY(0); }
-  .calc-btn.loading .btn-text { display: none; }
-  .calc-btn .spinner { display: none; width: 18px; height: 18px; border: 2px solid rgba(255,230,0,0.3); border-top-color: var(--taxi-yellow); border-radius: 50%; animation: spin 0.6s linear infinite; margin: 0 auto; }
-  .calc-btn.loading .spinner { display: block; }
-
-  /* RESULT CARD */
-  .result-card {
-    background: rgba(255,230,0,0.90);
-    border: 1px solid #CCBB00;
-    border-radius: 12px;
-    padding: 14px;
-    text-align: center;
+    padding: 20px 22px;
+    border: 1px solid rgba(255,230,0,0.1);
     position: relative;
     overflow: hidden;
-    
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   }
-
-  .result-label {
-    font-size: 1.1rem;
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px; height: 100%;
+    background: var(--y);
+    border-radius: 4px 0 0 4px;
+  }
+  .stat-label {
+    font-size: 0.72rem;
     letter-spacing: 2px;
+    color: rgba(255,255,255,0.45);
     text-transform: uppercase;
-    color: var(--taxi-blue-dark);
-    margin-bottom: 6px;
-    font-weight: 700;
-    font-family: 'Barlow Condensed', sans-serif;
+    margin-bottom: 8px;
   }
-
-  .result-value {
+  .stat-value {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 2rem;
+    font-size: 2.2rem;
     font-weight: 900;
-    color: var(--taxi-blue-dark);
+    color: var(--y);
     line-height: 1;
-    margin-bottom: 2px;
+  }
+  .stat-sub {
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.35);
+    margin-top: 4px;
   }
 
-  .result-sub { font-size: 0.8rem; color: var(--taxi-blue); }
-
-  .sidebar { display: flex; flex-direction: column; gap: 12px; }
-  .divider { height: 1px; background: rgba(255,255,255,0.08); }
-
-  /* NOTIF */
-  .notif {
-    position: fixed;
-    bottom: 24px; left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: #1a1a2e;
-    color: var(--white);
-    padding: 12px 24px;
-    border-radius: 12px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    opacity: 0;
-    transition: all 0.3s;
-    z-index: 999;
-    white-space: nowrap;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  /* GRID DE PAINÉIS */
+  .panels-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
   }
-  .notif.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  @media(max-width:700px) { .panels-grid { grid-template-columns: 1fr; } }
 
-  /* INSTALL BANNER */
-  .install-banner {
-    display: none;
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    background: var(--taxi-blue-dark);
-    border-top: 2px solid var(--taxi-yellow);
-    padding: 14px 20px;
-    align-items: center;
-    gap: 12px;
-    z-index: 500;
+  .panel {
+    background: var(--b);
+    border-radius: 14px;
+    padding: 22px;
+    border: 1px solid rgba(255,230,0,0.1);
   }
-  .banner-text { flex: 1; font-size: 0.9rem; color: var(--white); }
-  .banner-install { background: var(--taxi-yellow); color: var(--taxi-blue-dark); border: none; border-radius: 8px; padding: 8px 16px; font-weight: 800; font-family: 'Barlow Condensed', sans-serif; cursor: pointer; font-size: 0.9rem; }
-  .banner-close { background: transparent; border: none; color: rgba(255,255,255,0.5); font-size: 1.2rem; cursor: pointer; }
-
-  /* MODAL TERMOS */
-  .modal-overlay {
-    position: fixed; inset: 0;
-    background: #1A5276;
-    
-    z-index: 2000;
-    display: flex; align-items: center; justify-content: center;
-    padding: 20px;
+  .panel h3 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.45);
+    text-transform: uppercase;
+    margin-bottom: 18px;
   }
 
-  .modal-box {
-    background: #1A5276;
-    border: 2px solid #FFE600;
+  /* BARRAS */
+  .bar-item {
+    margin-bottom: 12px;
+  }
+  .bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.88rem;
+    margin-bottom: 5px;
+    color: rgba(255,255,255,0.85);
+  }
+  .bar-label span { color: var(--y); font-weight: 600; }
+  .bar-track {
+    background: rgba(255,255,255,0.08);
+    border-radius: 4px;
+    height: 8px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    background: var(--y);
+    border-radius: 4px;
+    transition: width 0.6s ease;
+  }
+
+  /* TABELA RECENTES */
+  .table-wrap { overflow-x: auto; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  th {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.35);
+    text-transform: uppercase;
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  td {
+    padding: 10px 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.8);
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.03); }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
     border-radius: 20px;
-    padding: 32px 28px;
-    max-width: 500px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+  .badge-ok { background: rgba(39,174,96,0.2); color: #2ecc71; }
+  .badge-fora { background: rgba(231,76,60,0.2); color: #e74c3c; }
+
+  /* HORAS */
+  .horas-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 4px;
+  }
+  .hora-col { text-align: center; }
+  .hora-bar-wrap {
+    height: 60px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    margin-bottom: 4px;
+  }
+  .hora-bar {
     width: 100%;
+    background: var(--y);
+    border-radius: 3px 3px 0 0;
+    min-height: 3px;
+    opacity: 0.85;
+    transition: height 0.5s ease;
+  }
+  .hora-label {
+    font-size: 0.6rem;
+    color: rgba(255,255,255,0.3);
+  }
+
+  /* LOADING */
+  .loading-state {
     text-align: center;
-    animation: fadeIn 0.4s ease;
-    
-    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-    position: relative;
-    z-index: 1;
+    padding: 40px;
+    color: rgba(255,255,255,0.3);
+    font-size: 0.9rem;
+    letter-spacing: 2px;
   }
-  .modal-title { font-family: 'Barlow Condensed', sans-serif; font-size: 1.5rem; font-weight: 900; color: var(--taxi-yellow); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-  .modal-subtitle { font-size: 0.85rem; color: rgba(255,255,255,0.6); margin-bottom: 24px; }
-  .modal-text { background: transparent; border: none; padding: 16px; font-size: 0.95rem; color: var(--taxi-yellow); line-height: 1.6; text-align: center; margin-bottom: 20px; font-weight: 500; }
-  .modal-check-row { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 14px 16px; margin-bottom: 20px; cursor: pointer; transition: all 0.2s; text-align: left; }
-  .modal-check-row:hover { border-color: var(--taxi-yellow); }
-  .modal-check-row.checked { border-color: var(--green); background: rgba(34,197,94,0.08); }
-  .modal-checkbox { width: 22px; height: 22px; border: 2px solid rgba(255,255,255,0.3); border-radius: 6px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; font-size: 0.9rem; color: white; }
-  .modal-check-row.checked .modal-checkbox { background: var(--green); border-color: var(--green); }
-  .modal-check-label { font-size: 0.9rem; color: rgba(255,255,255,0.8); font-weight: 500; line-height: 1.4; }
-  .modal-btn { width: 100%; background: var(--taxi-yellow); color: var(--taxi-blue-dark); border: none; border-radius: 12px; padding: 14px; font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 1.1rem; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; opacity: 0.4; pointer-events: none; }
-  .modal-btn.enabled { opacity: 1; pointer-events: all; box-shadow: none; }
-  .modal-btn.enabled:hover { background: var(--taxi-yellow-dark); transform: translateY(-1px); }
-
-  /* BANDEIRA BADGE */
-  #bandeira-badge {
-    display:inline-block;
-    background:#c0392b;
-    color:white;
-    font-family:'Barlow Condensed',sans-serif;
-    font-size:0.75rem;
-    font-weight:800;
-    letter-spacing:2px;
-    padding:3px 10px;
-    border-radius:20px;
-    text-transform:uppercase;
-    margin-bottom:6px;
+  .spinner-sm {
+    display: inline-block;
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,230,0,0.3);
+    border-top-color: var(--y);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
   }
-
-  /* HISTÓRICO */
-  .historico-item {
-    background: var(--taxi-blue-dark);
-    color: var(--taxi-yellow);
-    border:none;
-    border-radius:8px;
-    padding:10px 14px;
-    font-family:'Barlow',sans-serif;
-    font-size:0.9rem;
-    font-weight:600;
-    cursor:pointer;
-    text-align:left;
-    width:100%;
-    transition: opacity 0.15s;
-  }
-  .historico-item:hover { opacity:0.85; }
-  .historico-item small {
-    display:block;
-    font-size:0.75rem;
-    opacity:0.6;
-    font-weight:400;
-    margin-top:2px;
-  }
-  #historico-section {
-    margin-top:8px;
-    display:none;
-  }
-  #historico-section h4 {
-    font-family:'Barlow Condensed',sans-serif;
-    font-size:0.8rem;
-    letter-spacing:2px;
-    color:rgba(255,255,255,0.5);
-    margin-bottom:6px;
-    text-transform:uppercase;
-  }
-  #historico-lista { display:flex; flex-direction:column; gap:6px; }
-
-  /* COMPARTILHAR */
-  #btn-compartilhar {
-    background: var(--taxi-yellow);
-    color: var(--taxi-blue-dark);
-    border:none;
-    border-radius:10px;
-    padding:12px 24px;
-    font-family:'Barlow Condensed',sans-serif;
-    font-weight:800;
-    font-size:1rem;
-    letter-spacing:2px;
-    text-transform:uppercase;
-    cursor:pointer;
-    width:100%;
-    margin-top:6px;
-  }
-
-  /* ANIMATIONS */
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .fade-in { animation: fadeIn 0.4s ease; }
 
-  footer {
-    text-align: center;
-    padding: 12px;
-    background: transparent;
-    color: var(--taxi-blue-dark);
-    font-size: 0.8rem;
-  }
-  footer a { color: var(--taxi-blue-dark); text-decoration: none; }
-
-  @media (max-width: 768px) {
-    header { padding: 0 14px; }
-    .header-inner { padding: 10px 0; }
-    .header-inner span[style*="font-size:1.7rem"] { font-size: 1.3rem !important; }
-    .header-inner div[style*="padding:8px 0 18px"] { padding: 6px 0 12px !important; }
-    header h1 { font-size: 1rem !important; white-space: normal !important; line-height: 1.3 !important; text-align: center; }
-    .main { padding: 10px 10px 20px; gap: 12px; grid-template-columns: 1fr !important; }
-    .card { padding: 14px; border-radius: 12px; }
-    .addr-input { font-size: 1rem !important; padding: 12px 14px !important; }
-    .loc-btn-big { font-size: 0.95rem; padding: 12px 14px; }
-    .calc-btn { font-size: 1.1rem; padding: 14px; }
-    .add-stop-btn { font-size: 0.85rem; padding: 10px; }
-    .result-card { padding: 14px; }
-    .result-card > div[style*="display:flex"] { flex-direction: column !important; gap: 10px !important; align-items: center !important; }
-    .result-value { font-size: 2.4rem !important; }
-    .result-label { font-size: 1rem !important; }
-    #result-info div[style*="font-size:0.9rem"] { font-size: 0.85rem !important; }
-    .sidebar { grid-template-columns: 1fr !important; }
-    footer { font-size: 0.78rem; padding: 14px 12px; }
-    .modal-box { padding: 24px 18px; border-radius: 16px; }
-    .modal-title { font-size: 1.3rem; }
-    .modal-text { font-size: 0.88rem; }
-    .modal-btn { font-size: 1rem; padding: 14px; }
-    .install-banner { padding: 12px 14px; }
+  .ultima-atualizacao {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.25);
+    text-align: right;
+    margin-bottom: 20px;
+    letter-spacing: 1px;
   }
 
-  @media (max-width: 400px) {
-    .header-inner span[style*="font-size:1.7rem"] { font-size: 1.1rem !important; }
-    header h1 { font-size: 0.9rem !important; }
-    .result-value { font-size: 2rem !important; }
-  }
-
+  /* Zebrinha decorativa */
   .zebrinha {
-    width: 100%;
-    height: 36px;
-    background-color: #FFE600;
-    background-image: repeating-conic-gradient(#1A5276 0% 25%, #FFE600 0% 50%);
-    background-size: 36px 36px;
-    flex-shrink: 0;
-    margin: 10px 0;
-    opacity: 0.92;
-    
+    height: 8px;
+    background-image: repeating-conic-gradient(var(--b) 0% 25%, var(--y) 0% 50%);
+    background-size: 16px 16px;
   }
 </style>
 </head>
 <body>
 
-<!-- MODAL TERMOS -->
-<div class="modal-overlay" id="modal-termos">
-  <div class="modal-box">
-    <div style="margin-bottom:16px;"></div>
-    <div class="modal-text">
-      <span style="font-size:1.1rem;font-weight:700;text-align:center;display:block;line-height:1.7;">Os valores são uma estimativa, podendo variar para mais ou para menos conforme condições de trânsito.<br><br>O valor cobrado será o do taxímetro ao final da corrida.</span>
-    </div>
-    <div class="modal-check-row" id="check-row" onclick="toggleCheck()">
-      <div class="modal-checkbox" id="modal-checkbox"></div>
-      <span class="modal-check-label">Li e concordo com os termos.</span>
-    </div>
-    <button class="modal-btn" id="modal-btn" onclick="entrarNoApp()">
-      Ir para o valor aproximado
-    </button>
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="logo">VALORTAXI</div>
+    <div class="sub">Painel de Acessos</div>
+    <input type="password" id="senha-input" placeholder="••••••••••••" onkeydown="if(event.key==='Enter')fazerLogin()" />
+    <button onclick="fazerLogin()">ENTRAR</button>
+    <div class="login-error" id="login-error">Senha incorreta</div>
   </div>
 </div>
 
-<div class="zebrinha"></div>
-<div class="main">
-  <!-- FORM CARD -->
-  <div class="card">
-    <div class="addr-group">
-      <div id="origin-display" style="font-family:'Barlow Condensed',sans-serif;font-size:1.35rem;font-weight:900;color:var(--taxi-yellow);text-transform:uppercase;letter-spacing:1.5px;padding:2px 0 10px;line-height:1.2;text-align:center;width:100%;display:block;word-break:break-word;text-shadow:-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 3px 8px rgba(0,0,0,0.6);">—</div>
-      <input type="hidden" id="origin" />
+<!-- PAINEL -->
+<div id="painel-screen">
+  <div class="zebrinha"></div>
+  <header>
+    <div class="brand">
+      VALORTAXI
+      <span>Painel de Acessos · Juiz de Fora</span>
     </div>
+    <div class="header-actions">
+      <button class="btn-atualizar" onclick="carregarDados()">↻ ATUALIZAR</button>
+      <button class="btn-sair" onclick="sair()">Sair</button>
+    </div>
+  </header>
 
-    <div class="addr-group" id="stops-container">
-      <div class="addr-group">
-        <label style="color:var(--taxi-yellow);"><span class="dot-dest"></span> PARA ONDE VAMOS?</label>
-        <div class="addr-row">
-          <input class="addr-input stop-input" data-index="0" type="text" placeholder="Local ou Rua, com número se possível..." autocomplete="off" />
-        </div>
+  <div class="main">
+    <div class="ultima-atualizacao" id="ultima-atualizacao">—</div>
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total de Cálculos</div>
+        <div class="stat-value" id="stat-total">—</div>
+        <div class="stat-sub">todos os tempos</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Hoje</div>
+        <div class="stat-value" id="stat-hoje">—</div>
+        <div class="stat-sub" id="stat-hoje-sub">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Esta Semana</div>
+        <div class="stat-value" id="stat-semana">—</div>
+        <div class="stat-sub">últimos 7 dias</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Fora do Perímetro</div>
+        <div class="stat-value" id="stat-fora">—</div>
+        <div class="stat-sub">total de avisos</div>
       </div>
     </div>
 
-    <button class="add-stop-btn" onclick="adicionarParada()" id="add-stop-btn" style="display:none;">+ Adicionar parada ou destino</button>
-    <div id="historico-section">
-      <h4>🕐 Recentes</h4>
-      <div id="historico-lista"></div>
+    <!-- PONTOS + HORÁRIOS -->
+    <div class="panels-grid">
+      <div class="panel">
+        <h3>📍 Acessos por Ponto</h3>
+        <div id="pontos-bars"><div class="loading-state"><span class="spinner-sm"></span>Carregando...</div></div>
+      </div>
+      <div class="panel">
+        <h3>🕐 Horários de Pico</h3>
+        <div id="horas-chart"><div class="loading-state"><span class="spinner-sm"></span>Carregando...</div></div>
+      </div>
     </div>
 
-    <button class="calc-btn" id="calc-map-btn" onclick="calcularPorMapa()">
-      <span class="btn-text">Calcular o valor aproximado</span>
-      <span class="spinner"></span>
-    </button>
+    <!-- DESTINOS + TABELA -->
+    <div class="panels-grid">
+      <div class="panel">
+        <h3>🏁 Destinos Mais Frequentes</h3>
+        <div id="destinos-bars"><div class="loading-state"><span class="spinner-sm"></span>Carregando...</div></div>
+      </div>
+      <div class="panel">
+        <h3>📅 Acessos por Dia (últimos 7 dias)</h3>
+        <div id="dias-bars"><div class="loading-state"><span class="spinner-sm"></span>Carregando...</div></div>
+      </div>
+    </div>
+
+    <!-- TABELA RECENTES -->
+    <div class="panel">
+      <h3>🕒 Últimos 30 Registros</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Data/Hora</th>
+              <th>Ponto</th>
+              <th>Destino</th>
+              <th>Resultado</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-recentes">
+            <tr><td colspan="5" class="loading-state"><span class="spinner-sm"></span>Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
-
-  <!-- RESULT CARD -->
-  <div class="result-card" id="result-card">
-    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;">
-      <div>
-        <div id="bandeira-badge" style="display:none;">BANDEIRA 2</div>
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;color:var(--taxi-blue-dark);text-align:center;letter-spacing:2px;">ENTRE</div>
-        <div class="result-value" id="total-price">R$</div>
-      </div>
-      <div id="result-info" style="display:none;margin-top:8px;flex-direction:column;gap:4px;text-align:center;">
-        <div id="result-msg" style="font-size:1.05rem;color:var(--taxi-blue-dark);font-weight:500;line-height:1.8;padding:10px 4px;font-family:'Barlow',sans-serif;">
-          Esse é o valor provável de sua corrida. Fique à vontade também pra consultar o taxista aí no ponto se preferir. Boa corrida! 🚕
-        </div>
-        <button id="btn-compartilhar" onclick="compartilharResultado()">📤 COMPARTILHAR</button>
-        <button onclick="novoCalculo()" style="margin-top:2px;background:var(--taxi-blue-dark);color:var(--taxi-yellow);border:none;border-radius:10px;padding:12px 24px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1rem;letter-spacing:2px;text-transform:uppercase;cursor:pointer;width:100%;">
-          NOVO CÁLCULO
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <div class="sidebar"></div>
-</div>
-
-
-
-<div class="notif" id="notif"></div>
-
-<div class="install-banner" id="install-banner">
-  <span class="banner-text">📱 Instale o Calculadora de Táxi no seu celular!</span>
-  <button class="banner-install" onclick="instalarApp()">Instalar</button>
-  <button class="banner-close" onclick="fecharBanner()">✕</button>
+  <div class="zebrinha" style="margin-top:20px;"></div>
 </div>
 
 <script>
-  // ── TARIFAS ───────────────────────────────────────────────────────────────
-  const TARIFAS = { bandeirada: 6.83, kmB1: 3.83, kmB2: 4.10, horaParada: 30.72 };
-  let bandeira = 1;
+  const SENHA = 'valortaxi161068';
+  const SHEET_ID = '1ehezzpGCdF2Jipei9160Lppry-krawI_-FxAFrBDuic';
+  const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
 
-  function detectarBandeira() {
-    const now = new Date(new Date().getTime() + 15 * 60 * 1000);
-    const hora = now.getHours();
-    const dia = now.getDay();
-    const FERIADOS = ['01-01','21-04','01-05','07-09','12-10','02-11','15-11','25-12','08-12','20-11'];
-    const mmdd = String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
-    const domingoOuFeriado = dia === 0 || FERIADOS.includes(mmdd);
-    const noturnoSegSab = (dia >= 1 && dia <= 6) && (hora >= 22 || hora < 6);
-    bandeira = (domingoOuFeriado || noturnoSegSab) ? 2 : 1;
-  }
-  detectarBandeira();
-
-  // ── PONTOS ────────────────────────────────────────────────────────────────
-  const PONTOS = {
-    'ponto51':   { nome: 'PONTO DE TÁXI DA RODOVIÁRIA',         lat: -21.738045,          lon: -43.374371          },
-    'ponto01md': { nome: 'PONTO 01 — MARECHAL DEODORO',         lat: -21.7614,             lon: -43.3496            },
-    'pontosind': { nome: 'PONTO DE TÁXI — SHOPPING INDEPENDÊNCIA', lat: -21.781686001031918, lon: -43.361046456576645 },
-    'pontojn':   { nome: 'PONTO DE TÁXI — SHOPPING JARDIM NORTE',  lat: -21.74083898014146,  lon: -43.37134838787416  }
-  };
-
-  function carregarPontoDeOrigem() {
-    const params = new URLSearchParams(window.location.search);
-    const ponto = params.get('ponto');
-    if (ponto && PONTOS[ponto]) {
-      window._origemFixa = { lat: PONTOS[ponto].lat, lon: PONTOS[ponto].lon };
-      document.getElementById('origin').value = PONTOS[ponto].nome;
-      document.getElementById('origin-display').textContent = PONTOS[ponto].nome;
-      renderHistorico();
-    }
-  }
-
-  // ── CONFIG ────────────────────────────────────────────────────────────────
-  const GOOGLE_API_KEY = 'AIzaSyC6M_XhgT-xqltyObVbmanmzSiqCH_AlD0';
-
-  // ── BASE LOCAL OSM (Overpass) ─────────────────────────────────────────────
-  const BASE_LOCAL = [{"n":"Shell","r":"","num":"","b":"","lat":-21.7100147,"lon":-43.4850117},{"n":"Biblioteca Central","r":"","num":"","b":"","lat":-21.7739713,"lon":-43.3688308},{"n":"Farmácia Universitária","r":"","num":"","b":"","lat":-21.7734424,"lon":-43.3706945},{"n":"Banco do Brasil","r":"","num":"","b":"","lat":-21.7754529,"lon":-43.3704221},{"n":"Banco do Brasil","r":"","num":"","b":"","lat":-21.7782252,"lon":-43.3725342},{"n":"Banco do Brasil","r":"","num":"","b":"","lat":-21.7735692,"lon":-43.3690025},{"n":"Santander","r":"","num":"","b":"","lat":-21.7735493,"lon":-43.3688415},{"n":"Santander","r":"","num":"","b":"","lat":-21.7747847,"lon":-43.3667973},{"n":"Banco do Brasil","r":"","num":"","b":"","lat":-21.775103,"lon":-43.3664061},{"n":"Academia de Comércio JF","r":"","num":"","b":"","lat":-21.7625995,"lon":-43.3530342},{"n":"Concessionária Parvel","r":"","num":"","b":"","lat":-21.7773342,"lon":-43.358647},{"n":"BR","r":"Avenida Barão do Rio Branco","num":"","b":"","lat":-21.769987,"lon":-43.3476525},{"n":"Colégio João XXIII","r":"","num":"","b":"","lat":-21.7561635,"lon":-43.3598996},{"n":"Posto Central","r":"","num":"","b":"","lat":-21.7570005,"lon":-43.3470142},{"n":"Faculdade Estácio de Sá","r":"","num":"","b":"","lat":-21.783444,"lon":-43.3357114},{"n":"Faculdade Doctum","r":"","num":"","b":"","lat":-21.7651398,"lon":-43.3485041},{"n":"Faculdade Vianna Jr.","r":"","num":"","b":"","lat":-21.7526833,"lon":-43.3531726},{"n":"Faculdade Universo","r":"","num":"","b":"","lat":-21.7507391,"lon":-43.3551915},{"n":"JF Informação","r":"","num":"","b":"","lat":-21.7614697,"lon":-43.3498279},{"n":"Posto Petrobras","r":"Avenida Barão do Rio Branco","num":"1192","b":"Centro","lat":-21.74983,"lon":-43.3528466},{"n":"Prefeitura de Juiz de Fora","r":"","num":"","b":"","lat":-21.7576402,"lon":-43.3440424},{"n":"Hospital 9 de Julho","r":"","num":"","b":"","lat":-21.7636259,"lon":-43.3442313},{"n":"Hospital Oncológico","r":"","num":"","b":"","lat":-21.7639199,"lon":-43.3441509},{"n":"Posto MAN","r":"","num":"","b":"","lat":-21.7608042,"lon":-43.3391367},{"n":"Faculdade Machado Sobrinho","r":"","num":"","b":"","lat":-21.7911632,"lon":-43.3400926},{"n":"Scalla Motel","r":"","num":"","b":"","lat":-21.8117119,"lon":-43.3759899},{"n":"La Rocca","r":"","num":"","b":"","lat":-21.7995393,"lon":-43.371575},{"n":"Estação Rodoviária Intermunicipal","r":"Rua Raul Soares","num":"","b":"Centro","lat":-21.7593356,"lon":-43.3432981},{"n":"Posto de Combustível BH","r":"","num":"","b":"","lat":-21.7824789,"lon":-43.3577826},{"n":"Igreja Nossa Senhora de Fátima","r":"","num":"","b":"","lat":-21.7692854,"lon":-43.3684624},{"n":"Bar do Bigode e Xororó","r":"Rua Chanceler Oswaldo Aranha","num":"","b":"","lat":-21.7687893,"lon":-43.3481427},{"n":"Posto BR","r":"Rodovia Presidente Juscelino Kubitschek","num":"","b":"","lat":-21.6356027,"lon":-43.439371},{"n":"Mercearia Bar","r":"","num":"","b":"","lat":-21.7772668,"lon":-43.347935},{"n":"By Jack","r":"","num":"","b":"","lat":-21.7771869,"lon":-43.3480557},{"n":"Armazém","r":"","num":"","b":"","lat":-21.777162,"lon":-43.3481201},{"n":"Galeto Dourado","r":"","num":"","b":"","lat":-21.777041,"lon":-43.348242},{"n":"Pizzaria Sapore","r":"","num":"","b":"","lat":-21.7770948,"lon":-43.3486191},{"n":"Restaurante Mestre Cook","r":"","num":"","b":"","lat":-21.7772268,"lon":-43.3483107},{"n":"Brasador SteakHouse","r":"","num":"","b":"","lat":-21.7774111,"lon":-43.3487559},{"n":"Mercearia du Faria","r":"","num":"","b":"","lat":-21.7771869,"lon":-43.3483884},{"n":"Estação Grill","r":"","num":"","b":"","lat":-21.7774211,"lon":-43.3477393},{"n":"Churrasqueira Alto dos Passos","r":"","num":"","b":"","lat":-21.7776303,"lon":-43.3478801},{"n":"Super Pizza","r":"","num":"","b":"","lat":-21.7772766,"lon":-43.3476562},{"n":"Sul America Lavanderia","r":"","num":"","b":"","lat":-21.7770051,"lon":-43.3474899},{"n":"Apriori","r":"","num":"","b":"","lat":-21.778111,"lon":-43.3485413},{"n":"Cine Santa Cruz","r":"Rua Jarbas de Leri Santos","num":"1655","b":"Centro","lat":-21.7562066,"lon":-43.3496647},{"n":"Bahamas Mix","r":"","num":"","b":"","lat":-21.7232129,"lon":-43.3950893},{"n":"Frango Frito","r":"","num":"","b":"","lat":-21.7747148,"lon":-43.6198545},{"n":"Trigofrios","r":"Rua Chanceler Oswaldo aranha","num":"219","b":"","lat":-21.7692282,"lon":-43.3499764},{"n":"Borracharia","r":"","num":"","b":"","lat":-21.7731424,"lon":-43.3807923},{"n":"Bar do Bené","r":"Avenida Pres. Costa e Silva","num":"2305","b":"","lat":-21.7711435,"lon":-43.3856633},{"n":"Banco do Brasil","r":"","num":"","b":"","lat":-21.7709978,"lon":-43.378891},{"n":"Banco24Horas","r":"","num":"","b":"","lat":-21.7710646,"lon":-43.378867},{"n":"Cervejaria Barbante","r":"Avenida Senhor dos Passos","num":"1531","b":"","lat":-21.7712613,"lon":-43.3861863},{"n":"Maria & Maria","r":"","num":"","b":"","lat":-21.7855906,"lon":-43.3780201},{"n":"99ª Cia de PM","r":"Avenida Presidente Costa e Silva","num":"1533","b":"Santana","lat":-21.7729548,"lon":-43.3715015},{"n":"Unidade Básica de Saúde de São Pedro","r":"Avenida Presidente Costa e Silva","num":"1533","b":"Santana","lat":-21.7728644,"lon":-43.3716433},{"n":"Caixa Econômica Federal","r":"","num":"","b":"","lat":-21.7727423,"lon":-43.371293},{"n":"UAPS Cidade do Sol","r":"","num":"","b":"","lat":-21.7175279,"lon":-43.4081914},{"n":"Idade da Pedra","r":"Avenida Presidente Costa e Silva","num":"2499","b":"","lat":-21.7732373,"lon":-43.381142},{"n":"Bar Universitario","r":"Rua Roberto Stiegert","num":"","b":"","lat":-21.7717067,"lon":-43.3816831},{"n":"Samurai - Japanese Food","r":"Rua Roberto Stiegert","num":"","b":"","lat":-21.7714053,"lon":-43.3818092},{"n":"Posto Benfica","r":"","num":"","b":"","lat":-21.6900363,"lon":-43.4331535},{"n":"Petrogas","r":"","num":"","b":"","lat":-21.6945221,"lon":-43.4306234},{"n":"PMMG","r":"","num":"","b":"","lat":-21.6886852,"lon":-43.4340405},{"n":"Fritas Lanches","r":"Rua Diogo Álvares","num":"","b":"","lat":-21.6888926,"lon":-43.4341381},{"n":"Banco do Brasil","r":"","num":"","b":"","lat":-21.6893312,"lon":-43.4334166},{"n":"Costelaria Curral","r":"","num":"","b":"","lat":-21.7982421,"lon":-43.4070821},{"n":"Recanto do mineiro","r":"","num":"","b":"","lat":-21.7769238,"lon":-43.4329573},{"n":"Comunidade Santa Rita de Cássia","r":"","num":"","b":"","lat":-21.7644626,"lon":-43.390687},{"n":"Bertus","r":"Rua Acácio Alves Alvim","num":"2510","b":"","lat":-21.790209,"lon":-43.3906449},{"n":"Mr Tugas","r":"Rua Otília de Souza Leal","num":"310","b":"","lat":-21.7913707,"lon":-43.3885094},{"n":"Suprema Juiz de Fora","r":"Alameda Salvaterra","num":"200","b":"Salvaterra","lat":-21.8167449,"lon":-43.3797044},{"n":"Mirante do Morro do Cristo","r":"","num":"","b":"","lat":-21.7637171,"lon":-43.3572999},{"n":"Privilège","r":"Alameda Engenheiro Gentil Forn","num":"1000","b":"","lat":-21.757126,"lon":-43.3698551},{"n":"Posto Petrobas","r":"","num":"","b":"","lat":-21.7942445,"lon":-43.3665574},{"n":"Bar do Pirata","r":"Rua Luiz Rocha","num":"677","b":"","lat":-21.7320525,"lon":-43.3647958},{"n":"Bar do Bode","r":"Rua Nazira Matar de Freitas","num":"384","b":"","lat":-21.7433634,"lon":-43.388351},{"n":"W 100","r":"Rua W","num":"100","b":"","lat":-21.7857565,"lon":-43.3780694},{"n":"Bicão do Schaeffer","r":"","num":"","b":"","lat":-21.7735722,"lon":-43.3974498},{"n":"Victory","r":"Avenida Itamar Franco","num":"1850","b":"","lat":-21.7708136,"lon":-43.3519931},{"n":"Estrela Sul","r":"","num":"","b":"","lat":-21.7823554,"lon":-43.3571771},{"n":"Pet Center","r":"Avenida Presidente Costa e Silva","num":"2067","b":"","lat":-21.7725836,"lon":-43.3775701},{"n":"Churrascaria Chimarron","r":"Avenida Barão do Rio Branco","num":"700","b":"","lat":-21.7455191,"lon":-43.3541666},{"n":"Zaya Multimarcas","r":"Avenida Presidente Itamar Franco","num":"1725","b":"São Mateus","lat":-21.7696893,"lon":-43.3507166},{"n":"São Bernardo","r":"","num":"","b":"","lat":-21.7584451,"lon":-43.3393689},{"n":"Mirante de São Bernardo","r":"","num":"","b":"","lat":-21.7586862,"lon":-43.3398339},{"n":"ABC","r":"Rua Doardino Longo","num":"669","b":"Jóquei Clube","lat":-21.7234477,"lon":-43.3955473},{"n":"Cidoka","r":"","num":"","b":"Barbosa Lage","lat":-21.7212763,"lon":-43.3957423},{"n":"Fio Fio","r":"Rua Nair do Prado Manso","num":"","b":"Barbosa Lage","lat":-21.7214955,"lon":-43.3952702},{"n":"Salão Studio F","r":"","num":"","b":"","lat":-21.7234402,"lon":-43.3958396},{"n":"Dom Barone","r":"","num":"","b":"Barbosa Lage","lat":-21.7184655,"lon":-43.4000177},{"n":"Panificadora Barbosa Lage","r":"Rua Cabo Raul José Maria","num":"","b":"Barbosa Lage","lat":-21.7200778,"lon":-43.3960254},{"n":"ETC e Tal","r":"","num":"","b":"","lat":-21.7234427,"lon":-43.3957028},{"n":"Usina Marmelos Zero","r":"","num":"","b":"","lat":-21.7867899,"lon":-43.3086095},{"n":"Elefantinho","r":"","num":"","b":"","lat":-21.7516163,"lon":-43.3500496},{"n":"Gruta Nossa Senhora de Fatima","r":"","num":"","b":"","lat":-21.7626434,"lon":-43.3555086},{"n":"Bondes Antigos","r":"","num":"","b":"","lat":-21.7931601,"lon":-43.3668083},{"n":"Localiza","r":"","num":"","b":"","lat":-21.7598732,"lon":-43.3512975},{"n":"Estátua de Itamar Franco","r":"","num":"","b":"","lat":-21.7635756,"lon":-43.3463742},{"n":"Ponto 22","r":"","num":"","b":"","lat":-21.7549488,"lon":-43.3448366},{"n":"Ponto 21","r":"Rua Roberto de Barros","num":"","b":"Centro","lat":-21.7554703,"lon":-43.3505284},{"n":"Ponto 4","r":"Rua Jarbas de Lery Santos","num":"","b":"Centro","lat":-21.7570992,"lon":-43.350189},{"n":"Ponto 3","r":"Rua Doutor Paulo Fontin","num":"109","b":"Centro","lat":-21.7602417,"lon":-43.3438095},{"n":"Ponto 1","r":"Rua Marechal Deodoro","num":"701","b":"Centro","lat":-21.7606979,"lon":-43.3506841},{"n":"Ponto 6","r":"Rua Barão de São João Nepomuceno","num":"","b":"Centro","lat":-21.7613,"lon":-43.3453922},{"n":"Ponto 22","r":"Rua Floriano Peixoto","num":"243","b":"Centro","lat":-21.7584711,"lon":-43.3481687},{"n":"Ponto 22","r":"","num":"","b":"","lat":-21.753877,"lon":-43.3448499},{"n":"Burger King","r":"Rua Doutor Romualdo","num":"40","b":"São Mateus","lat":-21.7703357,"lon":-43.3475804},{"n":"Posto Centro dos Chouferes","r":"","num":"","b":"","lat":-21.7537881,"lon":-43.345996},{"n":"Posto São José","r":"","num":"","b":"","lat":-21.7543068,"lon":-43.34779},{"n":"Shell","r":"","num":"","b":"","lat":-21.7630377,"lon":-43.334503},{"n":"Mito Meias e Malhas Ltda","r":"Rua Professora Violeta dos Santos","num":"185","b":"Democrata","lat":-21.7485128,"lon":-43.3627965},{"n":"Colégio Nossa Senhora do Carmo","r":"Rua Doná Maria Helena","num":"112","b":"","lat":-21.756447,"lon":-43.3545941},{"n":"Centro de Estética Susana's","r":"Rua Olegário Maciel","num":"777","b":"","lat":-21.7620238,"lon":-43.3544893},{"n":"Graal Juiz de Fora","r":"","num":"","b":"","lat":-21.7982627,"lon":-43.4142875},{"n":"Banco24Horas","r":"","num":"","b":"","lat":-21.6351128,"lon":-43.4397631},{"n":"BR","r":"","num":"","b":"","lat":-21.7983947,"lon":-43.4134945},{"n":"PRF - Policia Rodoviária Federal","r":"","num":"","b":"","lat":-21.5995894,"lon":-43.4580949},{"n":"Buteco do Coleguinha","r":"Maria Teixeira Lopes","num":"23","b":"Nossa Senhora de Fátima","lat":-21.7684139,"lon":-43.3669862},{"n":"AGS Soccer e Fitness","r":"","num":"","b":"","lat":-21.7166882,"lon":-43.3515502},{"n":"Shell","r":"","num":"","b":"","lat":-21.7308276,"lon":-43.3564696},{"n":"Posto Papagaio","r":"","num":"","b":"","lat":-21.7410195,"lon":-43.364879},{"n":"Escola Municipal Prefeito Dilermando Cruz Filho","r":"Rua Altivo Halfeld","num":"","b":"","lat":-21.7789569,"lon":-43.3310312},{"n":"Escola Estadual Henrique Burnier","r":"","num":"","b":"","lat":-21.769251,"lon":-43.3374366},{"n":"Rede Unida Supermercados","r":"","num":"","b":"","lat":-21.7786592,"lon":-43.3280285},{"n":"Padaria e Confeitaria Irmãos Dias","r":"","num":"","b":"","lat":-21.7772919,"lon":-43.3306129},{"n":"BR","r":"","num":"","b":"","lat":-21.7762455,"lon":-43.3311866},{"n":"Lavanderia Sul América","r":"","num":"","b":"","lat":-21.7769208,"lon":-43.3311821},{"n":"Açougue do Matadouro","r":"","num":"","b":"","lat":-21.7749049,"lon":-43.3303106},{"n":"Cartório Cobucci","r":"Avenida Presidente Itamar Franco","num":"1522","b":"Centro","lat":-21.7671455,"lon":-43.3498885},{"n":"River motos Yamaha","r":"Rua Tereza Cristina","num":"165","b":"Mariano Procópio","lat":-21.7449881,"lon":-43.3662541},{"n":"Tag Midia","r":"Rua Halfeld","num":"1067","b":"centro","lat":-21.7619931,"lon":-43.3520927},{"n":"Saloon","r":"Rua Américo Lôbo","num":"5300","b":"","lat":-21.7435807,"lon":-43.3617103},{"n":"Hotel São Luiz","r":"","num":"","b":"","lat":-21.7602248,"lon":-43.3448166},{"n":"Bar do Bigode","r":"","num":"","b":"","lat":-21.7687221,"lon":-43.3482879},{"n":"UTE Usina Termoelétrica de Juiz de Fora","r":"","num":"","b":"","lat":-21.6894646,"lon":-43.4577133},{"n":"Centro Médico Monte Sinai","r":"Avenida Presidente Itamar Franco","num":"4001","b":"","lat":-21.7814899,"lon":-43.3649857},{"n":"Pluri Bistrô","r":"Rua Marechal Deodoro","num":"810","b":"","lat":-21.7608744,"lon":-43.3519307},{"n":"Posto Galo - GNV","r":"","num":"","b":"","lat":-21.6794579,"lon":-43.4449455},{"n":"Paineira Escola Waldorf","r":"Avenida Senhor dos Passos","num":"2102","b":"São Pedro","lat":-21.7719694,"lon":-43.3891607},{"n":"Salão do Reino das Testemunhas de Jeová","r":"","num":"","b":"","lat":-21.7603754,"lon":-43.3522962},{"n":"Empório Bahamas","r":"Avenida Doutor Paulo Japiassu Coelho","num":"2","b":"","lat":-21.7827597,"lon":-43.3641797},{"n":"Jardim Sensorial","r":"","num":"","b":"","lat":-21.774323,"lon":-43.3698071},{"n":"IAD","r":"","num":"","b":"","lat":-21.7788848,"lon":-43.3744102},{"n":"Queijaria Santa Maria","r":"","num":"","b":"","lat":-21.7368427,"lon":-43.442299},{"n":"Climax Conveniência e Pizzaria","r":"","num":"","b":"","lat":-21.7307154,"lon":-43.35648},{"n":"Mercearia Davan","r":"Papa João Paulo ll","num":"119","b":"","lat":-21.7618897,"lon":-43.3915468},{"n":"Johrei Center Juiz de Fora","r":"Rua Pasteur","num":"33","b":"Centro","lat":-21.7584168,"lon":-43.3521922},{"n":"Visão Clínica e Cirurgia","r":"","num":"2406 sala 106","b":"","lat":-21.763281,"lon":-43.3494753},{"n":"Padaria Espigão","r":"Avenida Barão do Rio Branco","num":"3543","b":"","lat":-21.7729728,"lon":-43.3465302},{"n":"FACSUM ( Faculdade do Sudeste Mineiro)","r":"","num":"","b":"","lat":-21.7798866,"lon":-43.3612134},{"n":"Igreja Nossa Senhora de Fátima","r":"","num":"","b":"","lat":-21.800295,"lon":-43.3606737},{"n":"CBR","r":"","num":"","b":"","lat":-21.7795945,"lon":-43.3724737},{"n":"MRS","r":"","num":"","b":"","lat":-21.7580034,"lon":-43.3434742},{"n":"Bob's","r":"","num":"","b":"","lat":-21.7637356,"lon":-43.3488749},{"n":"Bar do Chicão","r":"","num":"","b":"","lat":-21.7744136,"lon":-43.3466311},{"n":"Igreja Adventista do Sétimo Dia São Pedro","r":"Rua Arthur Petterson","num":"77","b":"","lat":-21.7675131,"lon":-43.3690953},{"n":"Escola Maria Helena","r":"Rua Augusto Alves","num":"","b":"","lat":-21.7437032,"lon":-43.3441536},{"n":"Escola Municipal União da Bethânia","r":"","num":"","b":"","lat":-21.7093128,"lon":-43.3633885},{"n":"Bar do Leo","r":"","num":"","b":"","lat":-21.7532531,"lon":-43.3588612},{"n":"Igreja Pentecostal Cristo Liberta","r":"Rua Marcelino Vaz de Magalhães","num":"","b":"Bandeirantes","lat":-21.7218647,"lon":-43.3529141},{"n":"Mirante cervejeira escola","r":"","num":"","b":"","lat":-21.8115778,"lon":-43.3963746},{"n":"Gelattu's Juiz de Fora","r":"Rua Santo Antônio","num":"502","b":"","lat":-21.7577104,"lon":-43.3522279},{"n":"mercearia ponto verde","r":"R Luiza de oliveira","num":"","b":"","lat":-21.7065216,"lon":-43.4218619},{"n":"MERC. JUNIMAR","r":"Rua Doutor Dias da Cruz","num":"","b":"NOVA ERA 1","lat":-21.7022852,"lon":-43.4239316},{"n":"Igreja Presbiteriana V. União","r":"Rua Monte Libano","num":"499","b":"Bandeirantes","lat":-21.7189498,"lon":-43.3536573},{"n":"Terceira Igreja Presbiteriana","r":"","num":"","b":"","lat":-21.7520611,"lon":-43.3468204},{"n":"Igreja Apostólica Despertar","r":"","num":"","b":"","lat":-21.7524161,"lon":-43.3466621},{"n":"Pomba da Paz","r":"","num":"","b":"","lat":-21.7509571,"lon":-43.3440195},{"n":"Igreja do Evangelho","r":"","num":"","b":"","lat":-21.7517556,"lon":-43.3431665},{"n":"Latex Podre","r":"","num":"","b":"","lat":-21.7525727,"lon":-43.3465656},{"n":"Busto Dr. Eduardo Menezes","r":"","num":"","b":"","lat":-21.755256,"lon":-43.3514657},{"n":"Ponto 5","r":"","num":"","b":"Centro","lat":-21.7634323,"lon":-43.3493189},{"n":"Imagem de Nossa Senhora da Maternidade de Jerusalém","r":"","num":"","b":"","lat":-21.7523853,"lon":-43.347243},{"n":"Clínica Cuidato","r":"Rua Professor Benjamin Colucci","num":"160 - 602","b":"","lat":-21.7701509,"lon":-43.3459297},{"n":"GAFANHOTO BARBERSHOP","r":"Rua Cândido Tostes","num":"71","b":"São Mateus","lat":-21.7715688,"lon":-43.3544592},{"n":"GORDO GYM","r":"Rua Guarará","num":"185","b":"Guaruá","lat":-21.7781209,"lon":-43.3353426},{"n":"WM pneus","r":"Rua Antônio Passarela","num":"145","b":"","lat":-21.7759172,"lon":-43.3563328},{"n":"EXPERIENCE INFORMÁTICA","r":"Avenida dos Andradas","num":"516/207B","b":"CENTRO","lat":-21.7516734,"lon":-43.35308},{"n":"Delegacia PRF em Juiz de Fora","r":"Avenida Ruy Barbosa","num":"642","b":"Santa Terezinha","lat":-21.7411118,"lon":-43.3628426},{"n":"Olho no Olho","r":"","num":"","b":"","lat":-21.6439347,"lon":-43.4066577},{"n":"Jardim do Parque Mariano Procópio","r":"","num":"","b":"","lat":-21.7475157,"lon":-43.3597554},{"n":"Entrada do Jardim Botânico da UFJF - Universidade Federal de Juiz de Fora","r":"","num":"","b":"","lat":-21.7377345,"lon":-43.3693128},{"n":"Doceria e Fabrica de Chocolate Tudo em Chocolate","r":"Rua Valdir Martins de Oliveira","num":"54","b":"Sao Judas Tadeu","lat":-21.7064788,"lon":-43.4348385},{"n":"Polícia Federal do Brasil","r":"Avenida Brasil","num":"4150","b":"Manoel Honório","lat":-21.7454437,"lon":-43.3523746},{"n":"Polícia Federal do Brasil","r":"Avenida Brasil","num":"6345","b":"Mariano Procópio","lat":-21.7405658,"lon":-43.3710853},{"n":"BushDoctor Barbearia","r":"Rua Américo Luz","num":"74","b":"Manoel Honório","lat":-21.7457094,"lon":-43.3515848},{"n":"Condomínio Jardim de Minas","r":"Rua José Lourenço","num":"393","b":"","lat":-21.7712732,"lon":-43.3817988},{"n":"Bahamas","r":"Avenida Barão do Rio Branco","num":"3760","b":"","lat":-21.7750989,"lon":-43.3469038},{"n":"César Park Hotel","r":"Rua Santa Rita","num":"181","b":"Centro","lat":-21.7618789,"lon":-43.3445287},{"n":"BR","r":"Rua Barbosa Lima","num":"113","b":"Centro","lat":-21.7621952,"lon":-43.3441541},{"n":"Departamento de Ciência da Computação - DCC/UFJF","r":"Rua José Lourenço Kelmer","num":"","b":"São Pedro","lat":-21.7759355,"lon":-43.3723696},{"n":"Dri Prata","r":"Avenida Barão do Rio Branco","num":"","b":"Centro","lat":-21.7628471,"lon":-43.3495181},{"n":"Premier Parc Hotel","r":"","num":"","b":"","lat":-21.7925518,"lon":-43.3656576},{"n":"Center Car JF","r":"","num":"","b":"","lat":-21.8019258,"lon":-43.3704043},{"n":"Hospital Unimed Juiz de Fora","r":"","num":"","b":"","lat":-21.8052707,"lon":-43.3718785},{"n":"Supermercados BH","r":"","num":"","b":"","lat":-21.804747,"lon":-43.3754605},{"n":"Potência do Sul","r":"","num":"","b":"","lat":-21.8067417,"lon":-43.3766639},{"n":"Bahamas Mix","r":"","num":"","b":"","lat":-21.8160094,"lon":-43.3749577},{"n":"Mart Minas","r":"","num":"","b":"","lat":-21.813755,"lon":-43.3745974},{"n":"Hórus Serviços Aéreos","r":"","num":"","b":"","lat":-21.7947114,"lon":-43.385045},{"n":"Parque da Lajinha","r":"","num":"","b":"","lat":-21.7926809,"lon":-43.3663968},{"n":"Trade Hotel","r":"","num":"","b":"","lat":-21.7811877,"lon":-43.3614894},{"n":"Patrocínio Shop","r":"Rua Marília","num":"660","b":"Benfica","lat":-21.6875197,"lon":-43.4352358},{"n":"Duo Conceito - Buteco & Steak","r":"Avenida Eugênio do Nascimento","num":"288","b":"Aeroporto","lat":-21.7853012,"lon":-43.3750438},{"n":"Escola Saci","r":"Avenida Doutor Deusdedith Salgado","num":"1750","b":"","lat":-21.7912368,"lon":-43.3655462},{"n":"Parada do caminhoneiro","r":"","num":"","b":"","lat":-21.9323957,"lon":-43.597465},{"n":"Xiaomi","r":"","num":"","b":"","lat":-21.7808473,"lon":-43.3602956},{"n":"Empório Bertolini","r":"Rua Doutor Geraldo Mostaro","num":"10","b":"Quintas das Avenidas","lat":-21.7347167,"lon":-43.3563746},{"n":"Centro Social e Educacional Betel","r":"Avenida Barão do Rio Branco","num":"09","b":"Quintas das Avenidas","lat":-21.7344268,"lon":-43.3564277},{"n":"Escola Estadual Deputado Olavo Costa","r":"","num":"","b":"","lat":-21.7441261,"lon":-43.3857792},{"n":"BHR Juiz de Fora","r":"Avenida Deusdedith Salgado","num":"5050","b":"Salvaterra","lat":-21.8126605,"lon":-43.3757283},{"n":"Yoshio Shubo Consultoria","r":"Av. Barão do Rio Branco, MG, Brasil","num":"3596","b":"Passos","lat":-21.7735125,"lon":-43.346624},{"n":"Ponto 2","r":"Rua Batista de Oliveira","num":"400","b":"Centro","lat":-21.7592793,"lon":-43.3473045},{"n":"Skunk","r":"Rua Oscár Vidal","num":"150","b":"Centro","lat":-21.76475,"lon":-43.3482536},{"n":"Praça Mozart Geraldo Teixeira","r":"Praça Mozart Geraldo Teixeira","num":"","b":"Passos","lat":-21.7771746,"lon":-43.3459108},{"n":"Casa da cidadania","r":"","num":"","b":"","lat":-21.7729844,"lon":-43.2963411},{"n":"VERSA ODONTOLOGIA","r":"Rua Oscár Vidal","num":"89","b":"Centro","lat":-21.7647844,"lon":-43.3477756},{"n":"Espaço Comunitário de Esporte e Lazer Via São Pedro","r":"Via São Pedro","num":"","b":"Martelos","lat":-21.7715435,"lon":-43.3791464},{"n":"As Quatro Estações","r":"","num":"","b":"","lat":-21.7612052,"lon":-43.3495166},{"n":"Ponto de Táxi 39","r":"Rua Jesus Raimundo","num":"","b":"Teixeiras","lat":-21.7879384,"lon":-43.3627427},{"n":"Praça Dr. Dirceu de Andrade","r":"Rua Jesus Raimundo","num":"","b":"Teixeiras","lat":-21.7879057,"lon":-43.36286},{"n":"Ponto 8","r":"Avenida Barão do Rio Branco","num":"4127","b":"Bom Pastor","lat":-21.7776959,"lon":-43.345381},{"n":"Neves Consultoria Ambiental 07","r":"Avenida Barão do Rio Branco","num":"3925","b":"Passos","lat":-21.7762716,"lon":-43.3456023},{"n":"Clínica Dr. Luthy Reis Odontologia Especializada","r":"Avenida dos Andradas","num":"47/Sobrado","b":"Centro","lat":-21.7556451,"lon":-43.3514468},{"n":"Secretaria de Obras","r":"Rua Osório de Almeida","num":"689","b":"Poço Rico","lat":-21.7678603,"lon":-43.3368228},{"n":"Orion Esportes","r":"Rua Marechal Deodoro","num":"176","b":"Centro","lat":-21.7594834,"lon":-43.345883},{"n":"Santa Rolha Vinhos","r":"Rua Vila Vidal","num":"33","b":"Industrial","lat":-21.7286936,"lon":-43.3966202},{"n":"Panda Burguer","r":"Rua Eugênio de Montreuil","num":"8","b":"Araújo","lat":-21.6917368,"lon":-43.4315673},{"n":"Ponto 79","r":"Avenida Presidente Getúlio Vargas","num":"","b":"Centro","lat":-21.7584068,"lon":-43.3487746},{"n":"Ponto 4","r":"Rua Marechal Deodoro","num":"203","b":"Centro","lat":-21.7596901,"lon":-43.3463972},{"n":"Banco24Horas","r":"","num":"","b":"","lat":-21.755992,"lon":-43.3496828},{"n":"Banco24Horas","r":"","num":"","b":"","lat":-21.7562343,"lon":-43.3495652},{"n":"Banco24Horas","r":"","num":"","b":"","lat":-21.7563993,"lon":-43.3502349},{"n":"Banco24Horas","r":"","num":"","b":"","lat":-21.7570019,"lon":-43.3492358},{"n":"Ponto 1","r":"Avenida Barão do Rio Branco","num":"","b":"Centro","lat":-21.7607005,"lon":-43.3499473},{"n":"ViAquática","r":"","num":"","b":"","lat":-21.7771801,"lon":-43.3904545},{"n":"Radical Auto Peças","r":"Avenida Presidente Costa e Silva","num":"2092","b":"São Pedro","lat":-21.7723892,"lon":-43.3778079},{"n":"Eletrolar","r":"Avenida Presidente Costa e Silva","num":"2088","b":"São Pedro","lat":-21.7723834,"lon":-43.3777626},{"n":"Ótica Cidade Alta","r":"Avenida Presidente Costa e Silva","num":"2215","b":"São Pedro","lat":-21.772579,"lon":-43.3777026},{"n":"Kauê","r":"Avenida Presidente Costa e Silva","num":"2072","b":"São Pedro","lat":-21.7724248,"lon":-43.3774567},{"n":"Drogaria Via São Pedro","r":"Avenida Presidente Costa e Silva","num":"2070","b":"São Pedro","lat":-21.7724231,"lon":-43.3774122},{"n":"Mascotinho Pet","r":"Rua Barão de São Marcelino","num":"368","b":"Passos","lat":-21.7751662,"lon":-43.3497331},{"n":"Bike Top Adventure","r":"Rua Barão de São Marcelino","num":"364","b":"Passos","lat":-21.7751368,"lon":-43.3496889},{"n":"Cantinho do Aumor","r":"Rua Barão de São Marcelino","num":"356","b":"Passos","lat":-21.7751143,"lon":-43.3496346},{"n":"Flip Smart","r":"Rua Barão de São Marcelino","num":"498","b":"Passos","lat":-21.775128,"lon":-43.3490869},{"n":"Bistrôzin","r":"Rua Nair de Castro Cunha","num":"","b":"Cascatinha","lat":-21.7824496,"lon":-43.3632042},{"n":"Pequeno Príncipe","r":"Rua Ministro Amarílio Lopes Salgado","num":"120","b":"Cascatinha","lat":-21.7847818,"lon":-43.3635576},{"n":"Rio Antigo Móveis","r":"Avenida Doutor Paulo Japiassú Coelho","num":"308","b":"Cascatinha","lat":-21.7847833,"lon":-43.3646103},{"n":"Flash Discos","r":"Rua Gabriel Rodrigues","num":"850","b":"Santa Cecília","lat":-21.782595,"lon":-43.3539213}];
-
-  // Termos que existem na base OSM de JF — prioriza busca local
-  const TERMOS_OSM = ['academia','açougue','armazém','banco','bar','biblioteca','bike',
-    'borracharia','burger','caixa','cantinho','cartório','cervejaria','churrascaria',
-    'cine','clínica','clinica','colégio','colegio','comunidade','concessionária',
-    'condomínio','condominio','delegacia','doceria','drogaria','empório','escola',
-    'espaço','estação','estacao','faculdade','farmácia','farmacia','frango','galeto',
-    'gruta','hospital','hotel','igreja','jardim','lavanderia','mercearia','mercado',
-    'mirante','padaria','panificadora','parque','pet','pizzaria','polícia','policia',
-    'posto','praça','praca','prefeitura','queijaria','recanto','restaurante',
-    'rodoviária','rodoviaria','salão','salon','santa','secretaria','supermercado',
-    'terminal','unidade','usina','ótica','otica','pmmg','prf','uaps'];
-
-  function pareceTermoLocal(query) {
-    const q = query.toLowerCase().trim();
-    return TERMOS_OSM.some(t => q.startsWith(t) || q.includes(t));
-  }
-
-  function buscarBaseLocal(query) {
-    const q = query.toLowerCase().trim();
-    const JF_LAT = -21.7642, JF_LON = -43.3503;
-    return BASE_LOCAL.filter(l => {
-      if (!l.n.toLowerCase().includes(q)) return false;
-      const dLat = (l.lat - JF_LAT) * Math.PI / 180;
-      const dLon = (l.lon - JF_LON) * Math.PI / 180;
-      const a = Math.sin(dLat/2)**2 + Math.cos(JF_LAT*Math.PI/180)*Math.cos(l.lat*Math.PI/180)*Math.sin(dLon/2)**2;
-      const dist = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-      return dist <= 25;
-    }).slice(0, 4).map(l => ({
-      geometry: { location: { lat: l.lat, lng: l.lon } },
-      formatted_address: [l.n, l.r && l.num ? l.r + ', ' + l.num : l.r, l.b, 'Juiz de Fora, MG'].filter(Boolean).join(', '),
-      types: ['establishment'],
-      _local: true
-    }));
-  }
-
-  const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwcMh244zukx-p2llStfCVo3znYeiXxUIeXb91Uq4uqQ5QjFsUu37Az1eUa_VSe3jUI/exec';
-  const JF_BOUNDS = { latMin: -21.87, latMax: -21.62, lonMin: -43.50, lonMax: -43.27 };
-  const JF_CENTRO = { lat: -21.738045, lon: -43.374371 };
-
-
-  // ── REGISTRO SHEETS ───────────────────────────────────────────────────────
-  function registrarEvento(digitado, enderecoGoogle, acao, resultado) {
-    try {
-      const dataHora = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
-      const params = new URLSearchParams(window.location.search);
-      const ponto = params.get('ponto') || 'direto';
-      const pontoNome = (PONTOS[ponto] ? PONTOS[ponto].nome : ponto).toUpperCase();
-      fetch(SHEETS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dataHora, ponto: pontoNome, digitado, enderecoGoogle, acao, resultado }),
-        mode: 'no-cors'
-      });
-    } catch(e) {}
-  }
-
-  // ── GEOCODING ─────────────────────────────────────────────────────────────
-  async function geocodeFreshFull(addr) {
-    const q = encodeURIComponent(addr + ', Brasil');
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
-    try {
-      const r = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${q}&region=br&language=pt-BR&key=${GOOGLE_API_KEY}`, { signal: controller.signal });
-      const d = await r.json();
-      if (d.status !== 'OK' || !d.results.length) throw new Error('Endereço não encontrado. Tente usar o autocomplete.');
-      const result = d.results[0];
-      const loc = result.geometry.location;
-      const formatted = result.formatted_address.replace(', Brasil','').replace(', Brazil','');
-      const tipos = result.types || [];
-      const ehLocal = tipos.some(t => ['establishment','point_of_interest','premise','subpremise',
-        'natural_feature','airport','park','place_of_worship','hospital','school',
-        'shopping_mall','bus_station','train_station','subway_station'].includes(t));
-      const temNumero = /\d/.test(addr);
-      return { lat: loc.lat, lon: loc.lng, formatted, ehLocal, temNumero };
-    } finally {
-      clearTimeout(timeout);
-    }
-  }
-
-  // ── DISTÂNCIA (para validar raio) ─────────────────────────────────────────
-  function distanciaKm(lat1, lon1, lat2, lon2) {
-    const R = 6371;
-    const dLat = (lat2-lat1)*Math.PI/180, dLon = (lon2-lon1)*Math.PI/180;
-    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  }
-
-  // ── ROTA (OSRM) ──────────────────────────────────────────────────────────
-  async function calcularRota(coords) {
-    const s = coords.map(c => `${c.lon},${c.lat}`).join(';');
-    // Tenta servidor principal, com fallback para alternativo
-    const servidores = [
-      `https://router.project-osrm.org/route/v1/driving/${s}?overview=false`,
-      `https://routing.openstreetmap.de/routed-car/route/v1/driving/${s}?overview=false`
-    ];
-    for (const url of servidores) {
-      try {
-        const r = await fetch(url);
-        const d = await r.json();
-        if (d.code === 'Ok' && d.routes.length) {
-          return { distKm: d.routes[0].distance/1000, durMin: d.routes[0].duration/60 };
-        }
-      } catch(e) { continue; }
-    }
-    throw new Error('Não foi possível calcular a rota. Tente novamente.');
-  }
-
-  // ── RESULTADO ─────────────────────────────────────────────────────────────
-  // Avenidas longas com variação máxima especial (sem número)
-  const AVENIDAS_LONGAS = [
-    { nome: 'rio branco', fatorMax: 2.50 }
-  ];
-
-  function mostrarResultado(distKm, paradoMin, ruaSemNumero, enderecoDigitado) {
-    const kmRate = bandeira === 2 ? TARIFAS.kmB2 : TARIFAS.kmB1;
-    const total = TARIFAS.bandeirada + distKm * kmRate + (paradoMin/60) * TARIFAS.horaParada;
-    const hora = new Date().getHours();
-    const horaCritica = hora >= 17 && hora < 20;
-    let fatorMin = horaCritica ? 1.00 : 0.95;
-    let fatorMax = horaCritica ? 1.20 : 1.10;
-    if (ruaSemNumero) {
-      fatorMin = 0.85;
-      fatorMax = 1.50;
-      // Verifica se é uma avenida longa especial
-      const endLower = (enderecoDigitado || '').toLowerCase();
-      const avenidaEspecial = AVENIDAS_LONGAS.find(a => endLower.includes(a.nome));
-      if (avenidaEspecial) fatorMax = avenidaEspecial.fatorMax;
-    }
-    const vMin = Math.ceil(total * fatorMin);
-    const vMax = Math.ceil(total * fatorMax);
-    document.getElementById('total-price').textContent = 'R$ ' + vMin + ' a R$ ' + vMax;
-    document.getElementById('result-info').style.display = 'flex';
-    document.getElementById('add-stop-btn').style.display = 'block';
-    // Badge bandeira 2
-    const badge = document.getElementById('bandeira-badge');
-    if (bandeira === 2) { badge.style.display = 'inline-block'; } else { badge.style.display = 'none'; }
-    return { vMin, vMax };
-  }
-
-  // ── POPUP GENÉRICO ────────────────────────────────────────────────────────
-  function criarOverlay(html) {
-    const overlay = document.createElement('div');
-    overlay.className = 'confirm-overlay';
-    overlay.innerHTML = html;
-    document.body.appendChild(overlay);
-    return overlay;
-  }
-
-  function avisarEnderecoIncompleto(input) {
-    return new Promise(resolve => {
-      const overlay = criarOverlay(`
-        <div class="short-addr-box">
-          <div class="short-icon">⚠️</div>
-          <div class="short-msg">Seu endereço parece incorreto ou incompleto, favor verificar!</div>
-          <button class="btn-ok-conferir">OK, VOU CONFERIR</button>
-        </div>`);
-      overlay.querySelector('.btn-ok-conferir').onclick = () => {
-        overlay.remove(); input.value = ''; input.focus(); resolve();
-      };
-    });
-  }
-
-  function perguntarNumero(input) {
-    return new Promise(resolve => {
-      const overlay = criarOverlay(`
-        <div class="confirm-box">
-          <div class="confirm-title" style="font-size:1.05rem;">📍 Gostaria de informar o número?</div>
-          <div style="color:#fff;font-size:0.95rem;line-height:1.6;margin:14px 0 20px;">
-            Seu cálculo pode ficar mais preciso.
-          </div>
-          <div class="confirm-btns" style="flex-direction:column;gap:10px;">
-            <button class="btn-confirmar">Sim, vou informar</button>
-            <button class="btn-cancelar" style="font-size:0.85rem;padding:10px;">Não sei o número, entendo que terei menos precisão</button>
-          </div>
-        </div>`);
-      overlay.querySelector('.btn-confirmar').onclick = () => {
-        overlay.remove();
-        delete input.dataset.lat; delete input.dataset.lon; delete input.dataset.formatted;
-        input.focus();
-        input.value = input.value + ' ';
-        setTimeout(() => input.dispatchEvent(new Event('input')), 50);
-        resolve(false);
-      };
-      overlay.querySelector('.btn-cancelar').onclick = () => {
-        overlay.remove();
-        setTimeout(() => calcularPorMapa(), 150);
-        resolve(true);
-      };
-    });
-  }
-
-  // ── CALCULAR ──────────────────────────────────────────────────────────────
-  async function calcularPorMapa() {
-    const originVal = document.getElementById('origin').value.trim();
-    if (!originVal) { showNotif('⚠️ Informe a origem!'); return; }
-    const inputs = Array.from(document.querySelectorAll('.stop-input'));
-    const filled = inputs.map(i => i.value.trim()).filter(Boolean);
-    if (!filled.length) { showNotif('⚠️ Informe ao menos um destino!'); return; }
-
-    const btn = document.getElementById('calc-map-btn');
-    btn.classList.add('loading');
-
-    try {
-      // Origem fixa do ponto
-      const originCoord = window._origemFixa || (await geocodeFreshFull(originVal));
-
-
-      // Geocoding — usa cache do autocomplete se disponível
-      const destResults = await Promise.all(filled.map(addr => {
-        const inp = inputs.find(el => el.value.trim() === addr.trim());
-        if (inp && inp.dataset.lat && inp.dataset.lon) {
-          // ehLocal: '1' = local, '0' = rua, '' = não definido (digitado manualmente)
-          // Se não definido, assume ehLocal se não tem número mas parece nome de estabelecimento
-          let ehLocal = inp.dataset.ehLocal === '1';
-          if (!inp.dataset.ehLocal) {
-            ehLocal = !/\d/.test(addr); // sem número = provavelmente local ou rua genérica — trata igual
-          }
-          return Promise.resolve({
-            lat: parseFloat(inp.dataset.lat),
-            lon: parseFloat(inp.dataset.lon),
-            formatted: inp.dataset.formatted || addr,
-            ehLocal,
-            temNumero: /\d/.test(addr)
-          });
-        }
-        return geocodeFreshFull(addr);
-      }));
-
-      // Calcula rota
-      const { distKm, durMin } = await calcularRota([originCoord, ...destResults]);
-
-      // Margem maior APENAS se: não tem número, não é local e não veio do autocomplete
-      const inputs2 = Array.from(document.querySelectorAll('.stop-input'));
-      const ruaSemNumero = destResults.some((r, i) => {
-        const addr = filled[i] || '';
-        if (/\d/.test(addr)) return false;          // tem número → normal
-        if (r.ehLocal) return false;                  // local OSM ou Google → normal
-        const inp = inputs2.find(el => el.value.trim() === addr);
-        if (inp && inp.dataset.ehLocal === '1') return false; // selecionado no autocomplete → normal
-        return true; // rua genérica sem número
-      });
-
-      // Trajeto longo = distância real da rota >= 25km — não mostra valor, abre popup
-      if (distKm >= 25) {
-        const overlay = criarOverlay(`
-          <div class="confirm-box" style="text-align:center;">
-            <div class="confirm-title" style="font-size:1.05rem;line-height:1.6;">
-              ESSE DESTINO PARECE ESTAR FORA DO NOSSO PERÍMETRO URBANO.<br><br>
-              PARA VIAGENS A OUTROS MUNICÍPIOS, CONSULTE O TAXISTA NO PONTO.
-            </div>
-            <div style="margin-top:20px;">
-              <button class="btn-confirmar">Ok, entendi</button>
-            </div>
-          </div>`);
-        overlay.querySelector('.btn-confirmar').onclick = () => overlay.remove();
-        btn.classList.remove('loading');
-        return;
-      }
-      const { vMin, vMax } = mostrarResultado(distKm, durMin * 0.15, ruaSemNumero, filled.join(' '));
-
-      // Troca texto abaixo do valor quando rua sem número
-      const msgPadrao = 'Esse é o valor provável de sua corrida. Fique à vontade também pra consultar o taxista aí no ponto se preferir. Boa corrida! 🚕';
-      const msgSemNumero = 'A AUSÊNCIA DO NÚMERO NO ENDEREÇO GEROU UM CÁLCULO MAIS SUBJETIVO, COM UM PONTO MAIS PERTO E UM PONTO MAIS LONGE DO DESTINO INFORMADO.';
-      const msgEl = document.getElementById('result-msg');
-      msgEl.textContent = ruaSemNumero ? msgSemNumero : msgPadrao;
-      msgEl.style.color = ruaSemNumero ? '#c0392b' : 'var(--taxi-blue-dark)';
-      msgEl.style.fontWeight = ruaSemNumero ? '700' : '500';
-
-      // Registro
-      const destFormatados = destResults.map(r => r.formatted).join(' → ');
-      registrarEvento(filled.join(' → '), destFormatados, 'Calculado', `R$ ${vMin} a R$ ${vMax} | B${bandeira} | ${distKm.toFixed(1)}km`);
-      salvarHistorico(filled.join(' → '), `R$ ${vMin} a R$ ${vMax}`);
-
-      showNotif('✅ Estimativa calculada!');
-
-    } catch(e) {
-      showNotif('❌ ' + (e.message || 'Erro ao calcular rota.'));
-    } finally {
-      btn.classList.remove('loading');
-    }
-  }
-
-  // ── PARADAS ───────────────────────────────────────────────────────────────
-  let stopCount = 1;
-
-  function adicionarParada() {
-    if (stopCount >= 5) { showNotif('⚠️ Máximo de 5 paradas.'); return; }
-    stopCount++;
-    const div = document.createElement('div');
-    div.className = 'addr-group';
-    div.innerHTML = `
-      <label><span class="dot-dest"></span> Parada ${stopCount}</label>
-      <div class="addr-row">
-        <input class="addr-input stop-input" data-index="${stopCount-1}" type="text"
-          placeholder="Local ou Rua, com número se possível..." autocomplete="off" style="flex:1"/>
-        <button class="remove-stop-btn" onclick="removerParada(this)">✕</button>
-      </div>`;
-    document.getElementById('stops-container').appendChild(div);
-    setupAutocomplete(div.querySelector('.stop-input'));
-    if (stopCount >= 5) document.getElementById('add-stop-btn').style.display = 'none';
-  }
-
-  function removerParada(btn) {
-    btn.closest('.addr-group').remove();
-    stopCount--;
-    document.getElementById('add-stop-btn').style.display = 'flex';
-  }
-
-  // ── AUTOCOMPLETE ──────────────────────────────────────────────────────────
-  let autocompleteTimer = null;
-
-  function setupAutocomplete(input) {
-    const getWrapper = () => input.closest('.addr-group') || input.parentElement;
-    input.addEventListener('input', () => {
-      clearTimeout(autocompleteTimer);
-      removeAutocompleteList(getWrapper());
-      const val = input.value.trim();
-      // Limpa cache só se o texto mudou em relação ao que foi selecionado no autocomplete
-      const cachedText = (input.dataset.formatted || '').split(',').slice(0,2).join(',').trim();
-      if (val !== cachedText) {
-        delete input.dataset.lat;
-        delete input.dataset.lon;
-        delete input.dataset.formatted;
-        delete input.dataset.ehLocal;
-      }
-      if (val.length < 3) return;
-      autocompleteTimer = setTimeout(() => fetchSuggestions(val, input, getWrapper()), 400);
-    });
-    input.addEventListener('keydown', e => {
-      if (e.key === 'Enter') { removeAutocompleteList(getWrapper()); calcularPorMapa(); }
-    });
-    input.addEventListener('blur', () => {
-      setTimeout(() => removeAutocompleteList(getWrapper()), 200);
-    });
-  }
-
-  async function fetchSuggestions(query, input, wrapper) {
-    try {
-      // Busca base local OSM primeiro — instantâneo e sem custo
-      const localResults = buscarBaseLocal(query);
-      if (localResults.length >= 4) {
-        showAutocompleteList(localResults, input, wrapper);
-        return;
-      }
-
-      // Complementa com Google
-      const pareceCity = !/\d/.test(query) && query.trim().split(' ').length <= 3;
-      const [rJF, rGeral] = await Promise.all([
-        fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query + ', Juiz de Fora, MG, Brasil')}&region=br&language=pt-BR&key=${GOOGLE_API_KEY}`),
-        fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query + ', Brasil')}&region=br&language=pt-BR&key=${GOOGLE_API_KEY}`)
-      ]);
-      const [dJF, dGeral] = await Promise.all([rJF.json(), rGeral.json()]);
-      const jfResults = (dJF.status === 'OK' ? dJF.results : [])
-        .filter(r => r.formatted_address.toLowerCase().includes('juiz de fora'));
-      const geralResults = (dGeral.status === 'OK' ? dGeral.results : [])
-        .filter(r => !r.formatted_address.toLowerCase().includes('juiz de fora'));
-      const outrosResults = (pareceCity || jfResults.length === 0) ? geralResults : [];
-      // Se parece termo local (hospital, mercado etc), ignora resultados de outras cidades
-      const ehTermoLocal = pareceTermoLocal(query);
-      const temLocal = localResults.length > 0 || jfResults.length > 0;
-      const extras = (ehTermoLocal || temLocal) ? [] : outrosResults;
-      const merged = [...localResults, ...jfResults, ...extras].slice(0, 4);
-      if (!merged.length) return;
-      showAutocompleteList(merged, input, wrapper);
-    } catch(e) {}
-  }
-
-  function showAutocompleteList(results, input, wrapper) {
-    removeAutocompleteList(wrapper);
-    const list = document.createElement('div');
-    list.className = 'autocomplete-list';
-    results.forEach(res => {
-      const item = document.createElement('div');
-      item.className = 'autocomplete-item';
-      // Usa endereço completo (com número) se disponível, senão os 2 primeiros campos
-      const parts = res.formatted_address.split(',');
-      const hasNumber = /\d/.test(parts[0]);
-      item.textContent = hasNumber ? parts.slice(0, 2).join(',').trim() : parts.slice(0, 3).join(',').trim();
-      item.addEventListener('mousedown', () => {
-        input.dataset.lat = res.geometry.location.lat;
-        input.dataset.lon = res.geometry.location.lng;
-        input.dataset.formatted = res.formatted_address;
-        // Verifica se é estabelecimento/local (ponto exato) ou rua genérica
-        const tipos = res.types || [];
-        const ehLocal = tipos.some(t => ['establishment','point_of_interest','premise','subpremise',
-          'natural_feature','airport','park','place_of_worship','hospital','health',
-          'shopping_mall','bus_station','train_station','subway_station','university',
-          'school','church','food','restaurant','lodging','store','gym'].includes(t))
-          || !tipos.includes('route'); // qualquer coisa que não seja rua genérica é tratada como local
-        input.dataset.ehLocal = ehLocal ? '1' : '0';
-        input.value = item.textContent;
-        removeAutocompleteList(wrapper);
-        // Verifica distância em linha reta até o centro de JF
-        const lat = res.geometry.location.lat;
-        const lon = res.geometry.location.lng;
-        const dLat = (lat - JF_CENTRO.lat) * Math.PI / 180;
-        const dLon = (lon - JF_CENTRO.lon) * Math.PI / 180;
-        const a = Math.sin(dLat/2)**2 + Math.cos(JF_CENTRO.lat * Math.PI/180) * Math.cos(lat * Math.PI/180) * Math.sin(dLon/2)**2;
-        const distLinhReta = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        const pareceForaDoRaio = distLinhReta >= 20; // margem antes dos 25km reais
-
-        // Local, com número ou fora do raio → calcula direto (sem perguntar número)
-        // Rua sem número dentro do raio → pergunta
-        if (ehLocal || /\d/.test(item.textContent) || pareceForaDoRaio) {
-          setTimeout(() => calcularPorMapa(), 150);
-        } else {
-          setTimeout(() => perguntarNumero(input), 150);
-        }
-      });
-      list.appendChild(item);
-    });
-    wrapper.appendChild(list);
-  }
-
-  // ── HISTÓRICO ────────────────────────────────────────────────────────────
-  const HIST_KEY = 'valortaxi_hist';
-  const MAX_HIST = 5;
-
-  function salvarHistorico(destino, valor) {
-    try {
-      const hist = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
-      // Remove duplicata se existir
-      const novo = hist.filter(h => h.destino !== destino);
-      novo.unshift({ destino, valor });
-      localStorage.setItem(HIST_KEY, JSON.stringify(novo.slice(0, MAX_HIST)));
-      renderHistorico();
-    } catch(e) {}
-  }
-
-  function renderHistorico() {
-    try {
-      const hist = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
-      const lista = document.getElementById('historico-lista');
-      const section = document.getElementById('historico-section');
-      if (!hist.length) { section.style.display = 'none'; return; }
-      section.style.display = 'block';
-      lista.innerHTML = hist.map(h => `
-        <button class="historico-item" onclick="usarHistorico('${h.destino.replace(/'/g,"\'")}')">
-          ${h.destino}
-          <small>${h.valor}</small>
-        </button>`).join('');
-    } catch(e) {}
-  }
-
-  function usarHistorico(destino) {
-    const inp = document.querySelector('.stop-input');
-    if (!inp) return;
-    inp.value = destino;
-    // Limpa cache pra forçar geocoding novo
-    delete inp.dataset.lat; delete inp.dataset.lon;
-    delete inp.dataset.formatted; delete inp.dataset.ehLocal;
-    inp.focus();
-  }
-
-  // ── COMPARTILHAR ──────────────────────────────────────────────────────────
-  function compartilharResultado() {
-    const preco = document.getElementById('total-price').textContent;
-    const dest = document.querySelector('.stop-input')?.value || '';
-    const texto = `🚕 Táxi em Juiz de Fora\nDestino: ${dest}\nValor estimado: ${preco}\n\nCalculado pelo ValorTaxi`;
-    if (navigator.share) {
-      navigator.share({ title: 'ValorTaxi', text: texto }).catch(() => {});
+  function fazerLogin() {
+    const s = document.getElementById('senha-input').value;
+    if (s === SENHA) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('painel-screen').style.display = 'block';
+      carregarDados();
     } else {
-      navigator.clipboard.writeText(texto).then(() => showNotif('✅ Copiado!'));
+      document.getElementById('login-error').style.display = 'block';
+      document.getElementById('senha-input').value = '';
     }
   }
 
-  function novoCalculo() {
-    // Limpa campos de destino
-    document.querySelectorAll('.stop-input').forEach(inp => {
-      inp.value = '';
-      delete inp.dataset.lat;
-      delete inp.dataset.lon;
-      delete inp.dataset.formatted;
-      delete inp.dataset.ehLocal;
+  function sair() {
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('painel-screen').style.display = 'none';
+    document.getElementById('senha-input').value = '';
+  }
+
+  function parseCSV(text) {
+    const lines = text.trim().split('\n');
+    const headers = lines[0].split(',').map(h => h.replace(/"/g,'').trim());
+    return lines.slice(1).map(line => {
+      // Trata vírgulas dentro de aspas
+      const cols = [];
+      let cur = '', inQ = false;
+      for (let c of line) {
+        if (c === '"') inQ = !inQ;
+        else if (c === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
+        else cur += c;
+      }
+      cols.push(cur.trim());
+      const obj = {};
+      headers.forEach((h, i) => obj[h] = (cols[i] || '').replace(/"/g,'').trim());
+      return obj;
+    }).filter(r => r[headers[0]]);
+  }
+
+  async function carregarDados() {
+    try {
+      const r = await fetch(CSV_URL + '&t=' + Date.now());
+      const text = await r.text();
+      const rows = parseCSV(text);
+      renderDados(rows);
+      document.getElementById('ultima-atualizacao').textContent =
+        'Atualizado em ' + new Date().toLocaleString('pt-BR');
+    } catch(e) {
+      document.getElementById('ultima-atualizacao').textContent = 'Erro ao carregar dados. Verifique se a planilha está pública.';
+    }
+  }
+
+  function renderDados(rows) {
+    const agora = new Date();
+    const hoje = agora.toLocaleDateString('pt-BR');
+
+    // Filtra só calculados e fora do raio
+    const calculados = rows.filter(r => r['Ação'] === 'Calculado');
+    const foraRaio = rows.filter(r => r['Ação'] === 'Fora do raio 25km');
+
+    // Stats
+    document.getElementById('stat-total').textContent = calculados.length;
+    document.getElementById('stat-fora').textContent = foraRaio.length;
+
+    const hoje_rows = calculados.filter(r => {
+      const d = r['Data/Hora'] || '';
+      return d.startsWith(hoje.split('/').reverse().join('-')) || d.includes(hoje);
     });
-    // Remove paradas extras, mantém só a primeira
-    const stops = document.querySelectorAll('#stops-container .addr-group');
-    stops.forEach((el, i) => { if (i > 0) el.remove(); });
-    stopCount = 1;
-    // Esconde resultado e botão adicionar
-    document.getElementById('result-info').style.display = 'none';
-    document.getElementById('total-price').textContent = 'R$';
-    document.getElementById('add-stop-btn').style.display = 'none';
-    // Foca no campo
-    document.querySelector('.stop-input').focus();
-    renderHistorico();
+    document.getElementById('stat-hoje').textContent = hoje_rows.length;
+
+    const semana = new Date(agora); semana.setDate(semana.getDate() - 7);
+    const semana_rows = calculados.filter(r => {
+      try { return new Date(r['Data/Hora']) >= semana; } catch { return false; }
+    });
+    document.getElementById('stat-semana').textContent = semana_rows.length;
+    document.getElementById('stat-hoje-sub').textContent = hoje;
+
+    // Pontos
+    const pontos = {};
+    calculados.forEach(r => {
+      const p = r['Ponto'] || 'Desconhecido';
+      pontos[p] = (pontos[p] || 0) + 1;
+    });
+    renderBars('pontos-bars', pontos, 6);
+
+    // Destinos mais frequentes
+    const destinos = {};
+    calculados.forEach(r => {
+      const d = (r['Digitado'] || '').split('→')[0].trim().toLowerCase();
+      if (d) destinos[d] = (destinos[d] || 0) + 1;
+    });
+    renderBars('destinos-bars', destinos, 8);
+
+    // Horários de pico
+    const horas = Array(24).fill(0);
+    calculados.forEach(r => {
+      try {
+        const d = new Date(r['Data/Hora']);
+        if (!isNaN(d)) horas[d.getHours()]++;
+      } catch {}
+    });
+    renderHoras('horas-chart', horas);
+
+    // Dias últimos 7
+    const dias = {};
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(agora);
+      d.setDate(d.getDate() - i);
+      dias[d.toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit'})] = 0;
+    }
+    calculados.forEach(r => {
+      try {
+        const d = new Date(r['Data/Hora']);
+        if (!isNaN(d)) {
+          const k = d.toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit'});
+          if (k in dias) dias[k]++;
+        }
+      } catch {}
+    });
+    renderBars('dias-bars', dias, 7, true);
+
+    // Tabela recentes
+    const recentes = [...rows].reverse().slice(0, 30);
+    const tbody = document.getElementById('tabela-recentes');
+    tbody.innerHTML = recentes.map(r => `
+      <tr>
+        <td style="white-space:nowrap;font-size:0.8rem;color:rgba(255,255,255,0.5)">${r['Data/Hora']||'—'}</td>
+        <td style="font-size:0.82rem">${(r['Ponto']||'—').replace('PONTO DE TÁXI','').replace('PONTO','').trim()}</td>
+        <td>${r['Digitado']||'—'}</td>
+        <td style="font-size:0.82rem">${r['Resultado']||'—'}</td>
+        <td><span class="badge ${r['Ação']==='Calculado'?'badge-ok':'badge-fora'}">${r['Ação']||'—'}</span></td>
+      </tr>`).join('');
   }
 
-  function removeAutocompleteList(wrapper) {
-    const existing = wrapper ? wrapper.querySelector('.autocomplete-list') : null;
-    if (existing) existing.remove();
+  function renderBars(elId, obj, max, manterOrdem) {
+    const el = document.getElementById(elId);
+    let entries = Object.entries(obj);
+    if (!manterOrdem) entries.sort((a,b) => b[1]-a[1]);
+    entries = entries.slice(0, max);
+    const maxVal = Math.max(...entries.map(e => e[1]), 1);
+    el.innerHTML = entries.map(([label, val]) => `
+      <div class="bar-item">
+        <div class="bar-label">
+          <span style="color:rgba(255,255,255,0.85);font-weight:400">${label}</span>
+          <span>${val}</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:${Math.round(val/maxVal*100)}%"></div>
+        </div>
+      </div>`).join('');
+    if (!entries.length) el.innerHTML = '<div style="color:rgba(255,255,255,0.3);font-size:0.85rem;padding:10px 0">Sem dados ainda</div>';
   }
 
-  // ── MODAL ─────────────────────────────────────────────────────────────────
-  let termoAceito = false;
-
-  function toggleCheck() {
-    termoAceito = !termoAceito;
-    document.getElementById('check-row').classList.toggle('checked', termoAceito);
-    document.getElementById('modal-checkbox').textContent = termoAceito ? '✓' : '';
-    document.getElementById('modal-btn').classList.toggle('enabled', termoAceito);
+  function renderHoras(elId, horas) {
+    const el = document.getElementById(elId);
+    const maxVal = Math.max(...horas, 1);
+    // Mostra de 2 em 2 horas
+    const pares = [];
+    for (let i = 0; i < 24; i += 2) {
+      pares.push({ label: `${String(i).padStart(2,'0')}h`, val: horas[i] + horas[i+1] });
+    }
+    const maxPar = Math.max(...pares.map(p => p.val), 1);
+    el.innerHTML = `<div class="horas-grid">
+      ${pares.map(p => `
+        <div class="hora-col">
+          <div class="hora-bar-wrap">
+            <div class="hora-bar" style="height:${Math.max(3, Math.round(p.val/maxPar*56))}px"></div>
+          </div>
+          <div class="hora-label">${p.label}</div>
+        </div>`).join('')}
+    </div>`;
   }
-
-  function entrarNoApp() {
-    if (!termoAceito) return;
-    const modal = document.getElementById('modal-termos');
-    modal.style.opacity = '0'; modal.style.transition = 'opacity 0.4s';
-    setTimeout(() => modal.style.display = 'none', 400);
-  }
-
-  // ── NOTIF ─────────────────────────────────────────────────────────────────
-  function showNotif(msg) {
-    const n = document.getElementById('notif');
-    n.textContent = msg; n.classList.add('show');
-    setTimeout(() => n.classList.remove('show'), 3000);
-  }
-
-  // ── PWA ───────────────────────────────────────────────────────────────────
-  let deferredPrompt;
-  window.addEventListener('beforeinstallprompt', e => {
-    e.preventDefault(); deferredPrompt = e;
-    document.getElementById('install-banner').style.display = 'flex';
-  });
-  function instalarApp() {
-    if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then(() => { deferredPrompt = null; fecharBanner(); }); }
-  }
-  function fecharBanner() { document.getElementById('install-banner').style.display = 'none'; }
-
-  // ── INIT ──────────────────────────────────────────────────────────────────
-  window.addEventListener('DOMContentLoaded', () => {
-    carregarPontoDeOrigem();
-    document.querySelectorAll('.stop-input').forEach(inp => setupAutocomplete(inp));
-  });
 </script>
 </body>
 </html>
