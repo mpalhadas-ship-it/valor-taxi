@@ -567,7 +567,7 @@
         <div class="result-value" id="total-price">R$</div>
       </div>
       <div id="result-info" style="display:none;margin-top:8px;flex-direction:column;gap:4px;text-align:center;">
-        <div id="aviso-pico">⚠️ Horário de pico — valor pode ser maior por trânsito</div>
+        <div id="aviso-pico" style="display:none!important;"></div>
         <div id="result-dist" style="display:none;"></div>
         <div id="result-msg" style="font-size:1.05rem;color:var(--taxi-blue-dark);font-weight:500;line-height:1.8;padding:10px 4px;font-family:'Barlow',sans-serif;">
           Valor pode estar maior em razão do Trânsito
@@ -934,7 +934,7 @@
 
       // Troca texto abaixo do valor quando rua sem número
       const msgPadrao = 'Valor pode estar maior em razão do Trânsito';
-      const msgSemNumero = 'AUSÊNCIA DO NÚMERO NO ENDEREÇO EXIBE UM VALOR MENOR PARA O INÍCIO E OUTRO MAIOR PARA O FINAL DA RUA OU AVENIDA';
+      const msgSemNumero = 'A AUSÊNCIA DO NÚMERO NO ENDEREÇO EXIBE O MENOR E O MAIOR VALOR PROVÁVEL. CASO SAIBA O NÚMERO, INFORME PARA OBTER UM CÁLCULO MELHOR.';
       const msgEl = document.getElementById('result-msg');
       msgEl.textContent = ruaSemNumero ? msgSemNumero : msgPadrao;
       msgEl.style.color = 'var(--taxi-blue)';
