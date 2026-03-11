@@ -421,19 +421,6 @@
     from { opacity:0; transform:scale(0.8); }
     to   { opacity:1; transform:scale(1); }
   }
-  #aviso-pico {
-    background: var(--taxi-blue);
-    border: 1px solid var(--taxi-blue-dark);
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-family: 'Barlow', sans-serif;
-    font-size: 0.82rem;
-    color: var(--taxi-yellow);
-    font-weight: 600;
-    text-align: center;
-    display: none;
-    margin-bottom: 4px;
-  }
   .avaliacao-wrap {
     display: flex;
     gap: 10px;
@@ -566,10 +553,8 @@
         <div class="result-value" id="total-price">R$</div>
       </div>
       <div id="result-info" style="display:none;margin-top:8px;flex-direction:column;gap:4px;text-align:center;">
-        <div id="aviso-pico" style="display:none!important;"></div>
         <div id="result-dist" style="display:none;"></div>
         <div id="result-msg" style="font-size:1.05rem;color:var(--taxi-blue-dark);font-weight:500;line-height:1.8;padding:10px 4px;font-family:'Barlow',sans-serif;">
-          Valor pode estar maior em razão do Trânsito
         </div>
         <div class="avaliacao-wrap" id="avaliacao-wrap">
           <button class="btn-avaliacao" onclick="avaliar(1)" id="btn-like">👍</button>
@@ -797,9 +782,6 @@
     // Badge bandeira 2
     const badge = document.getElementById('bandeira-badge');
     if (bandeira === 2) { badge.style.display = 'inline-block'; } else { badge.style.display = 'none'; }
-    // Aviso pico desativado
-    const aviso = document.getElementById('aviso-pico');
-    aviso.style.display = horaCritica ? 'block' : 'none';
     // Distância
     document.getElementById('result-dist').textContent = '';
     // Vibração
@@ -933,7 +915,7 @@
       const { vMin, vMax } = mostrarResultado(distKm, durMin * 0.15, ruaSemNumero, filled.join(' '));
 
       // Troca texto abaixo do valor quando rua sem número
-      const msgPadrao = 'Valor pode estar maior em razão do Trânsito';
+      const msgPadrao = '';
       const msgSemNumero = 'A AUSÊNCIA DO NÚMERO NO ENDEREÇO EXIBE O MENOR E O MAIOR VALOR PROVÁVEL.';
       const msgEl = document.getElementById('result-msg');
       msgEl.textContent = ruaSemNumero ? msgSemNumero : msgPadrao;
