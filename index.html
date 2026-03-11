@@ -1004,34 +1004,78 @@
     });
   }
 
+  // Cache de sugestões Places para evitar chamadas repetidas
+  const _placesCache = {};
+
   async function fetchSuggestions(query, input, wrapper) {
+    // 1. Base local OSM — instantânea
     const localResults = buscarBaseLocal(query);
-    // Mostra locais imediatamente se tiver algum resultado
     if (localResults.length > 0) {
       showAutocompleteList(localResults, input, wrapper);
-      if (localResults.length >= 4) return; // suficiente, não precisa do Google
+      if (localResults.length >= 4) return; // suficiente
     }
-    // Complementa com Google em paralelo
+
+    // 2. Places Autocomplete — melhor que geocode para sugestões
     try {
-      const rJF = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query + ', Juiz de Fora, MG, Brasil')}&region=br&language=pt-BR&key=${GOOGLE_API_KEY}`);
-      const dJF = await rJF.json();
-      const jfResults = (dJF.status === 'OK' ? dJF.results : [])
-        .filter(r => r.formatted_address.toLowerCase().includes('juiz de fora'));
-      // Se não achou nada em JF, tenta geral
-      let geralResults = [];
-      if (!localResults.length && !jfResults.length) {
-        const rGeral = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query + ', Brasil')}&region=br&language=pt-BR&key=${GOOGLE_API_KEY}`);
-        const dGeral = await rGeral.json();
-        geralResults = dGeral.status === 'OK' ? dGeral.results : [];
+      const cacheKey = query.toLowerCase().trim();
+      let predictions;
+
+      if (_placesCache[cacheKey]) {
+        predictions = _placesCache[cacheKey];
+      } else {
+        const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(query)}&components=country:br&location=-21.7605,-43.3498&radius=25000&strictbounds=false&language=pt-BR&key=${GOOGLE_API_KEY}`;
+        const r = await fetch(url);
+        const d = await r.json();
+        predictions = d.status === 'OK' ? d.predictions : [];
+        _placesCache[cacheKey] = predictions;
       }
-      const umaPalavra = query.trim().split(' ').length === 1;
-      const merged = umaPalavra
-        ? [...jfResults, ...localResults, ...geralResults].slice(0, 5)
-        : [...localResults, ...jfResults, ...geralResults].slice(0, 5);
-      if (merged.length) showAutocompleteList(merged, input, wrapper);
+
+      // Filtra resultados de JF ou região próxima
+      const jfPreds = predictions.filter(p => {
+        const desc = p.description.toLowerCase();
+        return desc.includes('juiz de fora') || desc.includes(', mg') || desc.includes('minas gerais');
+      }).slice(0, 5);
+
+      if (!jfPreds.length && !localResults.length) {
+        // Sem resultados em JF — tenta sem filtro geográfico
+        const todos = predictions.slice(0, 3);
+        if (todos.length) await resolverEMostrarPredictions(todos, localResults, input, wrapper);
+        return;
+      }
+
+      await resolverEMostrarPredictions(jfPreds, localResults, input, wrapper);
+
     } catch(e) {
-      // Google falhou — os locais já foram mostrados acima se existiam
+      // Places falhou — locais OSM já foram mostrados acima
     }
+  }
+
+  // Converte predictions do Places em resultados com coordenadas via Place Details
+  const _detailsCache = {};
+
+  async function resolverEMostrarPredictions(predictions, localResults, input, wrapper) {
+    const placesResults = await Promise.all(predictions.map(async p => {
+      try {
+        if (_detailsCache[p.place_id]) return _detailsCache[p.place_id];
+        const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${p.place_id}&fields=geometry,formatted_address,types,name&language=pt-BR&key=${GOOGLE_API_KEY}`;
+        const r = await fetch(url);
+        const d = await r.json();
+        if (d.status !== 'OK') return null;
+        const result = {
+          geometry: d.result.geometry,
+          formatted_address: d.result.formatted_address || p.description,
+          types: d.result.types || [],
+          name: d.result.name || '',
+          _fromPlaces: true
+        };
+        _detailsCache[p.place_id] = result;
+        return result;
+      } catch(e) { return null; }
+    }));
+
+    const valid = placesResults.filter(Boolean);
+    const merged = [...localResults, ...valid].slice(0, 5);
+    if (merged.length) showAutocompleteList(merged, input, wrapper);
   }
 
   function showAutocompleteList(results, input, wrapper) {
@@ -1041,10 +1085,18 @@
     results.forEach(res => {
       const item = document.createElement('div');
       item.className = 'autocomplete-item';
-      // Usa endereço completo (com número) se disponível, senão os 2 primeiros campos
-      const parts = res.formatted_address.split(',');
-      const hasNumber = /\d/.test(parts[0]);
-      item.textContent = hasNumber ? parts.slice(0, 2).join(',').trim() : parts.slice(0, 3).join(',').trim();
+      // Usa nome do local se disponível (Places), senão monta do endereço
+      let displayText;
+      if (res.name && res._fromPlaces) {
+        const parts = res.formatted_address.split(',');
+        // Nome + cidade para ficar claro
+        displayText = res.name + ', ' + parts.slice(-2).join(',').trim();
+      } else {
+        const parts = res.formatted_address.split(',');
+        const hasNumber = /\d/.test(parts[0]);
+        displayText = hasNumber ? parts.slice(0, 2).join(',').trim() : parts.slice(0, 3).join(',').trim();
+      }
+      item.textContent = displayText;
       item.addEventListener('mousedown', () => {
         input.dataset.lat = res.geometry.location.lat;
         input.dataset.lon = res.geometry.location.lng;
@@ -1057,7 +1109,7 @@
           'school','church','food','restaurant','lodging','store','gym'].includes(t))
           || !tipos.includes('route'); // qualquer coisa que não seja rua genérica é tratada como local
         input.dataset.ehLocal = ehLocal ? '1' : '0';
-        input.value = item.textContent;
+        input.value = displayText;
         removeAutocompleteList(wrapper);
         // Verifica distância em linha reta até o centro de JF
         const lat = res.geometry.location.lat;
@@ -1070,7 +1122,7 @@
 
         // Local, com número ou fora do raio → calcula direto (sem perguntar número)
         // Rua sem número dentro do raio → pergunta
-        if (ehLocal || /\d/.test(item.textContent) || pareceForaDoRaio) {
+        if (ehLocal || /\d/.test(displayText) || pareceForaDoRaio) {
           setTimeout(() => calcularPorMapa(), 150);
         } else {
           setTimeout(() => perguntarNumero(input), 150);
