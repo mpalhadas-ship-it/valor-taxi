@@ -404,61 +404,6 @@
   .modal-btn.enabled { opacity: 1; pointer-events: all; box-shadow: none; }
   .modal-btn.enabled:hover { background: var(--taxi-yellow-dark); transform: translateY(-1px); }
 
-  /* BOTÕES 3D */
-  .calc-btn {
-    box-shadow: 0 6px 0 #b8a000, 0 8px 10px rgba(0,0,0,0.25) !important;
-    transform: translateY(0);
-    transition: all 0.1s ease !important;
-  }
-  .calc-btn:active:not(.loading) {
-    box-shadow: 0 2px 0 #b8a000, 0 3px 6px rgba(0,0,0,0.2) !important;
-    transform: translateY(4px) !important;
-  }
-  .calc-btn.loading {
-    box-shadow: 0 2px 0 #b8a000 !important;
-    transform: translateY(4px) !important;
-  }
-  .modal-btn.enabled {
-    box-shadow: 0 6px 0 #b8a000, 0 8px 10px rgba(0,0,0,0.25) !important;
-    transform: translateY(0);
-    transition: all 0.1s ease !important;
-  }
-  .modal-btn.enabled:hover {
-    transform: translateY(2px) !important;
-    box-shadow: 0 4px 0 #b8a000, 0 5px 8px rgba(0,0,0,0.2) !important;
-  }
-  .modal-btn.enabled:active {
-    transform: translateY(6px) !important;
-    box-shadow: 0 1px 0 #b8a000 !important;
-  }
-  .btn-confirmar {
-    box-shadow: 0 5px 0 #b8a000, 0 7px 8px rgba(0,0,0,0.2) !important;
-    transform: translateY(0);
-    transition: all 0.1s ease !important;
-  }
-  .btn-confirmar:active {
-    box-shadow: 0 1px 0 #b8a000 !important;
-    transform: translateY(4px) !important;
-  }
-  .btn-cancelar {
-    box-shadow: 0 5px 0 #0e3350, 0 7px 8px rgba(0,0,0,0.2) !important;
-    transform: translateY(0);
-    transition: all 0.1s ease !important;
-  }
-  .btn-cancelar:active {
-    box-shadow: 0 1px 0 #0e3350 !important;
-    transform: translateY(4px) !important;
-  }
-  .btn-ok-conferir {
-    box-shadow: 0 5px 0 #b8a000, 0 7px 8px rgba(0,0,0,0.2) !important;
-    transform: translateY(0);
-    transition: all 0.1s ease !important;
-  }
-  .btn-ok-conferir:active {
-    box-shadow: 0 1px 0 #b8a000 !important;
-    transform: translateY(4px) !important;
-  }
-
   /* ANIMATIONS */
   @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -664,7 +609,12 @@
       const result = d.results[0];
       const loc = result.geometry.location;
       const formatted = result.formatted_address.replace(', Brasil','').replace(', Brazil','');
-      return { lat: loc.lat, lon: loc.lng, formatted };
+      const tipos = result.types || [];
+      const ehLocal = tipos.some(t => ['establishment','point_of_interest','premise','subpremise',
+        'natural_feature','airport','park','place_of_worship','hospital','school',
+        'shopping_mall','bus_station','train_station','subway_station'].includes(t));
+      const temNumero = /\d/.test(addr);
+      return { lat: loc.lat, lon: loc.lng, formatted, ehLocal, temNumero };
     } finally {
       clearTimeout(timeout);
     }
@@ -799,11 +749,17 @@
       const destResults = await Promise.all(filled.map(addr => {
         const inp = inputs.find(el => el.value.trim() === addr.trim());
         if (inp && inp.dataset.lat && inp.dataset.lon) {
+          // ehLocal: '1' = local, '0' = rua, '' = não definido (digitado manualmente)
+          // Se não definido, assume ehLocal se não tem número mas parece nome de estabelecimento
+          let ehLocal = inp.dataset.ehLocal === '1';
+          if (!inp.dataset.ehLocal) {
+            ehLocal = !/\d/.test(addr); // sem número = provavelmente local ou rua genérica — trata igual
+          }
           return Promise.resolve({
             lat: parseFloat(inp.dataset.lat),
             lon: parseFloat(inp.dataset.lon),
             formatted: inp.dataset.formatted || addr,
-            ehLocal: inp.dataset.ehLocal === '1',
+            ehLocal,
             temNumero: /\d/.test(addr)
           });
         }
@@ -942,7 +898,11 @@
         input.dataset.formatted = res.formatted_address;
         // Verifica se é estabelecimento/local (ponto exato) ou rua genérica
         const tipos = res.types || [];
-        const ehLocal = tipos.some(t => ['establishment','point_of_interest','premise','subpremise','natural_feature','airport','park','place_of_worship'].includes(t));
+        const ehLocal = tipos.some(t => ['establishment','point_of_interest','premise','subpremise',
+          'natural_feature','airport','park','place_of_worship','hospital','health',
+          'shopping_mall','bus_station','train_station','subway_station','university',
+          'school','church','food','restaurant','lodging','store','gym'].includes(t))
+          || !tipos.includes('route'); // qualquer coisa que não seja rua genérica é tratada como local
         input.dataset.ehLocal = ehLocal ? '1' : '0';
         input.value = item.textContent;
         removeAutocompleteList(wrapper);
