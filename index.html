@@ -838,13 +838,15 @@
         const num = overlay.querySelector('#input-numero-popup').value.trim();
         overlay.remove();
         if (num) {
-          // Insere número no endereço
+          // Insere número no endereço e calcula direto sem autocomplete
           const endComNum = ruaAtual.replace(/,\s*$/, '') + ', ' + num;
           input.value = endComNum;
           delete input.dataset.lat; delete input.dataset.lon; delete input.dataset.formatted;
-          input.dispatchEvent(new Event('input'));
+          resolve(false);
+          setTimeout(() => calcularPorMapa(), 100);
+        } else {
+          resolve(true); // sem número — calcula com margem ampliada
         }
-        resolve(!num); // se não digitou número, trata como sem número
       };
 
       // Enter no campo de número confirma
