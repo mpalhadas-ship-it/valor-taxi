@@ -766,8 +766,7 @@
     { nome: 'rio branco', fatorMax: 2.50 }
   ];
 
-  function mostrarResultado(distKm, paradoMin, ruaSemNumero, enderecoDigitado, distKmReal) {
-    distKm = distKmReal || distKm;
+  function mostrarResultado(distKm, paradoMin, ruaSemNumero, enderecoDigitado) {
     const kmRate = bandeira === 2 ? TARIFAS.kmB2 : TARIFAS.kmB1;
     const total = TARIFAS.bandeirada + distKm * kmRate + (paradoMin/60) * TARIFAS.horaParada;
     const hora = new Date().getHours();
@@ -924,7 +923,7 @@
         btn.classList.remove('loading');
         return;
       }
-      const { vMin, vMax } = mostrarResultado(distKm, durMin * 0.15, ruaSemNumero, filled.join(' '), distKm);
+      const { vMin, vMax } = mostrarResultado(distKm, durMin * 0.15, ruaSemNumero, filled.join(' '));
 
       // Troca texto abaixo do valor quando rua sem número
       const msgPadrao = 'Esse é o valor provável de sua corrida. Fique à vontade também pra consultar o taxista aí no ponto se preferir. Boa corrida! 🚕';
@@ -997,7 +996,7 @@
       if (e.key === 'Enter') { removeAutocompleteList(getWrapper()); calcularPorMapa(); }
     });
     input.addEventListener('blur', () => {
-      setTimeout(() => removeAutocompleteList(getWrapper()), 200);
+      setTimeout(() => removeAutocompleteList(getWrapper()), 300);
     });
   }
 
@@ -1048,7 +1047,7 @@
       const parts = res.formatted_address.split(',');
       const hasNumber = /\d/.test(parts[0]);
       item.textContent = hasNumber ? parts.slice(0, 2).join(',').trim() : parts.slice(0, 3).join(',').trim();
-      item.addEventListener('mousedown', () => {
+      const handleSelect = () => {
         input.dataset.lat = res.geometry.location.lat;
         input.dataset.lon = res.geometry.location.lng;
         input.dataset.formatted = res.formatted_address;
@@ -1078,7 +1077,9 @@
         } else {
           setTimeout(() => perguntarNumero(input), 150);
         }
-      });
+      };
+      item.addEventListener('mousedown', handleSelect);
+      item.addEventListener('touchstart', (e) => { e.preventDefault(); handleSelect(); });
       list.appendChild(item);
     });
     wrapper.appendChild(list);
