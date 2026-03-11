@@ -1026,19 +1026,13 @@
       if (_placesCache[cacheKey]) {
         googleResults = _placesCache[cacheKey];
       } else {
-        // Busca em paralelo: com e sem "Juiz de Fora" para pegar mais resultados
         const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query + ', Juiz de Fora, MG, Brasil')}&region=br&language=pt-BR&key=${GOOGLE_API_KEY}`;
         const r = await fetch(url);
         const d = await r.json();
 
-        if (d.status === 'OK') {
-          googleResults = d.results.filter(res => {
-            // Verifica se está em JF
-            const temJF = res.address_components.some(c =>
-              c.long_name.toLowerCase() === 'juiz de fora'
-            );
-            if (!temJF) return false;
-            // Verifica raio de 30km
+        if (d.status === 'OK' && d.results.length > 0) {
+          // Filtra por raio de 30km do centro de JF (mais confiável que address_components para buscas parciais)
+          const filtrados = d.results.filter(res => {
             const lat = res.geometry.location.lat;
             const lon = res.geometry.location.lng;
             const dLat = (lat - JF_CENTRO.lat) * Math.PI / 180;
@@ -1047,29 +1041,30 @@
             return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)) <= 30;
           });
 
-          // Se for rua sem número, cria entrada sem número para sugerir
-          const temNumero = /\d/.test(query);
-          if (!temNumero && googleResults.length > 0) {
-            // Pega a rua base e cria sugestão genérica
-            const base = googleResults[0];
-            const ruaComp = base.address_components.find(c => c.types.includes('route'));
-            const bairro = base.address_components.find(c => c.types.includes('sublocality') || c.types.includes('neighborhood'));
-            if (ruaComp) {
-              const nomRua = ruaComp.long_name;
-              const nomBairro = bairro ? bairro.long_name : '';
-              // Cria sugestão "Rua X, Juiz de Fora" sem número
-              googleResults = [{
-                geometry: base.geometry,
-                formatted_address: [nomRua, nomBairro, 'Juiz de Fora, MG'].filter(Boolean).join(', '),
-                address_components: base.address_components,
-                types: ['route']
-              }];
-            } else {
-              googleResults = googleResults.slice(0, 1);
-            }
-          } else {
-            googleResults = googleResults.slice(0, 3);
-          }
+          const base = filtrados.length > 0 ? filtrados : d.results.slice(0, 1);
+
+          // Extrai nome da rua para montar sugestão limpa
+          googleResults = base.slice(0, 3).map(res => {
+            const ruaComp = res.address_components.find(c => c.types.includes('route'));
+            const bairro = res.address_components.find(c =>
+              c.types.includes('sublocality_level_1') || c.types.includes('neighborhood')
+            );
+            const numero = res.address_components.find(c => c.types.includes('street_number'));
+
+            const partesEnd = [];
+            if (ruaComp) partesEnd.push(ruaComp.long_name);
+            else partesEnd.push(res.formatted_address.split(',')[0]);
+            if (numero) partesEnd.push(numero.long_name);
+            if (bairro) partesEnd.push(bairro.long_name);
+            partesEnd.push('Juiz de Fora, MG');
+
+            return {
+              geometry: res.geometry,
+              formatted_address: partesEnd.filter(Boolean).join(', '),
+              address_components: res.address_components,
+              types: res.types
+            };
+          });
 
           _placesCache[cacheKey] = googleResults;
         }
