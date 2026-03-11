@@ -404,6 +404,61 @@
   .modal-btn.enabled { opacity: 1; pointer-events: all; box-shadow: none; }
   .modal-btn.enabled:hover { background: var(--taxi-yellow-dark); transform: translateY(-1px); }
 
+  /* BOTÕES 3D */
+  .calc-btn {
+    box-shadow: 0 6px 0 #b8a000, 0 8px 10px rgba(0,0,0,0.25) !important;
+    transform: translateY(0);
+    transition: all 0.1s ease !important;
+  }
+  .calc-btn:active:not(.loading) {
+    box-shadow: 0 2px 0 #b8a000, 0 3px 6px rgba(0,0,0,0.2) !important;
+    transform: translateY(4px) !important;
+  }
+  .calc-btn.loading {
+    box-shadow: 0 2px 0 #b8a000 !important;
+    transform: translateY(4px) !important;
+  }
+  .modal-btn.enabled {
+    box-shadow: 0 6px 0 #b8a000, 0 8px 10px rgba(0,0,0,0.25) !important;
+    transform: translateY(0);
+    transition: all 0.1s ease !important;
+  }
+  .modal-btn.enabled:hover {
+    transform: translateY(2px) !important;
+    box-shadow: 0 4px 0 #b8a000, 0 5px 8px rgba(0,0,0,0.2) !important;
+  }
+  .modal-btn.enabled:active {
+    transform: translateY(6px) !important;
+    box-shadow: 0 1px 0 #b8a000 !important;
+  }
+  .btn-confirmar {
+    box-shadow: 0 5px 0 #b8a000, 0 7px 8px rgba(0,0,0,0.2) !important;
+    transform: translateY(0);
+    transition: all 0.1s ease !important;
+  }
+  .btn-confirmar:active {
+    box-shadow: 0 1px 0 #b8a000 !important;
+    transform: translateY(4px) !important;
+  }
+  .btn-cancelar {
+    box-shadow: 0 5px 0 #0e3350, 0 7px 8px rgba(0,0,0,0.2) !important;
+    transform: translateY(0);
+    transition: all 0.1s ease !important;
+  }
+  .btn-cancelar:active {
+    box-shadow: 0 1px 0 #0e3350 !important;
+    transform: translateY(4px) !important;
+  }
+  .btn-ok-conferir {
+    box-shadow: 0 5px 0 #b8a000, 0 7px 8px rgba(0,0,0,0.2) !important;
+    transform: translateY(0);
+    transition: all 0.1s ease !important;
+  }
+  .btn-ok-conferir:active {
+    box-shadow: 0 1px 0 #b8a000 !important;
+    transform: translateY(4px) !important;
+  }
+
   /* ANIMATIONS */
   @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -520,7 +575,7 @@
           Esse é o valor provável de sua corrida. Fique à vontade também pra consultar o taxista aí no ponto se preferir. Boa corrida! 🚕
         </div>
         <button onclick="novoCalculo()" style="margin-top:8px;background:var(--taxi-blue-dark);color:var(--taxi-yellow);border:none;border-radius:10px;padding:12px 24px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1rem;letter-spacing:2px;text-transform:uppercase;cursor:pointer;">
-          🔄 Novo Cálculo
+          NOVO CÁLCULO
         </button>
       </div>
     </div>
@@ -779,8 +834,11 @@
 
       // Troca texto abaixo do valor quando rua sem número
       const msgPadrao = 'Esse é o valor provável de sua corrida. Fique à vontade também pra consultar o taxista aí no ponto se preferir. Boa corrida! 🚕';
-      const msgSemNumero = 'COMO NÃO HOUVE NÚMERO PARA CÁLCULO, O VALOR ESTÁ CONSIDERANDO UM PONTO MAIS PERTO E UM PONTO MAIS LONGE DA RUA INFORMADA.';
-      document.getElementById('result-msg').textContent = ruaSemNumero ? msgSemNumero : msgPadrao;
+      const msgSemNumero = 'A AUSÊNCIA DO NÚMERO NO ENDEREÇO GEROU UM CÁLCULO MAIS SUBJETIVO, COM UM PONTO MAIS PERTO E UM PONTO MAIS LONGE DO DESTINO INFORMADO.';
+      const msgEl = document.getElementById('result-msg');
+      msgEl.textContent = ruaSemNumero ? msgSemNumero : msgPadrao;
+      msgEl.style.color = ruaSemNumero ? '#c0392b' : 'var(--taxi-blue-dark)';
+      msgEl.style.fontWeight = ruaSemNumero ? '700' : '500';
 
       // Registro
       const destFormatados = destResults.map(r => r.formatted).join(' → ');
