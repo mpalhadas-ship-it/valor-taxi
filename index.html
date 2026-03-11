@@ -927,7 +927,10 @@
     results.forEach(res => {
       const item = document.createElement('div');
       item.className = 'autocomplete-item';
-      item.textContent = res.formatted_address.split(',').slice(0, 2).join(',').trim();
+      // Usa endereço completo (com número) se disponível, senão os 2 primeiros campos
+      const parts = res.formatted_address.split(',');
+      const hasNumber = /\d/.test(parts[0]);
+      item.textContent = hasNumber ? parts.slice(0, 2).join(',').trim() : parts.slice(0, 3).join(',').trim();
       item.addEventListener('mousedown', () => {
         input.dataset.lat = res.geometry.location.lat;
         input.dataset.lon = res.geometry.location.lng;
