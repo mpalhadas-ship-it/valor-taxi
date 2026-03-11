@@ -559,7 +559,7 @@
   </div>
 
   <!-- RESULT CARD -->
-  <div class="result-card" id="result-card">
+  <div class="result-card" id="result-card" style="display:none;">
     <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;">
       <div>
         <div id="bandeira-badge" style="display:none;">BANDEIRA 2</div>
@@ -792,12 +792,13 @@
     const vMax = Math.ceil(total * fatorMax);
     // Animação contador do valor
     animarValor(vMin, vMax);
+    document.getElementById('result-card').style.display = 'block';
     document.getElementById('result-info').style.display = 'flex';
     document.getElementById('add-stop-btn').style.display = 'block';
     // Badge bandeira 2
     const badge = document.getElementById('bandeira-badge');
     if (bandeira === 2) { badge.style.display = 'inline-block'; } else { badge.style.display = 'none'; }
-    // Aviso pico
+    // Aviso pico desativado
     const aviso = document.getElementById('aviso-pico');
     aviso.style.display = horaCritica ? 'block' : 'none';
     // Distância
@@ -934,7 +935,7 @@
 
       // Troca texto abaixo do valor quando rua sem número
       const msgPadrao = 'Valor pode estar maior em razão do Trânsito';
-      const msgSemNumero = 'A AUSÊNCIA DO NÚMERO NO ENDEREÇO EXIBE O MENOR E O MAIOR VALOR PROVÁVEL. CASO SAIBA O NÚMERO, INFORME PARA OBTER UM CÁLCULO MELHOR.';
+      const msgSemNumero = 'A AUSÊNCIA DO NÚMERO NO ENDEREÇO EXIBE O MENOR E O MAIOR VALOR PROVÁVEL.';
       const msgEl = document.getElementById('result-msg');
       msgEl.textContent = ruaSemNumero ? msgSemNumero : msgPadrao;
       msgEl.style.color = 'var(--taxi-blue)';
@@ -1181,6 +1182,7 @@
     stops.forEach((el, i) => { if (i > 0) el.remove(); });
     stopCount = 1;
     // Esconde resultado e botão adicionar
+    document.getElementById('result-card').style.display = 'none';
     document.getElementById('result-info').style.display = 'none';
     document.getElementById('total-price').textContent = 'R$';
     document.getElementById('add-stop-btn').style.display = 'none';
