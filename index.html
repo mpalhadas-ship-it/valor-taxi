@@ -980,6 +980,8 @@
   let autocompleteTimer = null;
 
   function setupAutocomplete(input) {
+    if (input.dataset.autocompleteReady) return; // evita duplo setup
+    input.dataset.autocompleteReady = '1';
     const getWrapper = () => input.closest('.addr-group') || input.parentElement;
     input.addEventListener('input', () => {
       clearTimeout(autocompleteTimer);
