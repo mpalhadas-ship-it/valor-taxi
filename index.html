@@ -710,7 +710,8 @@
 
   // ── GEOCODING ─────────────────────────────────────────────────────────────
   async function geocodeFreshFull(addr) {
-    const q = encodeURIComponent(addr + ', Brasil');
+    // Força JF na busca — evita pegar cidades distantes
+    const q = encodeURIComponent(addr + ', Juiz de Fora, MG, Brasil');
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
     try {
