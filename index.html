@@ -1006,29 +1006,31 @@
 
   async function fetchSuggestions(query, input, wrapper) {
     const localResults = buscarBaseLocal(query);
-    if (localResults.length >= 4) {
+    // Mostra locais imediatamente se tiver algum resultado
+    if (localResults.length > 0) {
       showAutocompleteList(localResults, input, wrapper);
-      return;
+      if (localResults.length >= 4) return; // suficiente, não precisa do Google
     }
+    // Complementa com Google em paralelo
     try {
-      const [rJF, rGeral] = await Promise.all([
-        fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query + ', Juiz de Fora, MG, Brasil')}&region=br&language=pt-BR&key=${GOOGLE_API_KEY}`),
-        fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query + ', Brasil')}&region=br&language=pt-BR&key=${GOOGLE_API_KEY}`)
-      ]);
-      const [dJF, dGeral] = await Promise.all([rJF.json(), rGeral.json()]);
+      const rJF = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query + ', Juiz de Fora, MG, Brasil')}&region=br&language=pt-BR&key=${GOOGLE_API_KEY}`);
+      const dJF = await rJF.json();
       const jfResults = (dJF.status === 'OK' ? dJF.results : [])
         .filter(r => r.formatted_address.toLowerCase().includes('juiz de fora'));
-      const temLocal = localResults.length > 0 || jfResults.length > 0;
-      const geralResults = temLocal ? [] : (dGeral.status === 'OK' ? dGeral.results : [])
-        .filter(r => !r.formatted_address.toLowerCase().includes('juiz de fora'));
+      // Se não achou nada em JF, tenta geral
+      let geralResults = [];
+      if (!localResults.length && !jfResults.length) {
+        const rGeral = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query + ', Brasil')}&region=br&language=pt-BR&key=${GOOGLE_API_KEY}`);
+        const dGeral = await rGeral.json();
+        geralResults = dGeral.status === 'OK' ? dGeral.results : [];
+      }
       const umaPalavra = query.trim().split(' ').length === 1;
       const merged = umaPalavra
-        ? [...jfResults, ...localResults, ...geralResults].slice(0, 4)
-        : [...localResults, ...jfResults, ...geralResults].slice(0, 4);
+        ? [...jfResults, ...localResults, ...geralResults].slice(0, 5)
+        : [...localResults, ...jfResults, ...geralResults].slice(0, 5);
       if (merged.length) showAutocompleteList(merged, input, wrapper);
-      else if (localResults.length) showAutocompleteList(localResults, input, wrapper);
     } catch(e) {
-      if (localResults.length) showAutocompleteList(localResults, input, wrapper);
+      // Google falhou — os locais já foram mostrados acima se existiam
     }
   }
 
