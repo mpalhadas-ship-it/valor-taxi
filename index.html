@@ -1012,37 +1012,55 @@
 
 
   async function fetchSuggestions(query, input, wrapper) {
-    // 1. Base local OSM — instantânea, sem API
+    // 1. Base local OSM — instantânea, prioridade máxima
     const localResults = buscarBaseLocal(query);
-    if (localResults.length > 0) {
-      showAutocompleteList(localResults, input, wrapper);
-      if (localResults.length >= 4) return;
-    }
 
-    // 2. Geocoding API — funciona direto do browser sem SDK
+    // 2. Geocoding API do Google — só para complementar
     try {
-      const cacheKey = query.toLowerCase().trim();
+      const cacheKey = normalizarTexto(query.trim());
+      let googleResults = [];
+
       if (_placesCache[cacheKey]) {
-        const merged = [...localResults, ..._placesCache[cacheKey]].slice(0, 5);
-        if (merged.length) showAutocompleteList(merged, input, wrapper);
-        return;
+        googleResults = _placesCache[cacheKey];
+      } else {
+        const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query + ', Juiz de Fora, MG, Brasil')}&region=br&language=pt-BR&key=${GOOGLE_API_KEY}`;
+        const r = await fetch(url);
+        const d = await r.json();
+        if (d.status === 'OK') {
+          googleResults = d.results.filter(res => {
+            // Deve ter Juiz de Fora nos componentes
+            const temJF = res.address_components.some(c =>
+              c.long_name.toLowerCase() === 'juiz de fora'
+            );
+            if (!temJF) return false;
+            // Deve estar dentro do raio de 30km do centro
+            const lat = res.geometry.location.lat;
+            const lon = res.geometry.location.lng;
+            const dLat = (lat - JF_CENTRO.lat) * Math.PI / 180;
+            const dLon = (lon - JF_CENTRO.lon) * Math.PI / 180;
+            const a = Math.sin(dLat/2)**2 + Math.cos(JF_CENTRO.lat*Math.PI/180)*Math.cos(lat*Math.PI/180)*Math.sin(dLon/2)**2;
+            const dist = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return dist <= 30;
+          }).slice(0, 3);
+          _placesCache[cacheKey] = googleResults;
+        }
       }
 
-      const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query + ', Juiz de Fora, MG')}&region=br&language=pt-BR&key=${GOOGLE_API_KEY}`;
-      const r = await fetch(url);
-      const d = await r.json();
-      if (d.status !== 'OK') return;
+      // Remove duplicatas: não mostra do Google o que já está na base local
+      const localNomes = localResults.map(l => normalizarTexto(l.formatted_address.split(',')[0]));
+      const googleFiltrado = googleResults.filter(g => {
+        const nome = normalizarTexto(g.formatted_address.split(',')[0]);
+        return !localNomes.some(n => nome.includes(n) || n.includes(nome));
+      });
 
-      const jfResults = d.results.filter(res =>
-        res.address_components.some(c => c.long_name.toLowerCase() === 'juiz de fora')
-      ).slice(0, 4);
-
-      _placesCache[cacheKey] = jfResults;
-
-      const merged = [...localResults, ...jfResults].slice(0, 5);
+      // Mescla: base local primeiro, Google complementa
+      const merged = [...localResults, ...googleFiltrado].slice(0, 5);
       if (merged.length) showAutocompleteList(merged, input, wrapper);
 
-    } catch(e) { /* geocode falhou — OSM já foi mostrado */ }
+    } catch(e) {
+      // Google falhou — mostra só OSM se tiver
+      if (localResults.length) showAutocompleteList(localResults, input, wrapper);
+    }
   }
 
       function showAutocompleteList(results, input, wrapper) {
