@@ -822,12 +822,10 @@
       const overlay = criarOverlay(`
         <div class="confirm-box">
           <div class="confirm-title" style="font-size:1rem;letter-spacing:1px;">INFORME O NÚMERO PARA UM CÁLCULO MAIS APROXIMADO</div>
-          <div style="display:flex;gap:8px;margin:18px 0 14px;">
-            <input id="input-numero-popup" type="number" inputmode="numeric" placeholder="Ex: 150"
-              style="flex:1;padding:12px;border-radius:10px;border:2px solid #FFE600;font-size:1.1rem;font-weight:700;text-align:center;outline:none;background:#fff;color:#1A5276;" />
-            <button class="btn-confirmar" style="padding:12px 18px;white-space:nowrap;background:#FFE600;color:#1A5276;border:none;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.95rem;letter-spacing:1px;cursor:pointer;">OK, VOU INFORMAR</button>
-          </div>
-          <button class="btn-cancelar" style="width:100%;background:#FFE600;color:#1A5276;border:none;border-radius:10px;padding:12px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.85rem;letter-spacing:1px;cursor:pointer;">NÃO SEI O NÚMERO, CALCULE PELO QUE INFORMEI</button>
+          <input id="input-numero-popup" type="number" inputmode="numeric" placeholder="Ex: 150"
+            style="width:100%;margin:18px 0 10px;padding:14px;border-radius:10px;border:2px solid #FFE600;font-size:1.3rem;font-weight:700;text-align:center;outline:none;background:#fff;color:#1A5276;box-sizing:border-box;" />
+          <button class="btn-confirmar" style="width:100%;margin-bottom:10px;background:#FFE600;color:#1A5276;border:none;border-radius:10px;padding:11px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.95rem;letter-spacing:1px;cursor:pointer;">OK</button>
+          <button class="btn-cancelar" style="width:100%;background:#FFE600;color:#1A5276;border:none;border-radius:10px;padding:11px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.82rem;letter-spacing:1px;cursor:pointer;">NÃO SEI O NÚMERO, CALCULE PELO QUE INFORMEI</button>
         </div>`);
 
       // Foca no campo de número automaticamente
