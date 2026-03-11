@@ -510,6 +510,7 @@
     
   }
 </style>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC6M_XhgT-xqltyObVbmanmzSiqCH_AlD0&libraries=places&language=pt-BR"></script>
 </head>
 <body>
 
@@ -1004,81 +1005,106 @@
     });
   }
 
-  // Cache de sugestões Places para evitar chamadas repetidas
+  // Cache de sugestões Places
   const _placesCache = {};
+  let _autocompleteService = null;
+  let _placesService = null;
+
+  function getAutocompleteService() {
+    if (!_autocompleteService && window.google && google.maps && google.maps.places) {
+      _autocompleteService = new google.maps.places.AutocompleteService();
+      // PlacesService precisa de um elemento div
+      const div = document.createElement('div');
+      _placesService = new google.maps.places.PlacesService(div);
+    }
+    return _autocompleteService;
+  }
 
   async function fetchSuggestions(query, input, wrapper) {
     // 1. Base local OSM — instantânea
     const localResults = buscarBaseLocal(query);
     if (localResults.length > 0) {
       showAutocompleteList(localResults, input, wrapper);
-      if (localResults.length >= 4) return; // suficiente
+      if (localResults.length >= 4) return;
     }
 
-    // 2. Places Autocomplete — melhor que geocode para sugestões
-    try {
-      const cacheKey = query.toLowerCase().trim();
-      let predictions;
-
-      if (_placesCache[cacheKey]) {
-        predictions = _placesCache[cacheKey];
-      } else {
-        const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(query)}&components=country:br&location=-21.7605,-43.3498&radius=25000&strictbounds=false&language=pt-BR&key=${GOOGLE_API_KEY}`;
-        const r = await fetch(url);
-        const d = await r.json();
-        predictions = d.status === 'OK' ? d.predictions : [];
-        _placesCache[cacheKey] = predictions;
-      }
-
-      // Filtra resultados de JF ou região próxima
-      const jfPreds = predictions.filter(p => {
-        const desc = p.description.toLowerCase();
-        return desc.includes('juiz de fora') || desc.includes(', mg') || desc.includes('minas gerais');
-      }).slice(0, 5);
-
-      if (!jfPreds.length && !localResults.length) {
-        // Sem resultados em JF — tenta sem filtro geográfico
-        const todos = predictions.slice(0, 3);
-        if (todos.length) await resolverEMostrarPredictions(todos, localResults, input, wrapper);
-        return;
-      }
-
-      await resolverEMostrarPredictions(jfPreds, localResults, input, wrapper);
-
-    } catch(e) {
-      // Places falhou — locais OSM já foram mostrados acima
+    // 2. Places Autocomplete via JS SDK (sem CORS)
+    const service = getAutocompleteService();
+    if (!service) {
+      // SDK ainda não carregou — mantém locais OSM
+      return;
     }
+
+    const cacheKey = query.toLowerCase().trim();
+    if (_placesCache[cacheKey]) {
+      await resolverEMostrarPredictions(_placesCache[cacheKey], localResults, input, wrapper);
+      return;
+    }
+
+    service.getPlacePredictions({
+      input: query,
+      componentRestrictions: { country: 'br' },
+      location: new google.maps.LatLng(-21.7605, -43.3498),
+      radius: 30000,
+      language: 'pt-BR'
+    }, async (predictions, status) => {
+      if (status !== google.maps.places.PlacesServiceStatus.OK || !predictions) return;
+      // Filtra preferencialmente JF
+      const jfPreds = predictions.filter(p =>
+        p.description.toLowerCase().includes('juiz de fora') ||
+        p.description.toLowerCase().includes(', mg')
+      ).slice(0, 5);
+      const final = jfPreds.length ? jfPreds : predictions.slice(0, 3);
+      _placesCache[cacheKey] = final;
+      await resolverEMostrarPredictions(final, localResults, input, wrapper);
+    });
   }
 
-  // Converte predictions do Places em resultados com coordenadas via Place Details
+  // Busca detalhes (coordenadas) de cada prediction via PlacesService
   const _detailsCache = {};
 
-  async function resolverEMostrarPredictions(predictions, localResults, input, wrapper) {
-    const placesResults = await Promise.all(predictions.map(async p => {
-      try {
-        if (_detailsCache[p.place_id]) return _detailsCache[p.place_id];
-        const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${p.place_id}&fields=geometry,formatted_address,types,name&language=pt-BR&key=${GOOGLE_API_KEY}`;
-        const r = await fetch(url);
-        const d = await r.json();
-        if (d.status !== 'OK') return null;
-        const result = {
-          geometry: d.result.geometry,
-          formatted_address: d.result.formatted_address || p.description,
-          types: d.result.types || [],
-          name: d.result.name || '',
-          _fromPlaces: true
-        };
-        _detailsCache[p.place_id] = result;
-        return result;
-      } catch(e) { return null; }
-    }));
+  function resolverEMostrarPredictions(predictions, localResults, input, wrapper) {
+    return new Promise(resolve => {
+      const results = [];
+      let pending = predictions.length;
+      if (!pending) { resolve(); return; }
 
-    const valid = placesResults.filter(Boolean);
-    const merged = [...localResults, ...valid].slice(0, 5);
-    if (merged.length) showAutocompleteList(merged, input, wrapper);
+      predictions.forEach(p => {
+        if (_detailsCache[p.place_id]) {
+          results.push(_detailsCache[p.place_id]);
+          pending--;
+          if (pending === 0) mostrar();
+          return;
+        }
+        _placesService.getDetails({
+          placeId: p.place_id,
+          fields: ['geometry', 'formatted_address', 'types', 'name']
+        }, (place, status) => {
+          if (status === google.maps.places.PlacesServiceStatus.OK && place) {
+            const r = {
+              geometry: { location: { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() } },
+              formatted_address: place.formatted_address || p.description,
+              types: place.types || [],
+              name: place.name || '',
+              _fromPlaces: true
+            };
+            _detailsCache[p.place_id] = r;
+            results.push(r);
+          }
+          pending--;
+          if (pending === 0) mostrar();
+        });
+      });
+
+      function mostrar() {
+        const merged = [...localResults, ...results].slice(0, 5);
+        if (merged.length) showAutocompleteList(merged, input, wrapper);
+        resolve();
+      }
+    });
   }
 
-  function showAutocompleteList(results, input, wrapper) {
+    function showAutocompleteList(results, input, wrapper) {
     removeAutocompleteList(wrapper);
     const list = document.createElement('div');
     list.className = 'autocomplete-list';
