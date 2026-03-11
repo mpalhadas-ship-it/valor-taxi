@@ -359,20 +359,6 @@
   .notif.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
   /* INSTALL BANNER */
-  .install-banner {
-    display: none;
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    background: var(--taxi-blue-dark);
-    border-top: 2px solid var(--taxi-yellow);
-    padding: 14px 20px;
-    align-items: center;
-    gap: 12px;
-    z-index: 500;
-  }
-  .banner-text { flex: 1; font-size: 0.9rem; color: var(--white); }
-  .banner-install { background: var(--taxi-yellow); color: var(--taxi-blue-dark); border: none; border-radius: 8px; padding: 8px 16px; font-weight: 800; font-family: 'Barlow Condensed', sans-serif; cursor: pointer; font-size: 0.9rem; }
-  .banner-close { background: transparent; border: none; color: rgba(255,255,255,0.5); font-size: 1.2rem; cursor: pointer; }
 
   /* MODAL TERMOS */
   .modal-overlay {
@@ -449,14 +435,6 @@
     display: none;
     margin-bottom: 4px;
   }
-  #contador-corridas {
-    font-family: 'Barlow', sans-serif;
-    font-size: 0.78rem;
-    color: rgba(255,255,255,0.45);
-    text-align: center;
-    letter-spacing: 1px;
-    padding: 6px 0 2px;
-  }
   .avaliacao-wrap {
     display: flex;
     gap: 10px;
@@ -512,8 +490,7 @@
     .modal-title { font-size: 1.3rem; }
     .modal-text { font-size: 0.88rem; }
     .modal-btn { font-size: 1rem; padding: 14px; }
-    .install-banner { padding: 12px 14px; }
-  }
+    }
 
   @media (max-width: 400px) {
     .header-inner span[style*="font-size:1.7rem"] { font-size: 1.1rem !important; }
@@ -564,6 +541,7 @@
 
     <div class="addr-group" id="stops-container">
       <div class="addr-group">
+        <div id="saudacao" style="font-family:'Barlow',sans-serif;font-size:0.9rem;font-weight:600;color:rgba(255,255,255,0.6);margin-bottom:6px;letter-spacing:1px;"></div>
         <label style="color:var(--taxi-yellow);"><span class="dot-dest"></span> PARA ONDE VAMOS?</label>
         <div class="addr-row">
           <input class="addr-input stop-input" data-index="0" type="text" placeholder="Local ou Rua, com número se possível..." autocomplete="off" />
@@ -604,7 +582,6 @@
     </div>
   </div>
 
-  <div id="contador-corridas">🚕 Calculando corridas...</div>
   <div class="sidebar"></div>
 </div>
 
@@ -612,11 +589,6 @@
 
 <div class="notif" id="notif"></div>
 
-<div class="install-banner" id="install-banner">
-  <span class="banner-text">📱 Instale o Calculadora de Táxi no seu celular!</span>
-  <button class="banner-install" onclick="instalarApp()">Instalar</button>
-  <button class="banner-close" onclick="fecharBanner()">✕</button>
-</div>
 
 <script>
   // ── TARIFAS ───────────────────────────────────────────────────────────────
@@ -652,6 +624,13 @@
       document.getElementById('origin-display').textContent = PONTOS[ponto].nome;
       // Limpa qualquer dado antigo do localStorage
       try { localStorage.clear(); } catch(e) {}
+      // Saudação por horário
+      (function() {
+        const h = new Date().getHours();
+        const s = h >= 5 && h < 12 ? 'Bom dia! 🌅' : h >= 12 && h < 18 ? 'Boa tarde! ☀️' : 'Boa noite! 🌙';
+        const el = document.getElementById('saudacao');
+        if (el) el.textContent = s;
+      })();
       // Splash screen — some após 1.5s
       setTimeout(() => {
         const s = document.getElementById('splash-screen');
@@ -659,7 +638,6 @@
         setTimeout(() => s.style.display = 'none', 500);
       }, 1500);
       // Carrega contador de corridas
-      carregarContador();
     }
   }
 
@@ -1123,19 +1101,6 @@
     requestAnimationFrame(tick);
   }
 
-  async function carregarContador() {
-    try {
-      const CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTAFgp-moTJ_gV6c_9p1N0kdJitr_BeZptH0ukJMs-QialQgayN6E0erhdwd0d-acmpcBESsYwDMaxP/pub?output=csv&t=' + Date.now();
-      const r = await fetch(CSV, {cache:'no-store'});
-      const text = await r.text();
-      const linhas = text.trim().split('\n').filter(l => l.includes('Calculado'));
-      const total = linhas.length;
-      const el = document.getElementById('contador-corridas');
-      if (total > 0) {
-        el.textContent = '🚕 ' + total.toLocaleString('pt-BR') + ' corridas já calculadas por aqui!';
-      } else {
-        el.textContent = '';
-      }
     } catch(e) {
       document.getElementById('contador-corridas').textContent = '';
     }
@@ -1204,15 +1169,6 @@
   }
 
   // ── PWA ───────────────────────────────────────────────────────────────────
-  let deferredPrompt;
-  window.addEventListener('beforeinstallprompt', e => {
-    e.preventDefault(); deferredPrompt = e;
-    document.getElementById('install-banner').style.display = 'flex';
-  });
-  function instalarApp() {
-    if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then(() => { deferredPrompt = null; fecharBanner(); }); }
-  }
-  function fecharBanner() { document.getElementById('install-banner').style.display = 'none'; }
 
   // ── INIT ──────────────────────────────────────────────────────────────────
   window.addEventListener('DOMContentLoaded', () => {
