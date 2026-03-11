@@ -980,8 +980,6 @@
   let autocompleteTimer = null;
 
   function setupAutocomplete(input) {
-    if (input.dataset.autocompleteReady) return; // evita duplo setup
-    input.dataset.autocompleteReady = '1';
     const getWrapper = () => input.closest('.addr-group') || input.parentElement;
     input.addEventListener('input', () => {
       clearTimeout(autocompleteTimer);
@@ -1045,7 +1043,7 @@
       const parts = res.formatted_address.split(',');
       const hasNumber = /\d/.test(parts[0]);
       item.textContent = hasNumber ? parts.slice(0, 2).join(',').trim() : parts.slice(0, 3).join(',').trim();
-      const handleSelect = () => {
+      item.addEventListener('mousedown', () => {
         input.dataset.lat = res.geometry.location.lat;
         input.dataset.lon = res.geometry.location.lng;
         input.dataset.formatted = res.formatted_address;
@@ -1075,9 +1073,7 @@
         } else {
           setTimeout(() => perguntarNumero(input), 150);
         }
-      };
-      item.addEventListener('mousedown', handleSelect);
-      item.addEventListener('touchstart', (e) => { e.preventDefault(); handleSelect(); });
+      });
       list.appendChild(item);
     });
     wrapper.appendChild(list);
