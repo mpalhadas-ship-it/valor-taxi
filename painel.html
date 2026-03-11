@@ -589,7 +589,6 @@
       window._origemFixa = { lat: PONTOS[ponto].lat, lon: PONTOS[ponto].lon };
       document.getElementById('origin').value = PONTOS[ponto].nome;
       document.getElementById('origin-display').textContent = PONTOS[ponto].nome;
-      renderHistorico();
     }
   }
 
@@ -874,7 +873,6 @@
       // Registro
       const destFormatados = destResults.map(r => r.formatted).join(' → ');
       registrarEvento(filled.join(' → '), destFormatados, 'Calculado', `R$ ${vMin} a R$ ${vMax} | B${bandeira} | ${distKm.toFixed(1)}km`);
-      salvarHistorico(filled.join(' → '), `R$ ${vMin} a R$ ${vMax}`);
 
       showNotif('✅ Estimativa calculada!');
 
@@ -1022,57 +1020,7 @@
     wrapper.appendChild(list);
   }
 
-  // ── HISTÓRICO ────────────────────────────────────────────────────────────
-  const HIST_KEY = 'valortaxi_hist';
-  const MAX_HIST = 5;
 
-  function salvarHistorico(destino, valor) {
-    try {
-      const hist = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
-      // Remove duplicata se existir
-      const novo = hist.filter(h => h.destino !== destino);
-      novo.unshift({ destino, valor });
-      localStorage.setItem(HIST_KEY, JSON.stringify(novo.slice(0, MAX_HIST)));
-      renderHistorico();
-    } catch(e) {}
-  }
-
-  function renderHistorico() {
-    try {
-      const hist = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
-      const lista = document.getElementById('historico-lista');
-      const section = document.getElementById('historico-section');
-      if (!hist.length) { section.style.display = 'none'; return; }
-      section.style.display = 'block';
-      lista.innerHTML = hist.map(h => `
-        <button class="historico-item" onclick="usarHistorico('${h.destino.replace(/'/g,"\'")}')">
-          ${h.destino}
-          <small>${h.valor}</small>
-        </button>`).join('');
-    } catch(e) {}
-  }
-
-  function usarHistorico(destino) {
-    const inp = document.querySelector('.stop-input');
-    if (!inp) return;
-    inp.value = destino;
-    // Limpa cache pra forçar geocoding novo
-    delete inp.dataset.lat; delete inp.dataset.lon;
-    delete inp.dataset.formatted; delete inp.dataset.ehLocal;
-    inp.focus();
-  }
-
-  // ── COMPARTILHAR ──────────────────────────────────────────────────────────
-  function compartilharResultado() {
-    const preco = document.getElementById('total-price').textContent;
-    const dest = document.querySelector('.stop-input')?.value || '';
-    const texto = `🚕 Táxi em Juiz de Fora\nDestino: ${dest}\nValor estimado: ${preco}\n\nCalculado pelo ValorTaxi`;
-    if (navigator.share) {
-      navigator.share({ title: 'ValorTaxi', text: texto }).catch(() => {});
-    } else {
-      navigator.clipboard.writeText(texto).then(() => showNotif('✅ Copiado!'));
-    }
-  }
 
   function novoCalculo() {
     // Limpa campos de destino
@@ -1093,7 +1041,6 @@
     document.getElementById('add-stop-btn').style.display = 'none';
     // Foca no campo
     document.querySelector('.stop-input').focus();
-    renderHistorico();
   }
 
   function removeAutocompleteList(wrapper) {
