@@ -1032,8 +1032,10 @@
         googleResults = _placesCache[cacheKey];
       } else {
         const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query + ', Juiz de Fora, MG, Brasil')}&region=br&language=pt-BR&key=${GOOGLE_API_KEY}`;
+        console.log('[ValorTaxi] Geocode chamado:', query);
         const r = await fetch(url);
         const d = await r.json();
+        console.log('[ValorTaxi] Geocode status:', d.status, '| results:', d.results?.length);
 
         if (d.status === 'OK' && d.results.length > 0) {
           // Filtra por raio de 30km do centro de JF (mais confiável que address_components para buscas parciais)
@@ -1083,6 +1085,7 @@
       });
 
       const merged = [...localResults, ...googleFiltrado].slice(0, 5);
+      console.log('[ValorTaxi] merged:', merged.length, merged.map(m => m.formatted_address));
       if (merged.length) showAutocompleteList(merged, input, wrapper);
 
     } catch(e) {
