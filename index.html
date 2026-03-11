@@ -173,6 +173,7 @@
   }
 
   .addr-input::placeholder { color: #9CA3AF !important; font-weight: 400 !important; }
+  #input-numero-popup::placeholder { color: #C0C0C0 !important; font-size: 1rem !important; }
 
   /* AUTOCOMPLETE */
   .autocomplete-list {
@@ -822,10 +823,10 @@
       const overlay = criarOverlay(`
         <div class="confirm-box">
           <div class="confirm-title" style="font-size:1rem;letter-spacing:1px;">INFORME O NÚMERO PARA UM CÁLCULO MAIS APROXIMADO</div>
-          <input id="input-numero-popup" type="number" inputmode="numeric" placeholder="Ex: 150"
+          <input id="input-numero-popup" type="number" inputmode="numeric" placeholder="Digite aqui o número"
             style="width:100%;margin:18px 0 10px;padding:14px;border-radius:10px;border:2px solid #FFE600;font-size:1.3rem;font-weight:700;text-align:center;outline:none;background:#fff;color:#1A5276;box-sizing:border-box;" />
-          <button class="btn-confirmar" style="width:100%;margin-bottom:10px;background:#FFE600;color:#1A5276;border:none;border-radius:10px;padding:11px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.95rem;letter-spacing:1px;cursor:pointer;">OK</button>
-          <button class="btn-cancelar" style="width:100%;background:#FFE600;color:#1A5276;border:none;border-radius:10px;padding:11px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.82rem;letter-spacing:1px;cursor:pointer;">NÃO SEI O NÚMERO, CALCULE PELO QUE INFORMEI</button>
+          <button class="btn-confirmar" style="width:100%;margin-bottom:10px;background:#FFE600;color:#1A5276;border:none;border-radius:10px;padding:11px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.95rem;letter-spacing:1px;cursor:pointer;">INFORMAR</button>
+          <button class="btn-cancelar" style="width:100%;background:#FFE600;color:#1A5276;border:none;border-radius:10px;padding:11px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.82rem;letter-spacing:1px;cursor:pointer;">NÃO SEI O NÚMERO, CONTINUAR MESMO ASSIM</button>
         </div>`);
 
       // Foca no campo de número automaticamente
