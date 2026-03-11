@@ -997,7 +997,11 @@
         delete input.dataset.ehLocal;
       }
       if (val.length < 3) return;
-      autocompleteTimer = setTimeout(() => fetchSuggestions(val, input, getWrapper()), 400);
+      // Base local: responde rápido com qualquer comprimento >= 3
+      // Google Geocode: só chama com palavra completa (espaço no fim, ou >= 6 chars, ou 2+ palavras)
+      const palavras = val.trim().split(/\s+/);
+      const prontoParaGoogle = val.endsWith(' ') || val.length >= 6 || palavras.length >= 2;
+      autocompleteTimer = setTimeout(() => fetchSuggestions(val.trim(), input, getWrapper(), prontoParaGoogle), 400);
     });
     input.addEventListener('keydown', e => {
       if (e.key === 'Enter') { removeAutocompleteList(getWrapper()); calcularPorMapa(); }
@@ -1011,7 +1015,7 @@
 
 
 
-  async function fetchSuggestions(query, input, wrapper) {
+  async function fetchSuggestions(query, input, wrapper, buscarGoogle = true) {
     // 1. Base local OSM — instantânea, prioridade máxima
     const localResults = buscarBaseLocal(query);
 
@@ -1019,6 +1023,7 @@
     if (localResults.length > 0) showAutocompleteList(localResults, input, wrapper);
 
     // 2. Geocoding API do Google — complementa com ruas
+    if (!buscarGoogle) return;
     try {
       const cacheKey = normalizarTexto(query.trim());
       let googleResults = [];
