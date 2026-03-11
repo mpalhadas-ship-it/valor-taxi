@@ -910,10 +910,11 @@
       const [dJF, dGeral] = await Promise.all([rJF.json(), rGeral.json()]);
       const jfResults = (dJF.status === 'OK' ? dJF.results : [])
         .filter(r => r.formatted_address.toLowerCase().includes('juiz de fora'));
-      // Só mostra resultados de outras cidades se não houver nenhum em JF
-      const outrosResults = jfResults.length === 0
-        ? (dGeral.status === 'OK' ? dGeral.results : []).filter(r => !r.formatted_address.toLowerCase().includes('juiz de fora'))
-        : [];
+      // Se parece nome de cidade (sem número, poucas palavras), mostra resultados de fora junto
+      const pareceCity = !/\d/.test(query) && query.trim().split(' ').length <= 3;
+      const geralResults = (dGeral.status === 'OK' ? dGeral.results : [])
+        .filter(r => !r.formatted_address.toLowerCase().includes('juiz de fora'));
+      const outrosResults = (pareceCity || jfResults.length === 0) ? geralResults : [];
       const merged = [...jfResults, ...outrosResults].slice(0, 4);
       if (!merged.length) return;
       showAutocompleteList(merged, input, wrapper);
