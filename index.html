@@ -510,7 +510,7 @@
     
   }
 </style>
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC6M_XhgT-xqltyObVbmanmzSiqCH_AlD0&libraries=places&language=pt-BR"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC6M_XhgT-xqltyObVbmanmzSiqCH_AlD0&libraries=places&language=pt-BR&callback=initGoogleMaps" async defer></script>
 </head>
 <body>
 
@@ -634,11 +634,13 @@
       })();
       // Splash screen — some após 800ms, pointerEvents desativa imediatamente
       const splashEl = document.getElementById('splash-screen');
-      splashEl.style.pointerEvents = 'none';
-      setTimeout(() => {
-        splashEl.style.opacity = '0';
-        setTimeout(() => splashEl.remove(), 500);
-      }, 800);
+      if (splashEl) {
+        splashEl.style.pointerEvents = 'none';
+        setTimeout(() => {
+          splashEl.style.opacity = '0';
+          setTimeout(() => splashEl.remove(), 500);
+        }, 800);
+      }
       // Carrega contador de corridas
     }
   }
@@ -1010,15 +1012,7 @@
   let _autocompleteService = null;
   let _placesService = null;
 
-  function getAutocompleteService() {
-    if (!_autocompleteService && window.google && google.maps && google.maps.places) {
-      _autocompleteService = new google.maps.places.AutocompleteService();
-      // PlacesService precisa de um elemento div
-      const div = document.createElement('div');
-      _placesService = new google.maps.places.PlacesService(div);
-    }
-    return _autocompleteService;
-  }
+
 
   async function fetchSuggestions(query, input, wrapper) {
     // 1. Base local OSM — instantânea
@@ -1029,11 +1023,7 @@
     }
 
     // 2. Places Autocomplete via JS SDK (sem CORS)
-    const service = getAutocompleteService();
-    if (!service) {
-      // SDK ainda não carregou — mantém locais OSM
-      return;
-    }
+    if (!_autocompleteService) return; // SDK ainda não carregou
 
     const cacheKey = query.toLowerCase().trim();
     if (_placesCache[cacheKey]) {
@@ -1041,7 +1031,7 @@
       return;
     }
 
-    service.getPlacePredictions({
+    _autocompleteService.getPlacePredictions({
       input: query,
       componentRestrictions: { country: 'br' },
       location: new google.maps.LatLng(-21.7605, -43.3498),
@@ -1247,6 +1237,13 @@
     carregarPontoDeOrigem();
     document.querySelectorAll('.stop-input').forEach(inp => setupAutocomplete(inp));
   });
+
+  // Callback do Google Maps SDK — inicializa serviços quando SDK estiver pronto
+  function initGoogleMaps() {
+    _autocompleteService = new google.maps.places.AutocompleteService();
+    const div = document.createElement('div');
+    _placesService = new google.maps.places.PlacesService(div);
+  }
 </script>
 </body>
 </html>
