@@ -542,7 +542,7 @@
   <!-- FORM CARD -->
   <div class="card">
     <div class="addr-group">
-      <div id="origin-display" style="font-family:'Barlow Condensed',sans-serif;font-size:1.35rem;font-weight:900;color:var(--taxi-yellow);text-transform:uppercase;letter-spacing:1.5px;padding:2px 0 10px;line-height:1.2;text-align:center;">—</div>
+      <div id="origin-display" style="font-family:'Barlow Condensed',sans-serif;font-size:1.35rem;font-weight:900;color:var(--taxi-yellow);text-transform:uppercase;letter-spacing:1.5px;padding:2px 0 10px;line-height:1.2;text-align:center;width:100%;display:block;word-break:break-word;text-shadow:-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 3px 8px rgba(0,0,0,0.6);">—</div>
       <input type="hidden" id="origin" />
     </div>
 
@@ -613,8 +613,10 @@
 
   // ── PONTOS ────────────────────────────────────────────────────────────────
   const PONTOS = {
-    'ponto51':   { nome: 'PONTO DE TÁXI DA RODOVIÁRIA', lat: -21.738045, lon: -43.374371 },
-    'ponto01md': { nome: 'Ponto 01 — Marechal Deodoro', lat: -21.7614,   lon: -43.3496   }
+    'ponto51':   { nome: 'PONTO DE TÁXI DA RODOVIÁRIA',         lat: -21.738045,          lon: -43.374371          },
+    'ponto01md': { nome: 'PONTO 01 — MARECHAL DEODORO',         lat: -21.7614,             lon: -43.3496            },
+    'pontosind': { nome: 'PONTO DE TÁXI — SHOPPING INDEPENDÊNCIA', lat: -21.781686001031918, lon: -43.361046456576645 },
+    'pontojn':   { nome: 'PONTO DE TÁXI — SHOPPING JARDIM NORTE',  lat: -21.74083898014146,  lon: -43.37134838787416  }
   };
 
   function carregarPontoDeOrigem() {
