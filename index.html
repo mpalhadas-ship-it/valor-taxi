@@ -4,7 +4,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calculadora de Táxi — Juiz de Fora</title>
+<title>ValorTaxi — Juiz de Fora</title>
+<meta name="application-name" content="ValorTaxi">
+<meta name="apple-mobile-web-app-title" content="ValorTaxi">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#FFE600">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -421,6 +428,53 @@
 
 
 
+  @keyframes splashIn {
+    from { opacity:0; transform:translateY(20px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  @keyframes countUp {
+    from { opacity:0; transform:scale(0.8); }
+    to   { opacity:1; transform:scale(1); }
+  }
+  #aviso-pico {
+    background: rgba(192,57,43,0.12);
+    border: 1px solid rgba(192,57,43,0.3);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 0.82rem;
+    color: #c0392b;
+    font-weight: 600;
+    text-align: center;
+    display: none;
+    margin-bottom: 4px;
+  }
+  #contador-corridas {
+    font-family: 'Barlow', sans-serif;
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.45);
+    text-align: center;
+    letter-spacing: 1px;
+    padding: 6px 0 2px;
+  }
+  .avaliacao-wrap {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 6px;
+  }
+  .btn-avaliacao {
+    background: transparent;
+    border: 2px solid var(--taxi-blue-dark);
+    border-radius: 50px;
+    padding: 8px 20px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-avaliacao:hover { background: var(--taxi-blue-dark); }
+  .btn-avaliacao.ativo { background: var(--taxi-blue-dark); transform: scale(1.1); }
+
   /* ANIMATIONS */
   @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -534,8 +588,14 @@
         <div class="result-value" id="total-price">R$</div>
       </div>
       <div id="result-info" style="display:none;margin-top:8px;flex-direction:column;gap:4px;text-align:center;">
+        <div id="aviso-pico">⚠️ Horário de pico — valor pode ser maior por trânsito</div>
+        <div id="result-dist" style="font-family:'Barlow',sans-serif;font-size:0.88rem;color:rgba(26,82,118,0.6);letter-spacing:1px;"></div>
         <div id="result-msg" style="font-size:1.05rem;color:var(--taxi-blue-dark);font-weight:500;line-height:1.8;padding:10px 4px;font-family:'Barlow',sans-serif;">
           Esse é o valor provável de sua corrida. Fique à vontade também pra consultar o taxista aí no ponto se preferir. Boa corrida! 🚕
+        </div>
+        <div class="avaliacao-wrap" id="avaliacao-wrap">
+          <button class="btn-avaliacao" onclick="avaliar(1)" id="btn-like">👍</button>
+          <button class="btn-avaliacao" onclick="avaliar(0)" id="btn-dislike">👎</button>
         </div>
         <button onclick="novoCalculo()" style="margin-top:2px;background:var(--taxi-blue-dark);color:var(--taxi-yellow);border:none;border-radius:10px;padding:12px 24px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1rem;letter-spacing:2px;text-transform:uppercase;cursor:pointer;width:100%;">
           NOVO CÁLCULO
@@ -544,6 +604,7 @@
     </div>
   </div>
 
+  <div id="contador-corridas">🚕 Calculando corridas...</div>
   <div class="sidebar"></div>
 </div>
 
@@ -591,6 +652,14 @@
       document.getElementById('origin-display').textContent = PONTOS[ponto].nome;
       // Limpa qualquer dado antigo do localStorage
       try { localStorage.clear(); } catch(e) {}
+      // Splash screen — some após 1.5s
+      setTimeout(() => {
+        const s = document.getElementById('splash-screen');
+        s.style.opacity = '0';
+        setTimeout(() => s.style.display = 'none', 500);
+      }, 1500);
+      // Carrega contador de corridas
+      carregarContador();
     }
   }
 
@@ -717,7 +786,8 @@
     { nome: 'rio branco', fatorMax: 2.50 }
   ];
 
-  function mostrarResultado(distKm, paradoMin, ruaSemNumero, enderecoDigitado) {
+  function mostrarResultado(distKm, paradoMin, ruaSemNumero, enderecoDigitado, distKmReal) {
+    distKm = distKmReal || distKm;
     const kmRate = bandeira === 2 ? TARIFAS.kmB2 : TARIFAS.kmB1;
     const total = TARIFAS.bandeirada + distKm * kmRate + (paradoMin/60) * TARIFAS.horaParada;
     const hora = new Date().getHours();
@@ -734,12 +804,24 @@
     }
     const vMin = Math.ceil(total * fatorMin);
     const vMax = Math.ceil(total * fatorMax);
-    document.getElementById('total-price').textContent = 'R$ ' + vMin + ' a R$ ' + vMax;
+    // Animação contador do valor
+    animarValor(vMin, vMax);
     document.getElementById('result-info').style.display = 'flex';
     document.getElementById('add-stop-btn').style.display = 'block';
     // Badge bandeira 2
     const badge = document.getElementById('bandeira-badge');
     if (bandeira === 2) { badge.style.display = 'inline-block'; } else { badge.style.display = 'none'; }
+    // Aviso pico
+    const aviso = document.getElementById('aviso-pico');
+    aviso.style.display = horaCritica ? 'block' : 'none';
+    // Distância
+    document.getElementById('result-dist').textContent = '~' + distKm.toFixed(1) + ' km de rota';
+    // Vibração
+    if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
+    // Reset avaliação
+    document.getElementById('btn-like').classList.remove('ativo');
+    document.getElementById('btn-dislike').classList.remove('ativo');
+    document.getElementById('avaliacao-wrap').style.display = 'flex';
     return { vMin, vMax };
   }
 
@@ -862,7 +944,7 @@
         btn.classList.remove('loading');
         return;
       }
-      const { vMin, vMax } = mostrarResultado(distKm, durMin * 0.15, ruaSemNumero, filled.join(' '));
+      const { vMin, vMax } = mostrarResultado(distKm, durMin * 0.15, ruaSemNumero, filled.join(' '), distKm);
 
       // Troca texto abaixo do valor quando rua sem número
       const msgPadrao = 'Esse é o valor provável de sua corrida. Fique à vontade também pra consultar o taxista aí no ponto se preferir. Boa corrida! 🚕';
@@ -1023,6 +1105,53 @@
   }
 
 
+
+  function animarValor(vMin, vMax) {
+    const el = document.getElementById('total-price');
+    el.style.animation = 'none';
+    const duracao = 600;
+    const inicio = Date.now();
+    const tick = () => {
+      const prog = Math.min((Date.now() - inicio) / duracao, 1);
+      const ease = 1 - Math.pow(1 - prog, 3);
+      const cMin = Math.round(ease * vMin);
+      const cMax = Math.round(ease * vMax);
+      el.textContent = 'R$ ' + cMin + ' a R$ ' + cMax;
+      if (prog < 1) requestAnimationFrame(tick);
+      else el.textContent = 'R$ ' + vMin + ' a R$ ' + vMax;
+    };
+    requestAnimationFrame(tick);
+  }
+
+  async function carregarContador() {
+    try {
+      const CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTAFgp-moTJ_gV6c_9p1N0kdJitr_BeZptH0ukJMs-QialQgayN6E0erhdwd0d-acmpcBESsYwDMaxP/pub?output=csv&t=' + Date.now();
+      const r = await fetch(CSV, {cache:'no-store'});
+      const text = await r.text();
+      const linhas = text.trim().split('\n').filter(l => l.includes('Calculado'));
+      const total = linhas.length;
+      const el = document.getElementById('contador-corridas');
+      if (total > 0) {
+        el.textContent = '🚕 ' + total.toLocaleString('pt-BR') + ' corridas já calculadas por aqui!';
+      } else {
+        el.textContent = '';
+      }
+    } catch(e) {
+      document.getElementById('contador-corridas').textContent = '';
+    }
+  }
+
+  function avaliar(nota) {
+    const btnLike = document.getElementById('btn-like');
+    const btnDislike = document.getElementById('btn-dislike');
+    btnLike.classList.toggle('ativo', nota === 1);
+    btnDislike.classList.toggle('ativo', nota === 0);
+    const dest = document.querySelector('.stop-input')?.value || '';
+    const valor = document.getElementById('total-price').textContent;
+    registrarEvento(dest, valor, nota === 1 ? 'Avaliação 👍' : 'Avaliação 👎', valor);
+    showNotif(nota === 1 ? '👍 Obrigado pelo feedback!' : '👎 Obrigado! Vamos melhorar.');
+    document.getElementById('avaliacao-wrap').style.display = 'none';
+  }
 
   function novoCalculo() {
     // Limpa campos de destino
