@@ -576,6 +576,29 @@
 
   // ── CONFIG ────────────────────────────────────────────────────────────────
   const GOOGLE_API_KEY = 'AIzaSyC6M_XhgT-xqltyObVbmanmzSiqCH_AlD0';
+
+  // Palavras que indicam estabelecimento — nunca aplicam margem extra por falta de número
+  const PALAVRAS_ESTABELECIMENTO = [
+    'hospital','clínica','clinica','laboratório','laboratorio','farmácia','farmacia',
+    'supermercado','mercado','padaria','restaurante','bar','lanchonete','pizzaria',
+    'academia','hotel','pousada','escola','colégio','colegio','faculdade','universidade',
+    'creche','praça','praca','parque','igreja','catedral','shopping','galeria',
+    'oficina','posto','lavagem','pet','dentista','consultório','consultorio',
+    'salão','salon','barbearia','papelaria','banco','caixa','lotérica','loterica',
+    'cartório','cartorio','correios','delegacia','upa','ubs','terminal',
+    'rodoviária','rodoviaria','aeroporto','estação','estacao',
+    'cemitério','cemiterio','fórum','forum','tribunal','prefeitura','câmara',
+    'museu','teatro','cinema','biblioteca','ginásio','ginasio','estádio','estadio',
+    'ufjf','granbery','unipac','unifei','senai','senac','sesi','sesc',
+    'loja','empresa','condomínio','condominio','edifício','edificio','residencial',
+    'clube','sindicato','associação','associacao','instituto','fundação','fundacao',
+    'santa casa','santa','são','sao','nossa senhora','nossa','caixa econômica'
+  ];
+
+  function ehEstabelecimento(texto) {
+    const t = texto.toLowerCase().trim();
+    return PALAVRAS_ESTABELECIMENTO.some(p => t.startsWith(p));
+  }
   const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwcMh244zukx-p2llStfCVo3znYeiXxUIeXb91Uq4uqQ5QjFsUu37Az1eUa_VSe3jUI/exec';
   const JF_BOUNDS = { latMin: -21.87, latMax: -21.62, lonMin: -43.50, lonMax: -43.27 };
   const JF_CENTRO = { lat: -21.738045, lon: -43.374371 };
@@ -769,13 +792,20 @@
       // Calcula rota
       const { distKm, durMin } = await calcularRota([originCoord, ...destResults]);
 
-      // Margem maior APENAS se: não veio do autocomplete E é rua genérica E não tem número
+      // Margem maior APENAS se: não tem número E não parece estabelecimento
       const inputs2 = Array.from(document.querySelectorAll('.stop-input'));
       const ruaSemNumero = destResults.some((r, i) => {
-        const inp = inputs2.find(el => el.value.trim() === filled[i]);
-        const veiuDoAutocomplete = inp && inp.dataset.lat;
-        if (veiuDoAutocomplete) return false; // autocomplete = sempre preciso, nunca aplica margem
-        return !r.ehLocal && !r.temNumero;
+        const addr = filled[i] || '';
+        const temNum = /\d/.test(addr);
+        if (temNum) return false;
+        // Se veio do autocomplete como local, não aplica
+        const inp = inputs2.find(el => el.value.trim() === addr);
+        if (inp && inp.dataset.ehLocal === '1') return false;
+        // Se parece estabelecimento pelo nome, não aplica
+        if (ehEstabelecimento(addr)) return false;
+        // Se o geocoding identificou como local, não aplica
+        if (r.ehLocal) return false;
+        return true; // é rua genérica sem número
       });
 
       // Trajeto longo = distância real da rota >= 25km — não mostra valor, abre popup
