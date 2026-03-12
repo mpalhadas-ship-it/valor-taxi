@@ -1012,12 +1012,13 @@
       const msgComNumero = 'Estes são os valores prováveis até o destino informado. Boa corrida!';
       const msgExtra = 'Se preferir, consulte também o taxista que está no ponto. Boa corrida!';
       const msgEl = document.getElementById('result-msg');
+      const estilo = "font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.95rem;letter-spacing:0.03em;text-transform:uppercase;display:block;";
       if (ruaSemNumero) {
         msgEl.innerHTML = `
-          <span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.95rem;letter-spacing:0.03em;display:block;margin-bottom:10px;">${msgSemNumero}</span>
-          <span style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:0.95rem;display:block;">${msgExtra}</span>`;
+          <span style="${estilo}margin-bottom:10px;">${msgSemNumero}</span>
+          <span style="${estilo}">${msgExtra}</span>`;
       } else {
-        msgEl.innerHTML = `<span style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:0.95rem;">${msgComNumero}</span>`;
+        msgEl.innerHTML = `<span style="${estilo}">${msgComNumero}</span>`;
       }
       msgEl.style.color = 'var(--taxi-blue)';
 
