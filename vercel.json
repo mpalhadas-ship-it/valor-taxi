@@ -2,14 +2,20 @@
   "redirects": [
     {
       "source": "/",
-      "has": [{ "type": "host", "value": "ponto51.valor.taxi.br" }],
-      "destination": "/?ponto=ponto51",
+      "has": [{ "type": "host", "value": "independencia.valor.taxi.br" }],
+      "destination": "/?ponto=pontosind",
       "permanent": false
     },
     {
       "source": "/",
-      "has": [{ "type": "host", "value": "ponto21.valor.taxi.br" }],
-      "destination": "/?ponto=ponto21",
+      "has": [{ "type": "host", "value": "jardimnorte.valor.taxi.br" }],
+      "destination": "/?ponto=pontojn",
+      "permanent": false
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "ponto51.valor.taxi.br" }],
+      "destination": "/?ponto=ponto51",
       "permanent": false
     }
   ]
