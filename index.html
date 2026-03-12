@@ -1013,12 +1013,13 @@
       const msgExtra = 'Se preferir, consulte também o taxista que está no ponto. Boa corrida!';
       const msgEl = document.getElementById('result-msg');
       if (ruaSemNumero) {
-        msgEl.innerHTML = msgSemNumero + '<br><br>' + msgExtra;
+        msgEl.innerHTML = `
+          <span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.95rem;letter-spacing:0.03em;display:block;margin-bottom:10px;">${msgSemNumero}</span>
+          <span style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:0.95rem;display:block;">${msgExtra}</span>`;
       } else {
-        msgEl.textContent = msgComNumero;
+        msgEl.innerHTML = `<span style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:0.95rem;">${msgComNumero}</span>`;
       }
       msgEl.style.color = 'var(--taxi-blue)';
-      msgEl.style.fontWeight = ruaSemNumero ? '700' : '500';
 
       // Registro
       const destFormatados = destResults.map(r => r.formatted).join(' → ');
