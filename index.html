@@ -900,6 +900,29 @@
         return geocodeFreshFull(addr);
       }));
 
+      // Valida se destinos estão dentro do raio de JF (30km do centro)
+      for (const dest of destResults) {
+        const dLat = (dest.lat - JF_CENTRO.lat) * Math.PI / 180;
+        const dLon = (dest.lon - JF_CENTRO.lon) * Math.PI / 180;
+        const a = Math.sin(dLat/2)**2 + Math.cos(JF_CENTRO.lat*Math.PI/180)*Math.cos(dest.lat*Math.PI/180)*Math.sin(dLon/2)**2;
+        const distCentro = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        if (distCentro > 30) {
+          btn.classList.remove('loading');
+          criarOverlay(`
+            <div class="confirm-box" style="text-align:center;">
+              <div class="confirm-title" style="font-size:1.05rem;line-height:1.6;">
+                DESTINO FORA DE JUIZ DE FORA
+              </div>
+              <div style="color:#fff;font-size:0.95rem;line-height:1.6;margin:14px 0 20px;">
+                O endereço informado parece estar fora do perímetro urbano de Juiz de Fora.<br><br>
+                Por favor, verifique o destino e tente novamente.
+              </div>
+              <button class="btn-confirmar" onclick="this.closest('.modal-overlay').remove()">OK, ENTENDI</button>
+            </div>`);
+          return;
+        }
+      }
+
       // Calcula rota
       const { distKm, durMin } = await calcularRota([originCoord, ...destResults]);
 
