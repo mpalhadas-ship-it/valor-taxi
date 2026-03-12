@@ -934,7 +934,7 @@
 
       // Troca texto abaixo do valor quando rua sem número
       const msgPadrao = '';
-      const msgSemNumero = 'POR NÃO HAVER O NÚMERO DO ENDEREÇO INFORMADO, FOI CALCULADO O MENOR E O MAIOR VALOR PROVÁVEL PARA O SEU DESTINO.';
+      const msgSemNumero = 'SEM INFORMAÇÃO DO NÚMERO, SERÁ CONSIDERADO UM DESTINO MAIS PRÓXIMO E UM MAIS DISTANTE DO LOCAL INFORMADO';
       const msgEl = document.getElementById('result-msg');
       msgEl.textContent = ruaSemNumero ? msgSemNumero : msgPadrao;
       msgEl.style.color = 'var(--taxi-blue)';
