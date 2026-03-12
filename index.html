@@ -1008,10 +1008,15 @@
       const { vMin, vMax } = mostrarResultado(distKm, durMin * 0.15, ruaSemNumero, filled.join(' '));
 
       // Troca texto abaixo do valor quando rua sem número
-      const msgPadrao = '';
       const msgSemNumero = 'SEM INFORMAÇÃO DO NÚMERO, O VALOR ACIMA CONSIDERA UM DESTINO MAIS PRÓXIMO E UM MAIS DISTANTE DO LOCAL INFORMADO';
+      const msgComNumero = 'Estes são os valores prováveis até o destino informado. Boa corrida!';
+      const msgExtra = 'Se preferir, consulte também o taxista que está no ponto. Boa corrida!';
       const msgEl = document.getElementById('result-msg');
-      msgEl.textContent = ruaSemNumero ? msgSemNumero : msgPadrao;
+      if (ruaSemNumero) {
+        msgEl.innerHTML = msgSemNumero + '<br><br>' + msgExtra;
+      } else {
+        msgEl.textContent = msgComNumero;
+      }
       msgEl.style.color = 'var(--taxi-blue)';
       msgEl.style.fontWeight = ruaSemNumero ? '700' : '500';
 
