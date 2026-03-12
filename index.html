@@ -913,10 +913,9 @@
       if (destinoBloqueado(dest)) {
         criarOverlay(`
           <div class="confirm-box" style="text-align:center;">
-            <div class="confirm-title" style="font-size:1.05rem;line-height:1.6;">DESTINO FORA DE JUIZ DE FORA</div>
+            <div class="confirm-title" style="font-size:1.05rem;line-height:1.6;">LOCAL INFORMADO ESTÁ FORA DO PERÍMETRO DE JUIZ DE FORA</div>
             <div style="color:#fff;font-size:0.95rem;line-height:1.6;margin:14px 0 20px;">
-              O destino informado está fora do perímetro de atendimento.<br><br>
-              Este serviço atende apenas corridas em Juiz de Fora.
+              PARA DESTINOS A OUTROS MUNICÍPIOS, CONSULTE O VALOR COM O TAXISTA NO PONTO
             </div>
             <button class="btn-confirmar" onclick="this.closest('.confirm-overlay').remove()">OK, ENTENDI</button>
           </div>`);
@@ -1027,10 +1026,9 @@
       if (msg.includes('não encontrado em Juiz de Fora') || msg.includes('fora do perímetro')) {
         criarOverlay(`
           <div class="confirm-box" style="text-align:center;">
-            <div class="confirm-title" style="font-size:1.05rem;line-height:1.6;">DESTINO FORA DE JUIZ DE FORA</div>
+            <div class="confirm-title" style="font-size:1.05rem;line-height:1.6;">LOCAL INFORMADO ESTÁ FORA DO PERÍMETRO DE JUIZ DE FORA</div>
             <div style="color:#fff;font-size:0.95rem;line-height:1.6;margin:14px 0 20px;">
-              O endereço informado não foi encontrado em Juiz de Fora.<br><br>
-              Por favor, verifique o destino e tente novamente.
+              PARA DESTINOS A OUTROS MUNICÍPIOS, CONSULTE O VALOR COM O TAXISTA NO PONTO
             </div>
             <button class="btn-confirmar" onclick="this.closest('.confirm-overlay').remove()">OK, ENTENDI</button>
           </div>`);
