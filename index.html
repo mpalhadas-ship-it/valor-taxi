@@ -529,8 +529,8 @@
 
     <div class="addr-group" id="stops-container">
       <div class="addr-group">
-        <div id="saudacao" style="font-family:'Barlow',sans-serif;font-size:0.9rem;font-weight:600;color:rgba(255,255,255,0.6);margin-bottom:6px;letter-spacing:1px;"></div>
-        <label style="color:var(--taxi-yellow);"><span class="dot-dest"></span> PARA ONDE VAMOS?</label>
+        <div id="saudacao" style="font-family:'Barlow',sans-serif;font-size:1.2rem;font-weight:700;color:#ffffff;margin-bottom:8px;letter-spacing:1px;"></div>
+        <label style="color:var(--taxi-yellow);display:block;text-align:center;width:100%;letter-spacing:2px;font-weight:800;">PARA ONDE VAMOS?</label>
         <div class="addr-row">
           <input class="addr-input stop-input" data-index="0" type="text" placeholder="Rua, número ou local" autocomplete="off" />
         </div>
@@ -934,7 +934,7 @@
 
       // Troca texto abaixo do valor quando rua sem número
       const msgPadrao = '';
-      const msgSemNumero = 'SEM INFORMAÇÃO DO NÚMERO, SERÁ CONSIDERADO UM DESTINO MAIS PRÓXIMO E UM MAIS DISTANTE DO LOCAL INFORMADO';
+      const msgSemNumero = 'SEM INFORMAÇÃO DO NÚMERO, O VALOR ACIMA CONSIDERA UM DESTINO MAIS PRÓXIMO E UM MAIS DISTANTE DO LOCAL INFORMADO';
       const msgEl = document.getElementById('result-msg');
       msgEl.textContent = ruaSemNumero ? msgSemNumero : msgPadrao;
       msgEl.style.color = 'var(--taxi-blue)';
