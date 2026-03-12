@@ -933,7 +933,7 @@
                 O endereço informado parece estar fora do perímetro urbano de Juiz de Fora.<br><br>
                 Por favor, verifique o destino e tente novamente.
               </div>
-              <button class="btn-confirmar" onclick="this.closest('.modal-overlay').remove()">OK, ENTENDI</button>
+              <button class="btn-confirmar" onclick="this.closest('.confirm-overlay').remove()">OK, ENTENDI</button>
             </div>`);
           return;
         }
@@ -995,7 +995,7 @@
               O endereço informado não foi encontrado em Juiz de Fora.<br><br>
               Por favor, verifique o destino e tente novamente.
             </div>
-            <button class="btn-confirmar" onclick="this.closest('.modal-overlay').remove()">OK, ENTENDI</button>
+            <button class="btn-confirmar" onclick="this.closest('.confirm-overlay').remove()">OK, ENTENDI</button>
           </div>`);
       } else {
         showNotif('❌ ' + msg);
