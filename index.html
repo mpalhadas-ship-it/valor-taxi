@@ -683,6 +683,27 @@
   const JF_BOUNDS = { latMin: -21.87, latMax: -21.62, lonMin: -43.50, lonMax: -43.27 };
   const JF_CENTRO = { lat: -21.738045, lon: -43.374371 };
 
+  // Cidades da região que NÃO são atendidas — bloqueio por nome
+  const CIDADES_BLOQUEADAS = [
+    'bicas','barbacena','lima duarte','santos dumont','matias barbosa',
+    'ewbank da camara','ewbank','mar de espanha','leopoldina','cataguases',
+    'muriae','muriaé','uba','ubá','visconde do rio branco','tabuleiro',
+    'rio novo','santos dumont','santa rita de jacutinga','pedro teixeira',
+    'bias forges','bias fortes','olaria','rio preto','descoberto',
+    'chacara','chácara','piau','simao pereira','simão pereira',
+    'coronel pacheco','guarara','guarará','rochedo de minas',
+    'senador cortes','santana do deserto','pequeri'
+  ];
+
+  function destinoBloqueado(texto) {
+    const norm = texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    return CIDADES_BLOQUEADAS.some(c => {
+      const cn = c.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      // Bloqueia se o texto É a cidade ou COMEÇA com ela
+      return norm === cn || norm.startsWith(cn + ' ') || norm.startsWith(cn + ',');
+    });
+  }
+
 
   // ── REGISTRO SHEETS ───────────────────────────────────────────────────────
   function registrarEvento(digitado, enderecoGoogle, acao, resultado) {
@@ -886,6 +907,22 @@
     const inputs = Array.from(document.querySelectorAll('.stop-input'));
     const filled = inputs.map(i => i.value.trim()).filter(Boolean);
     if (!filled.length) { showNotif('⚠️ Informe ao menos um destino!'); return; }
+
+    // Bloqueia cidades da região pelo nome antes mesmo do geocode
+    for (const dest of filled) {
+      if (destinoBloqueado(dest)) {
+        criarOverlay(`
+          <div class="confirm-box" style="text-align:center;">
+            <div class="confirm-title" style="font-size:1.05rem;line-height:1.6;">DESTINO FORA DE JUIZ DE FORA</div>
+            <div style="color:#fff;font-size:0.95rem;line-height:1.6;margin:14px 0 20px;">
+              O destino informado está fora do perímetro de atendimento.<br><br>
+              Este serviço atende apenas corridas em Juiz de Fora.
+            </div>
+            <button class="btn-confirmar" onclick="this.closest('.confirm-overlay').remove()">OK, ENTENDI</button>
+          </div>`);
+        return;
+      }
+    }
 
     const btn = document.getElementById('calc-map-btn');
     btn.classList.add('loading');
