@@ -14,7 +14,7 @@
     },
     {
       "source": "/",
-      "has": [{ "type": "host", "value": "ponto51.valor.taxi.br" }],
+      "has": [{ "type": "host", "value": "rodoviaria.valor.taxi.br" }],
       "destination": "/?ponto=ponto51",
       "permanent": false
     }
