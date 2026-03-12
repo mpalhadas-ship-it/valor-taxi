@@ -601,9 +601,17 @@
     'pontojn':   { nome: 'PONTO DE TÁXI — SHOPPING JARDIM NORTE',  lat: -21.74083898014146,  lon: -43.37134838787416  }
   };
 
-  function carregarPontoDeOrigem() {
+function carregarPontoDeOrigem() {
     const params = new URLSearchParams(window.location.search);
-    const ponto = params.get('ponto');
+    let ponto = params.get('ponto');
+    
+    // Se não tem parâmetro, detecta pelo subdomínio
+    if (!ponto) {
+      const host = window.location.hostname;
+      if (host.includes('independencia')) ponto = 'pontosind';
+      else if (host.includes('jardimnorte')) ponto = 'pontojn';
+      else if (host.includes('rodoviaria')) ponto = 'ponto51';
+    }
     if (ponto && PONTOS[ponto]) {
       window._origemFixa = { lat: PONTOS[ponto].lat, lon: PONTOS[ponto].lon };
       document.getElementById('origin').value = PONTOS[ponto].nome;
@@ -1343,3 +1351,4 @@
 </script>
 </body>
 </html>
+
