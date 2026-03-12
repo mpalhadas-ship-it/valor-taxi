@@ -14,6 +14,11 @@
       "source": "/(.*)",
       "has": [{ "type": "host", "value": "rodoviaria.valor.taxi.br" }],
       "destination": "/$1"
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "painel.valor.taxi.br" }],
+      "destination": "/painel.html"
     }
   ]
 }
