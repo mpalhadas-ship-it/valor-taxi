@@ -908,6 +908,11 @@
     const filled = inputs.map(i => i.value.trim()).filter(Boolean);
     if (!filled.length) { showNotif('⚠️ Informe ao menos um destino!'); return; }
 
+    // Bloqueia cálculo se algum destino tiver menos de 6 caracteres
+    for (const dest of filled) {
+      if (dest.length < 6) { showNotif('Para calcular sua estimativa, precisamos de mais informações.'); return; }
+    }
+
     // Bloqueia cidades da região pelo nome antes mesmo do geocode
     for (const dest of filled) {
       if (destinoBloqueado(dest)) {
