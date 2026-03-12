@@ -718,7 +718,23 @@
         'natural_feature','airport','park','place_of_worship','hospital','school',
         'shopping_mall','bus_station','train_station','subway_station'].includes(t));
       const temNumero = /\d/.test(addr);
-      return { lat: loc.lat, lon: loc.lng, formatted, ehLocal, temNumero };
+
+      const comps = result.address_components || [];
+      const cidade = comps.find(c => c.types.includes('administrative_area_level_2'));
+      const ehJF = cidade ? cidade.long_name.toLowerCase().includes('juiz de fora') : false;
+      const foraDeJF = cidade && !ehJF;
+
+      // Verifica se o resultado tem alguma relação com o que foi digitado
+      // Se o Google retornou algo completamente diferente (ex: digitou "barbacena" mas retornou rua aleatória de JF)
+      const addrNorm = formatted.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const queryNorm = addr.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const queryPalavras = queryNorm.split(/\s+/).filter(p => p.length > 3);
+      const primeiraParteAddr = addrNorm.split(',')[0];
+      const semMatch = queryPalavras.length > 0 && !queryPalavras.some(p => primeiraParteAddr.includes(p));
+
+      if (semMatch) throw new Error('Endereço não encontrado em Juiz de Fora. Verifique o destino informado.');
+
+      return { lat: loc.lat, lon: loc.lng, formatted, ehLocal, temNumero, foraDeJF };
     } finally {
       clearTimeout(timeout);
     }
@@ -900,13 +916,13 @@
         return geocodeFreshFull(addr);
       }));
 
-      // Valida se destinos estão dentro do raio de JF (30km do centro)
+      // Valida se destinos estão dentro de JF
       for (const dest of destResults) {
         const dLat = (dest.lat - JF_CENTRO.lat) * Math.PI / 180;
         const dLon = (dest.lon - JF_CENTRO.lon) * Math.PI / 180;
         const a = Math.sin(dLat/2)**2 + Math.cos(JF_CENTRO.lat*Math.PI/180)*Math.cos(dest.lat*Math.PI/180)*Math.sin(dLon/2)**2;
         const distCentro = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        if (distCentro > 30) {
+        if (distCentro > 30 || dest.foraDeJF) {
           btn.classList.remove('loading');
           criarOverlay(`
             <div class="confirm-box" style="text-align:center;">
@@ -970,7 +986,20 @@
       showNotif('✅ Estimativa calculada!');
 
     } catch(e) {
-      showNotif('❌ ' + (e.message || 'Erro ao calcular rota.'));
+      const msg = e.message || 'Erro ao calcular rota.';
+      if (msg.includes('não encontrado em Juiz de Fora') || msg.includes('fora do perímetro')) {
+        criarOverlay(`
+          <div class="confirm-box" style="text-align:center;">
+            <div class="confirm-title" style="font-size:1.05rem;line-height:1.6;">DESTINO FORA DE JUIZ DE FORA</div>
+            <div style="color:#fff;font-size:0.95rem;line-height:1.6;margin:14px 0 20px;">
+              O endereço informado não foi encontrado em Juiz de Fora.<br><br>
+              Por favor, verifique o destino e tente novamente.
+            </div>
+            <button class="btn-confirmar" onclick="this.closest('.modal-overlay').remove()">OK, ENTENDI</button>
+          </div>`);
+      } else {
+        showNotif('❌ ' + msg);
+      }
     } finally {
       btn.classList.remove('loading');
     }
@@ -1085,6 +1114,20 @@
               types: res.types
             };
           });
+          // Remove resultados genéricos de JF quando o usuário digitou outra coisa
+          // Ex: digitou "barbacena" mas Google retornou "Juiz de Fora, Juiz de Fora, MG"
+          googleResults = googleResults.filter(res => {
+            const addr = (res.formatted_address || '').toLowerCase();
+            const queryNorm = normalizarTexto(query);
+            // Se o endereço é só "juiz de fora" sem nada mais específico, descarta
+            if (addr.replace(/,.*/, '').trim() === 'juiz de fora') return false;
+            // Se a cidade retornada não contém nenhuma palavra da query, descarta
+            const primeiraParte = normalizarTexto(addr.split(',')[0]);
+            const queryPalavras = queryNorm.split(/\s+/);
+            const temMatch = queryPalavras.some(p => p.length > 2 && primeiraParte.includes(p));
+            return temMatch;
+          });
+
           _placesCache[cacheKey] = googleResults;
         }
       }
