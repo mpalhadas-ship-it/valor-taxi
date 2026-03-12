@@ -1,0 +1,16 @@
+{
+  "redirects": [
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "ponto51.valor.taxi.br" }],
+      "destination": "/?ponto=ponto51",
+      "permanent": false
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "ponto21.valor.taxi.br" }],
+      "destination": "/?ponto=ponto21",
+      "permanent": false
+    }
+  ]
+}
