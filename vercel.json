@@ -1,22 +1,19 @@
 {
-  "redirects": [
+  "rewrites": [
     {
-      "source": "/",
+      "source": "/(.*)",
       "has": [{ "type": "host", "value": "independencia.valor.taxi.br" }],
-      "destination": "https://valor-taxi.vercel.app/?ponto=pontosind",
-      "permanent": false
+      "destination": "/$1"
     },
     {
-      "source": "/",
+      "source": "/(.*)",
       "has": [{ "type": "host", "value": "jardimnorte.valor.taxi.br" }],
-      "destination": "https://valor-taxi.vercel.app/?ponto=pontojn",
-      "permanent": false
+      "destination": "/$1"
     },
     {
-      "source": "/",
+      "source": "/(.*)",
       "has": [{ "type": "host", "value": "rodoviaria.valor.taxi.br" }],
-      "destination": "https://valor-taxi.vercel.app/?ponto=ponto51",
-      "permanent": false
+      "destination": "/$1"
     }
   ]
 }
