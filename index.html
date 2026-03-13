@@ -5,13 +5,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ValorTaxi — Juiz de Fora</title>
-<meta name="application-name" content="ValorTaxi">
-<meta name="apple-mobile-web-app-title" content="ValorTaxi">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+
+
+
 <meta name="theme-color" content="#FFE600">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon.png">
+
+
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@300;400;500;600&family=Roboto+Condensed:wght@900&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -601,17 +601,9 @@
     'pontojn':   { nome: 'PONTO DE TÁXI — SHOPPING JARDIM NORTE',  lat: -21.74083898014146,  lon: -43.37134838787416  }
   };
 
-function carregarPontoDeOrigem() {
+  function carregarPontoDeOrigem() {
     const params = new URLSearchParams(window.location.search);
-    let ponto = params.get('ponto');
-    
-    // Se não tem parâmetro, detecta pelo subdomínio
-    if (!ponto) {
-      const host = window.location.hostname;
-      if (host.includes('independencia')) ponto = 'pontosind';
-      else if (host.includes('jardimnorte')) ponto = 'pontojn';
-      else if (host.includes('rodoviaria')) ponto = 'ponto51';
-    }
+    const ponto = params.get('ponto');
     if (ponto && PONTOS[ponto]) {
       window._origemFixa = { lat: PONTOS[ponto].lat, lon: PONTOS[ponto].lon };
       document.getElementById('origin').value = PONTOS[ponto].nome;
@@ -915,11 +907,6 @@ function carregarPontoDeOrigem() {
     const inputs = Array.from(document.querySelectorAll('.stop-input'));
     const filled = inputs.map(i => i.value.trim()).filter(Boolean);
     if (!filled.length) { showNotif('⚠️ Informe ao menos um destino!'); return; }
-
-    // Bloqueia cálculo se algum destino tiver menos de 6 caracteres
-    for (const dest of filled) {
-      if (dest.length < 6) { showNotif('Para calcular sua estimativa, precisamos de mais informações.'); return; }
-    }
 
     // Bloqueia cidades da região pelo nome antes mesmo do geocode
     for (const dest of filled) {
@@ -1339,8 +1326,6 @@ function carregarPontoDeOrigem() {
     setTimeout(() => n.classList.remove('show'), 3000);
   }
 
-  // ── PWA ───────────────────────────────────────────────────────────────────
-
   // ── INIT ──────────────────────────────────────────────────────────────────
   window.addEventListener('DOMContentLoaded', () => {
     carregarPontoDeOrigem();
@@ -1351,4 +1336,3 @@ function carregarPontoDeOrigem() {
 </script>
 </body>
 </html>
-
