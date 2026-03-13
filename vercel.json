@@ -16,7 +16,7 @@
       "destination": "/$1"
     },
     {
-      "source": "/",
+      "source": "/(.*)",
       "has": [{ "type": "host", "value": "painel.valor.taxi.br" }],
       "destination": "/painel.html"
     }
