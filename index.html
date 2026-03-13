@@ -5,7 +5,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ValorTaxi — Juiz de Fora</title>
+<meta name="application-name" content="ValorTaxi">
+<meta name="apple-mobile-web-app-title" content="ValorTaxi">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#FFE600">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@300;400;500;600&family=Roboto+Condensed:wght@900&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -597,7 +603,16 @@
 
   function carregarPontoDeOrigem() {
     const params = new URLSearchParams(window.location.search);
-    const ponto = params.get('ponto');
+    // Detecta ponto pelo subdomínio caso não venha via query string
+    const subdomainMap = {
+      'rodoviaria': 'ponto51',
+      'jardimnorte': 'pontojn',
+      'independencia': 'pontosind'
+    };
+    const hostname = window.location.hostname;
+    const sub = hostname.split('.')[0];
+    const pontoSubdominio = subdomainMap[sub] || null;
+    const ponto = params.get('ponto') || pontoSubdominio;
     if (ponto && PONTOS[ponto]) {
       window._origemFixa = { lat: PONTOS[ponto].lat, lon: PONTOS[ponto].lon };
       document.getElementById('origin').value = PONTOS[ponto].nome;
@@ -1319,6 +1334,8 @@
     n.textContent = msg; n.classList.add('show');
     setTimeout(() => n.classList.remove('show'), 3000);
   }
+
+  // ── PWA ───────────────────────────────────────────────────────────────────
 
   // ── INIT ──────────────────────────────────────────────────────────────────
   window.addEventListener('DOMContentLoaded', () => {
