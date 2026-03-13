@@ -3,17 +3,17 @@
     {
       "source": "/(.*)",
       "has": [{ "type": "host", "value": "independencia.valor.taxi.br" }],
-      "destination": "/$1"
+      "destination": "/?ponto=pontosind"
     },
     {
       "source": "/(.*)",
       "has": [{ "type": "host", "value": "jardimnorte.valor.taxi.br" }],
-      "destination": "/$1"
+      "destination": "/?ponto=pontojn"
     },
     {
       "source": "/(.*)",
       "has": [{ "type": "host", "value": "rodoviaria.valor.taxi.br" }],
-      "destination": "/$1"
+      "destination": "/?ponto=ponto51"
     },
     {
       "source": "/(.*)",
