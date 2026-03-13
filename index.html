@@ -878,7 +878,17 @@
       // Foca no campo de número automaticamente
       setTimeout(() => {
         const numInput = overlay.querySelector('#input-numero-popup');
-        if (numInput) numInput.focus();
+        if (numInput) {
+          numInput.focus();
+          numInput.addEventListener('focus', () => {
+            overlay.style.alignItems = 'flex-start';
+            overlay.style.paddingTop = '16px';
+          });
+          numInput.addEventListener('blur', () => {
+            overlay.style.alignItems = 'center';
+            overlay.style.paddingTop = '20px';
+          });
+        }
       }, 100);
 
       overlay.querySelector('.btn-confirmar').onclick = () => {
