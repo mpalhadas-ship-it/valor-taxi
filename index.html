@@ -795,7 +795,7 @@
   // ── RESULTADO ─────────────────────────────────────────────────────────────
   // Avenidas longas com variação máxima especial (sem número)
   const AVENIDAS_LONGAS = [
-    { nome: 'rio branco', fatorMax: 2.50 }
+    { nome: 'rio branco', fatorMax: 2.00 }
   ];
 
   function mostrarResultado(distKm, paradoMin, ruaSemNumero, enderecoDigitado, ehBairro) {
@@ -806,11 +806,12 @@
     let fatorMin = horaCritica ? 1.00 : 0.95;
     let fatorMax = horaCritica ? 1.20 : 1.10;
     if (ehBairro) {
-      fatorMin = 0.70;
-      fatorMax = 2.00;
+      fatorMin = 0.75;
+      fatorMax = 1.60;
     } else if (ruaSemNumero) {
-      fatorMin = 0.85;
-      fatorMax = 1.50;
+      fatorMin = 0.75;
+      fatorMax = 1.40;
+      // Verifica se é uma avenida longa especial
       const endLower = (enderecoDigitado || '').toLowerCase();
       const avenidaEspecial = AVENIDAS_LONGAS.find(a => endLower.includes(a.nome));
       if (avenidaEspecial) fatorMax = avenidaEspecial.fatorMax;
@@ -940,9 +941,11 @@
       const destResults = await Promise.all(filled.map(addr => {
         const inp = inputs.find(el => el.value.trim() === addr.trim());
         if (inp && inp.dataset.lat && inp.dataset.lon) {
+          // ehLocal: '1' = local, '0' = rua, '' = não definido (digitado manualmente)
+          // Se não definido, assume ehLocal se não tem número mas parece nome de estabelecimento
           let ehLocal = inp.dataset.ehLocal === '1';
           if (!inp.dataset.ehLocal) {
-            ehLocal = !/\d/.test(addr);
+            ehLocal = !/\d/.test(addr); // sem número = provavelmente local ou rua genérica — trata igual
           }
           return Promise.resolve({
             lat: parseFloat(inp.dataset.lat),
@@ -994,7 +997,6 @@
         return true;
       });
 
-      // Detecta se o destino é apenas um bairro (vem direto do destResults)
       const ehBairro = destResults.some(r => r.ehBairro === true);
 
       // Trajeto longo = distância real da rota >= 25km — não mostra valor, abre popup
