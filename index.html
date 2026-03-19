@@ -1214,13 +1214,16 @@
         input.dataset.lat = res.geometry.location.lat;
         input.dataset.lon = res.geometry.location.lng;
         input.dataset.formatted = res.formatted_address;
+        input.dataset.ehBairro = res._ehBairro ? '1' : '0';
+        input.dataset.raioBairro = res._raioBairro || '';
         // Verifica se é estabelecimento/local (ponto exato) ou rua genérica
+        // Bairro nunca é local exato, mesmo que venha como 'establishment'
         const tipos = res.types || [];
-        const ehLocal = tipos.some(t => ['establishment','point_of_interest','premise','subpremise',
+        const ehLocal = !res._ehBairro && (tipos.some(t => ['establishment','point_of_interest','premise','subpremise',
           'natural_feature','airport','park','place_of_worship','hospital','health',
           'shopping_mall','bus_station','train_station','subway_station','university',
           'school','church','food','restaurant','lodging','store','gym'].includes(t))
-          || !tipos.includes('route'); // qualquer coisa que não seja rua genérica é tratada como local
+          || !tipos.includes('route'));
         input.dataset.ehLocal = ehLocal ? '1' : '0';
         input.value = displayText;
         removeAutocompleteList(wrapper);
@@ -1233,9 +1236,9 @@
         const distLinhReta = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         const pareceForaDoRaio = distLinhReta >= 20; // margem antes dos 25km reais
 
-        // Local, com número ou fora do raio → calcula direto (sem perguntar número)
+        // Local, bairro, com número ou fora do raio → calcula direto (sem perguntar número)
         // Rua sem número dentro do raio → pergunta
-        if (ehLocal || /\d/.test(displayText) || pareceForaDoRaio) {
+        if (ehLocal || res._ehBairro || /\d/.test(displayText) || pareceForaDoRaio) {
           setTimeout(() => calcularPorMapa(), 150);
         } else {
           setTimeout(() => perguntarNumero(input), 150);
