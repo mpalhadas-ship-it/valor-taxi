@@ -603,11 +603,7 @@
 
   function carregarPontoDeOrigem() {
     const params = new URLSearchParams(window.location.search);
-    const subdomainMap = {
-      'rodoviaria': 'ponto51',
-      'jardimnorte': 'pontojn',
-      'independencia': 'pontosind'
-    };
+    const subdomainMap = { 'rodoviaria': 'ponto51', 'jardimnorte': 'pontojn', 'independencia': 'pontosind' };
     const sub = window.location.hostname.split('.')[0];
     const ponto = params.get('ponto') || subdomainMap[sub] || null;
     if (ponto && PONTOS[ponto]) {
@@ -681,7 +677,8 @@
       geometry: { location: { lat: l.lat, lng: l.lon } },
       formatted_address: [l.n, l.r && l.num ? l.r + ', ' + l.num : l.r, l.b, 'Juiz de Fora, MG'].filter(Boolean).join(', '),
       types: ['establishment'],
-      _local: true
+      _local: true,
+      _ehBairro: l.r === '' && l.num === '' && l.n === l.b
     }));
   }
 
@@ -801,17 +798,19 @@
     { nome: 'rio branco', fatorMax: 2.50 }
   ];
 
-  function mostrarResultado(distKm, paradoMin, ruaSemNumero, enderecoDigitado) {
+  function mostrarResultado(distKm, paradoMin, ruaSemNumero, enderecoDigitado, ehBairro) {
     const kmRate = bandeira === 2 ? TARIFAS.kmB2 : TARIFAS.kmB1;
     const total = TARIFAS.bandeirada + distKm * kmRate + (paradoMin/60) * TARIFAS.horaParada;
     const hora = new Date().getHours();
     const horaCritica = hora >= 17 && hora < 20;
     let fatorMin = horaCritica ? 1.00 : 0.95;
     let fatorMax = horaCritica ? 1.20 : 1.10;
-    if (ruaSemNumero) {
+    if (ehBairro) {
+      fatorMin = 0.70;
+      fatorMax = 2.00;
+    } else if (ruaSemNumero) {
       fatorMin = 0.85;
       fatorMax = 1.50;
-      // Verifica se é uma avenida longa especial
       const endLower = (enderecoDigitado || '').toLowerCase();
       const avenidaEspecial = AVENIDAS_LONGAS.find(a => endLower.includes(a.nome));
       if (avenidaEspecial) fatorMax = avenidaEspecial.fatorMax;
@@ -941,17 +940,16 @@
       const destResults = await Promise.all(filled.map(addr => {
         const inp = inputs.find(el => el.value.trim() === addr.trim());
         if (inp && inp.dataset.lat && inp.dataset.lon) {
-          // ehLocal: '1' = local, '0' = rua, '' = não definido (digitado manualmente)
-          // Se não definido, assume ehLocal se não tem número mas parece nome de estabelecimento
           let ehLocal = inp.dataset.ehLocal === '1';
           if (!inp.dataset.ehLocal) {
-            ehLocal = !/\d/.test(addr); // sem número = provavelmente local ou rua genérica — trata igual
+            ehLocal = !/\d/.test(addr);
           }
           return Promise.resolve({
             lat: parseFloat(inp.dataset.lat),
             lon: parseFloat(inp.dataset.lon),
             formatted: inp.dataset.formatted || addr,
             ehLocal,
+            ehBairro: inp.dataset.ehBairro === '1',
             temNumero: /\d/.test(addr)
           });
         }
@@ -988,12 +986,16 @@
       const inputs2 = Array.from(document.querySelectorAll('.stop-input'));
       const ruaSemNumero = destResults.some((r, i) => {
         const addr = filled[i] || '';
-        if (/\d/.test(addr)) return false;          // tem número → normal
-        if (r.ehLocal) return false;                  // local OSM ou Google → normal
+        if (/\d/.test(addr)) return false;
+        if (r.ehLocal) return false;
+        if (r.ehBairro) return false;
         const inp = inputs2.find(el => el.value.trim() === addr);
-        if (inp && inp.dataset.ehLocal === '1') return false; // selecionado no autocomplete → normal
-        return true; // rua genérica sem número
+        if (inp && inp.dataset.ehLocal === '1') return false;
+        return true;
       });
+
+      // Detecta se o destino é apenas um bairro (vem direto do destResults)
+      const ehBairro = destResults.some(r => r.ehBairro === true);
 
       // Trajeto longo = distância real da rota >= 25km — não mostra valor, abre popup
       if (distKm >= 25) {
@@ -1011,15 +1013,17 @@
         btn.classList.remove('loading');
         return;
       }
-      const { vMin, vMax } = mostrarResultado(distKm, durMin * 0.15, ruaSemNumero, filled.join(' '));
+      const { vMin, vMax } = mostrarResultado(distKm, durMin * 0.15, ruaSemNumero, filled.join(' '), ehBairro);
 
-      // Troca texto abaixo do valor quando rua sem número
+      const msgBairro = 'COMO FOI INFORMADO APENAS O BAIRRO, O VALOR PODE VARIAR BASTANTE CONFORME O DESTINO EXATO. INFORME O ENDEREÇO COMPLETO PARA UMA ESTIMATIVA MAIS PRECISA';
       const msgSemNumero = 'SEM INFORMAÇÃO DO NÚMERO, O VALOR ACIMA CONSIDERA UM DESTINO MAIS PRÓXIMO E UM MAIS DISTANTE DO LOCAL INFORMADO';
       const msgComNumero = 'Estes são os valores prováveis até o destino informado. Boa corrida!';
       const msgExtra = 'Se preferir, consulte também o taxista que está no ponto. Boa corrida!';
       const msgEl = document.getElementById('result-msg');
       const estilo = "font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.95rem;letter-spacing:0.03em;text-transform:uppercase;display:block;";
-      if (ruaSemNumero) {
+      if (ehBairro) {
+        msgEl.innerHTML = `<span style="${estilo}margin-bottom:10px;">${msgBairro}</span><span style="${estilo}">${msgExtra}</span>`;
+      } else if (ruaSemNumero) {
         msgEl.innerHTML = `
           <span style="${estilo}margin-bottom:10px;">${msgSemNumero}</span>
           <span style="${estilo}">${msgExtra}</span>`;
@@ -1218,6 +1222,7 @@
         input.dataset.lat = res.geometry.location.lat;
         input.dataset.lon = res.geometry.location.lng;
         input.dataset.formatted = res.formatted_address;
+        input.dataset.ehBairro = res._ehBairro ? '1' : '0';
         // Verifica se é estabelecimento/local (ponto exato) ou rua genérica
         const tipos = res.types || [];
         const ehLocal = tipos.some(t => ['establishment','point_of_interest','premise','subpremise',
