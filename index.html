@@ -603,9 +603,7 @@
 
   function carregarPontoDeOrigem() {
     const params = new URLSearchParams(window.location.search);
-    const subdomainMap = { 'rodoviaria': 'ponto51', 'jardimnorte': 'pontojn', 'independencia': 'pontosind' };
-    const sub = window.location.hostname.split('.')[0];
-    const ponto = params.get('ponto') || subdomainMap[sub] || null;
+    const ponto = params.get('ponto');
     if (ponto && PONTOS[ponto]) {
       window._origemFixa = { lat: PONTOS[ponto].lat, lon: PONTOS[ponto].lon };
       document.getElementById('origin').value = PONTOS[ponto].nome;
@@ -659,6 +657,52 @@
     return t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   }
 
+  // P = pequeno, G = grande, M = médio (padrão automático)
+  const BAIRROS_P = new Set([
+    'centro','cascatinha','jardim norte','bandeirantes','alto dos passos',
+    'santa terezinha','granbery','bom pastor','poco rico','dom bosco',
+    'santa catarina','santos anjos','morro da gloria','paineiras',
+    'jardim gloria','jardim laranjeiras','vale do ipe','costa carvalho',
+    'lourdes','sao bernardo','sao benedito','grajau','eldorado',
+    'vivendas da serra','progresso','santa paula','manoel honorio',
+    'nossa senhora aparecida','centenario','guarua','previdenciarios',
+    'sao geraldo','jardim de ala','jardim america','parque burnier',
+    'jardim esperanca',
+  ]);
+  const BAIRROS_G = new Set([
+    'benfica','nova benfica','grama','borboleta','barreira do triunfo',
+    'sao pedro','aeroporto','salvaterra','distrito industrial',
+    'monte castelo','recanto dos lagos','filgueiras','igrejinha',
+    'valadares','toledos','humaita','vila esperanca','linhares',
+    'caete','santo antonio','retiro','santa cruz','nova era','graminha',
+  ]);
+
+  function classificarBairro(nomeNorm) {
+    if (BAIRROS_P.has(nomeNorm)) return 'P';
+    if (BAIRROS_G.has(nomeNorm)) return 'G';
+    return 'M';
+  }
+
+  function detectarBairroConhecido(texto) {
+    const norm = normalizarTexto(texto.split(',')[0].trim());
+    if (BAIRROS_P.has(norm)) return 'P';
+    if (BAIRROS_G.has(norm)) return 'G';
+    return null;
+  }
+
+  function detectarBairroPorTipos(tipos, addressComponents) {
+    if (!tipos || !addressComponents) return null;
+    const isBairro = tipos.some(t =>
+      ['neighborhood','sublocality','sublocality_level_1'].includes(t)
+    ) && !tipos.includes('route') && !tipos.includes('street_address');
+    if (!isBairro) return null;
+    const comp = addressComponents.find(c =>
+      c.types.includes('sublocality_level_1') || c.types.includes('neighborhood')
+    );
+    const norm = comp ? normalizarTexto(comp.long_name) : '';
+    return classificarBairro(norm);
+  }
+
   function buscarBaseLocal(query) {
     const q = normalizarTexto(query.trim());
     const JF_LAT = -21.7642, JF_LON = -43.3503;
@@ -679,21 +723,6 @@
       types: ['establishment'],
       _local: true
     }));
-  }
-
-  // ── BAIRROS CONHECIDOS (detecta mesmo quando resultado vem do Google) ──────
-  const BAIRROS_CONHECIDOS = {
-    'centro': 'P', 'cascatinha': 'P', 'jardim norte': 'P', 'bandeirantes': 'P',
-    'alto dos passos': 'P', 'santa terezinha': 'P',
-    'sao mateus': 'M', 'teixeiras': 'M', 'santa luzia': 'M',
-    'barbosa lage': 'M', 'milho branco': 'M',
-    'sao pedro': 'G', 'benfica': 'G', 'salvaterra': 'G',
-    'borboleta': 'G', 'grama': 'G', 'graminha': 'G',
-  };
-
-  function detectarBairroConhecido(texto) {
-    const norm = normalizarTexto(texto.split(',')[0].trim());
-    return BAIRROS_CONHECIDOS[norm] || null;
   }
 
   const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwcMh244zukx-p2llStfCVo3znYeiXxUIeXb91Uq4uqQ5QjFsUu37Az1eUa_VSe3jUI/exec';
@@ -812,16 +841,20 @@
     { nome: 'rio branco', fatorMax: 2.50 }
   ];
 
-  function mostrarResultado(distKm, paradoMin, ruaSemNumero, enderecoDigitado) {
+  function mostrarResultado(distKm, paradoMin, ruaSemNumero, enderecoDigitado, ehBairro, raioBairro) {
     const kmRate = bandeira === 2 ? TARIFAS.kmB2 : TARIFAS.kmB1;
     const total = TARIFAS.bandeirada + distKm * kmRate + (paradoMin/60) * TARIFAS.horaParada;
     const hora = new Date().getHours();
     const horaCritica = hora >= 17 && hora < 20;
     let fatorMin = horaCritica ? 1.00 : 0.95;
     let fatorMax = horaCritica ? 1.20 : 1.10;
-    if (ruaSemNumero) {
-      fatorMin = 0.85;
-      fatorMax = 1.50;
+    if (ehBairro) {
+      const fatoresBairro = { 'P': [0.85, 1.20], 'M': [0.85, 1.40], 'G': [0.85, 1.60] };
+      const f = fatoresBairro[raioBairro] || fatoresBairro['M'];
+      fatorMin = f[0]; fatorMax = f[1];
+    } else if (ruaSemNumero) {
+      fatorMin = 0.75;
+      fatorMax = 1.40;
       // Verifica se é uma avenida longa especial
       const endLower = (enderecoDigitado || '').toLowerCase();
       const avenidaEspecial = AVENIDAS_LONGAS.find(a => endLower.includes(a.nome));
@@ -963,6 +996,8 @@
             lon: parseFloat(inp.dataset.lon),
             formatted: inp.dataset.formatted || addr,
             ehLocal,
+            ehBairro: inp.dataset.ehBairro === '1',
+            raioBairro: inp.dataset.raioBairro || 'M',
             temNumero: /\d/.test(addr)
           });
         }
@@ -1000,9 +1035,10 @@
       const ruaSemNumero = destResults.some((r, i) => {
         const addr = filled[i] || '';
         if (/\d/.test(addr)) return false;          // tem número → normal
-        if (r.ehLocal) return false;                  // local OSM ou Google → normal
+        if (r.ehLocal) return false;
+        if (r.ehBairro) return false;
         const inp = inputs2.find(el => el.value.trim() === addr);
-        if (inp && inp.dataset.ehLocal === '1') return false; // selecionado no autocomplete → normal
+        if (inp && inp.dataset.ehLocal === '1') return false;
         return true; // rua genérica sem número
       });
 
@@ -1022,15 +1058,19 @@
         btn.classList.remove('loading');
         return;
       }
-      const { vMin, vMax } = mostrarResultado(distKm, durMin * 0.15, ruaSemNumero, filled.join(' '));
+      const ehBairro = destResults.some(r => r.ehBairro === true);
+      const raioBairro = destResults.find(r => r.ehBairro)?.raioBairro || 'M';
+      const { vMin, vMax } = mostrarResultado(distKm, durMin * 0.15, ruaSemNumero, filled.join(' '), ehBairro, raioBairro);
 
-      // Troca texto abaixo do valor quando rua sem número
+      const msgBairro = 'COMO FOI INFORMADO APENAS O BAIRRO, O VALOR PODE VARIAR BASTANTE CONFORME O DESTINO EXATO. INFORME O ENDEREÇO COMPLETO PARA UMA ESTIMATIVA MAIS PRECISA';
       const msgSemNumero = 'SEM INFORMAÇÃO DO NÚMERO, O VALOR ACIMA CONSIDERA UM DESTINO MAIS PRÓXIMO E UM MAIS DISTANTE DO LOCAL INFORMADO';
       const msgComNumero = 'Estes são os valores prováveis até o destino informado. Boa corrida!';
       const msgExtra = 'Se preferir, consulte também o taxista que está no ponto. Boa corrida!';
       const msgEl = document.getElementById('result-msg');
       const estilo = "font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.95rem;letter-spacing:0.03em;text-transform:uppercase;display:block;";
-      if (ruaSemNumero) {
+      if (ehBairro) {
+        msgEl.innerHTML = `<span style="${estilo}margin-bottom:10px;">${msgBairro}</span><span style="${estilo}">${msgExtra}</span>`;
+      } else if (ruaSemNumero) {
         msgEl.innerHTML = `
           <span style="${estilo}margin-bottom:10px;">${msgSemNumero}</span>
           <span style="${estilo}">${msgExtra}</span>`;
@@ -1229,13 +1269,15 @@
         input.dataset.lat = res.geometry.location.lat;
         input.dataset.lon = res.geometry.location.lng;
         input.dataset.formatted = res.formatted_address;
-        // Detecta bairro: base local (_ehBairro) OU mapa de bairros conhecidos
-        const raioBairroDetectado = res._raioBairro || detectarBairroConhecido(displayText);
+        // Detecta bairro: base local, nome conhecido ou tipos do Google
+        const tipos = res.types || [];
+        const raioBairroDetectado = res._raioBairro
+          || detectarBairroConhecido(displayText)
+          || detectarBairroPorTipos(tipos, res.address_components);
         const ehBairroDetectado = !!(res._ehBairro || raioBairroDetectado);
         input.dataset.ehBairro = ehBairroDetectado ? '1' : '0';
         input.dataset.raioBairro = raioBairroDetectado || '';
         // Bairro nunca é local exato
-        const tipos = res.types || [];
         const ehLocal = !ehBairroDetectado && (tipos.some(t => ['establishment','point_of_interest','premise','subpremise',
           'natural_feature','airport','park','place_of_worship','hospital','health',
           'shopping_mall','bus_station','train_station','subway_station','university',
@@ -1251,10 +1293,10 @@
         const dLon = (lon - JF_CENTRO.lon) * Math.PI / 180;
         const a = Math.sin(dLat/2)**2 + Math.cos(JF_CENTRO.lat * Math.PI/180) * Math.cos(lat * Math.PI/180) * Math.sin(dLon/2)**2;
         const distLinhReta = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        const pareceForaDoRaio = distLinhReta >= 20;
+        const pareceForaDoRaio = distLinhReta >= 20; // margem antes dos 25km reais
 
-        // Bairro, local, com número ou fora do raio → calcula direto
-        // Rua sem número dentro do raio → pergunta número
+        // Local, com número ou fora do raio → calcula direto (sem perguntar número)
+        // Rua sem número dentro do raio → pergunta
         if (ehBairroDetectado || ehLocal || /\d/.test(displayText) || pareceForaDoRaio) {
           setTimeout(() => calcularPorMapa(), 150);
         } else {
