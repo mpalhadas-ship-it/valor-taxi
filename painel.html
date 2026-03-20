@@ -6,234 +6,91 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ValorTaxi — Painel de Acessos</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
-  :root {
-    --yellow: #FFE600;
-    --blue: #1A5276;
-    --blue-light: #2471A3;
-    --white: #ffffff;
-    --green: #22c55e;
-  }
+  :root { --yellow: #FFE600; --blue: #1A5276; --blue-light: #2471A3; --white: #ffffff; --green: #22c55e; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--yellow);
-    font-family: 'Barlow', sans-serif;
-    min-height: 100vh;
-  }
+  body { background: var(--yellow); font-family: 'Barlow', sans-serif; min-height: 100vh; }
 
-  /* TELA DE SENHA */
-  #tela-senha {
-    position: fixed; inset: 0;
-    background: var(--blue);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 9999; padding: 20px;
-  }
-  .senha-box {
-    background: var(--blue);
-    border: 2px solid var(--yellow);
-    border-radius: 20px;
-    padding: 36px 28px;
-    max-width: 380px; width: 100%;
-    text-align: center;
-  }
-  .senha-box h2 {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1.6rem; font-weight: 900;
-    color: var(--yellow); text-transform: uppercase;
-    letter-spacing: 2px; margin-bottom: 8px;
-  }
-  .senha-box p {
-    color: rgba(255,255,255,0.6);
-    font-size: 0.9rem; margin-bottom: 24px;
-  }
-  .senha-box input {
-    width: 100%; padding: 14px;
-    border: 2px solid rgba(255,255,255,0.2);
-    border-radius: 10px;
-    background: rgba(255,255,255,0.08);
-    color: white; font-size: 1.1rem;
-    text-align: center; letter-spacing: 3px;
-    outline: none; margin-bottom: 16px;
-    font-family: 'Barlow', sans-serif;
-  }
+  #tela-senha { position: fixed; inset: 0; background: var(--blue); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 20px; }
+  .senha-box { background: var(--blue); border: 2px solid var(--yellow); border-radius: 20px; padding: 36px 28px; max-width: 380px; width: 100%; text-align: center; }
+  .senha-box h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 1.6rem; font-weight: 900; color: var(--yellow); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
+  .senha-box p { color: rgba(255,255,255,0.6); font-size: 0.9rem; margin-bottom: 24px; }
+  .senha-box input { width: 100%; padding: 14px; border: 2px solid rgba(255,255,255,0.2); border-radius: 10px; background: rgba(255,255,255,0.08); color: white; font-size: 1.1rem; text-align: center; letter-spacing: 3px; outline: none; margin-bottom: 16px; font-family: 'Barlow', sans-serif; }
   .senha-box input:focus { border-color: var(--yellow); }
-  .senha-box button {
-    width: 100%; padding: 14px;
-    background: var(--yellow); color: var(--blue);
-    border: none; border-radius: 10px;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 900; font-size: 1.1rem;
-    letter-spacing: 2px; text-transform: uppercase;
-    cursor: pointer;
-  }
+  .senha-box button { width: 100%; padding: 14px; background: var(--yellow); color: var(--blue); border: none; border-radius: 10px; font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 1.1rem; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; }
   .senha-box button:hover { background: #e6cf00; }
-  .senha-erro {
-    color: #ff6b6b; font-size: 0.85rem;
-    margin-top: 10px; display: none;
-  }
+  .senha-erro { color: #ff6b6b; font-size: 0.85rem; margin-top: 10px; display: none; }
 
-  /* ZEBRINHA */
-  .zebrinha {
-    width: 100%; height: 36px;
-    background-color: var(--yellow);
-    background-image: repeating-conic-gradient(var(--blue) 0% 25%, var(--yellow) 0% 50%);
-    background-size: 36px 36px;
-    opacity: 0.92;
-  }
+  .zebrinha { width: 100%; height: 36px; background-color: var(--yellow); background-image: repeating-conic-gradient(var(--blue) 0% 25%, var(--yellow) 0% 50%); background-size: 36px 36px; opacity: 0.92; }
 
-  /* HEADER */
-  .header {
-    background: var(--blue);
-    padding: 16px 24px;
-    display: flex; align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap; gap: 12px;
-  }
-  .header h1 {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1.5rem; font-weight: 900;
-    color: var(--yellow); text-transform: uppercase;
-    letter-spacing: 2px;
-  }
-  .header-sub {
-    font-size: 0.8rem; color: rgba(255,255,255,0.6);
-    font-weight: 400;
-  }
+  .header { background: var(--blue); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  .header h1 { font-family: 'Barlow Condensed', sans-serif; font-size: 1.5rem; font-weight: 900; color: var(--yellow); text-transform: uppercase; letter-spacing: 2px; }
+  .header-sub { font-size: 0.8rem; color: rgba(255,255,255,0.6); font-weight: 400; }
+  .btn-atualizar { padding: 8px 18px; background: var(--yellow); color: var(--blue); border: none; border-radius: 8px; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 0.95rem; letter-spacing: 1px; cursor: pointer; text-transform: uppercase; }
+  .btn-atualizar:hover { background: #e6cf00; }
 
-  /* CARDS RESUMO */
-  .resumo {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 12px;
-    padding: 20px 20px 0;
-    max-width: 1100px; margin: 0 auto;
-  }
-  .resumo-card {
-    background: var(--blue);
-    border: 1px solid var(--yellow);
-    border-radius: 12px;
-    padding: 16px;
-    text-align: center;
-  }
-  .resumo-card .num {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 2.2rem; font-weight: 900;
-    color: var(--yellow); line-height: 1;
-  }
-  .resumo-card .label {
-    font-size: 0.75rem; font-weight: 700;
-    color: rgba(255,255,255,0.7);
-    text-transform: uppercase; letter-spacing: 1px;
-    margin-top: 4px;
-  }
+  .resumo { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; padding: 20px 20px 0; max-width: 1100px; margin: 0 auto; }
+  .resumo-card { background: var(--blue); border: 1px solid var(--yellow); border-radius: 12px; padding: 16px; text-align: center; }
+  .resumo-card .num { font-family: 'Barlow Condensed', sans-serif; font-size: 2.2rem; font-weight: 900; color: var(--yellow); line-height: 1; }
+  .resumo-card .label { font-size: 0.72rem; font-weight: 700; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
 
-  /* FILTROS */
-  .filtros {
-    max-width: 1100px; margin: 16px auto 0;
-    padding: 0 20px;
-    display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
-  }
-  .filtros input, .filtros select {
-    padding: 8px 14px;
-    border: 2px solid var(--blue);
-    border-radius: 8px;
-    font-family: 'Barlow', sans-serif;
-    font-size: 0.9rem;
-    background: white; color: var(--blue);
-    outline: none;
-  }
+  .secao { max-width: 1100px; margin: 20px auto 0; padding: 0 20px; }
+  .secao-titulo { font-family: 'Barlow Condensed', sans-serif; font-size: 1rem; font-weight: 800; color: var(--blue); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; }
+
+  .graficos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+  .grafico-card { background: var(--blue); border: 1px solid var(--yellow); border-radius: 12px; padding: 16px; }
+  .grafico-card h3 { font-family: 'Barlow Condensed', sans-serif; font-size: 0.85rem; font-weight: 800; color: var(--yellow); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+  .grafico-card canvas { max-height: 220px; }
+
+  .rankings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-top: 16px; }
+  .ranking-card { background: var(--blue); border: 1px solid var(--yellow); border-radius: 12px; padding: 16px; }
+  .ranking-card h3 { font-family: 'Barlow Condensed', sans-serif; font-size: 0.85rem; font-weight: 800; color: var(--yellow); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+  .ranking-item { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .ranking-item:last-child { border-bottom: none; }
+  .ranking-pos { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; color: var(--yellow); font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
+  .ranking-nome { color: white; font-size: 0.88rem; flex: 1; }
+  .ranking-bar-wrap { width: 80px; background: rgba(255,255,255,0.1); border-radius: 4px; height: 6px; }
+  .ranking-bar { background: var(--yellow); border-radius: 4px; height: 6px; }
+  .ranking-count { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; color: var(--yellow); font-size: 0.95rem; width: 30px; text-align: right; flex-shrink: 0; }
+
+  .filtros { max-width: 1100px; margin: 20px auto 0; padding: 0 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .filtros input, .filtros select { padding: 8px 14px; border: 2px solid var(--blue); border-radius: 8px; font-family: 'Barlow', sans-serif; font-size: 0.9rem; background: white; color: var(--blue); outline: none; }
   .filtros input:focus, .filtros select:focus { border-color: var(--blue-light); }
   .filtros input { flex: 1; min-width: 200px; }
-  .btn-atualizar {
-    padding: 8px 18px;
-    background: var(--blue); color: var(--yellow);
-    border: none; border-radius: 8px;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 800; font-size: 0.95rem;
-    letter-spacing: 1px; cursor: pointer;
-    text-transform: uppercase;
-  }
-  .btn-atualizar:hover { background: var(--blue-light); }
 
-  /* TABELA */
-  .tabela-wrap {
-    max-width: 1100px; margin: 16px auto 30px;
-    padding: 0 20px;
-    overflow-x: auto;
-  }
-  table {
-    width: 100%; border-collapse: collapse;
-    background: white;
-    border-radius: 12px; overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    font-size: 0.88rem;
-  }
-  thead {
-    background: var(--blue);
-    color: var(--yellow);
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.8rem; letter-spacing: 1px;
-    text-transform: uppercase;
-  }
+  .tabela-wrap { max-width: 1100px; margin: 16px auto 30px; padding: 0 20px; overflow-x: auto; }
+  .tabela-titulo { font-family: 'Barlow Condensed', sans-serif; font-size: 1rem; font-weight: 800; color: var(--blue); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
+  table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-size: 0.88rem; }
+  thead { background: var(--blue); color: var(--yellow); font-family: 'Barlow Condensed', sans-serif; font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase; }
   th { padding: 12px 14px; text-align: left; font-weight: 800; }
   td { padding: 10px 14px; border-bottom: 1px solid #f0f0f0; color: #333; }
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: #fffde7; }
-  .badge-ponto {
-    display: inline-block;
-    background: var(--blue);
-    color: var(--yellow);
-    font-size: 0.7rem; font-weight: 800;
-    padding: 2px 8px; border-radius: 20px;
-    text-transform: uppercase; letter-spacing: 1px;
-    white-space: nowrap;
-  }
-  .badge-valor {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 900; color: var(--blue);
-    font-size: 1rem;
-  }
+  .badge-ponto { display: inline-block; background: var(--blue); color: var(--yellow); font-size: 0.7rem; font-weight: 800; padding: 2px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; }
+  .badge-valor { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; color: var(--blue); font-size: 1rem; }
+  .status-msg { text-align: center; padding: 40px; color: var(--blue); font-weight: 600; font-size: 1rem; }
 
-  /* LOADING / VAZIO */
-  .status-msg {
-    text-align: center; padding: 40px;
-    color: var(--blue); font-weight: 600;
-    font-size: 1rem;
-  }
-
-  /* PAGINAÇÃO */
-  .paginacao {
-    display: flex; justify-content: center;
-    gap: 8px; margin-top: 12px; flex-wrap: wrap;
-  }
-  .paginacao button {
-    padding: 6px 14px;
-    background: var(--blue); color: var(--yellow);
-    border: none; border-radius: 6px;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 700; cursor: pointer; font-size: 0.9rem;
-  }
+  .paginacao { display: flex; justify-content: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .paginacao button { padding: 6px 14px; background: var(--blue); color: var(--yellow); border: none; border-radius: 6px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; cursor: pointer; font-size: 0.9rem; }
   .paginacao button.ativo { background: var(--yellow); color: var(--blue); }
   .paginacao button:hover { opacity: 0.85; }
 
   @media (max-width: 600px) {
     .header { padding: 12px 16px; }
-    .resumo { padding: 14px 14px 0; }
-    .filtros { padding: 0 14px; }
-    .tabela-wrap { padding: 0 14px; }
+    .resumo, .secao, .filtros, .tabela-wrap { padding-left: 14px; padding-right: 14px; }
     th, td { padding: 8px 10px; font-size: 0.8rem; }
+    .graficos-grid, .rankings-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
 <body>
 
-<!-- TELA DE SENHA -->
 <div id="tela-senha">
   <div class="senha-box">
     <h2>Painel ValorTaxi</h2>
     <p>Área restrita — informe a senha para continuar</p>
-    <input type="password" id="input-senha" placeholder="••••••••••••"
-      onkeydown="if(event.key==='Enter') verificarSenha()" />
+    <input type="password" id="input-senha" placeholder="••••••••••••" onkeydown="if(event.key==='Enter') verificarSenha()" />
     <button onclick="verificarSenha()">ENTRAR</button>
     <div class="senha-erro" id="senha-erro">Senha incorreta. Tente novamente.</div>
   </div>
@@ -249,27 +106,29 @@
   <button class="btn-atualizar" onclick="carregarDados()">↺ Atualizar</button>
 </div>
 
-<!-- CARDS RESUMO -->
-<div class="resumo" id="resumo">
-  <div class="resumo-card">
-    <div class="num" id="total-registros">—</div>
-    <div class="label">Total de consultas</div>
+<div class="resumo">
+  <div class="resumo-card"><div class="num" id="total-registros">—</div><div class="label">Total de consultas</div></div>
+  <div class="resumo-card"><div class="num" id="total-hoje">—</div><div class="label">Consultas hoje</div></div>
+  <div class="resumo-card"><div class="num" id="total-semana">—</div><div class="label">Últimos 7 dias</div></div>
+  <div class="resumo-card"><div class="num" id="ponto-top">—</div><div class="label">Ponto mais ativo</div></div>
+  <div class="resumo-card"><div class="num" id="hora-pico">—</div><div class="label">Horário de pico</div></div>
+  <div class="resumo-card"><div class="num" id="dia-pico">—</div><div class="label">Dia mais ativo</div></div>
+</div>
+
+<div class="secao">
+  <div class="secao-titulo">📈 Análise Visual</div>
+  <div class="graficos-grid">
+    <div class="grafico-card"><h3>Consultas por hora do dia</h3><canvas id="grafico-hora"></canvas></div>
+    <div class="grafico-card"><h3>Consultas por dia da semana</h3><canvas id="grafico-semana"></canvas></div>
+    <div class="grafico-card"><h3>Últimos 14 dias</h3><canvas id="grafico-dias"></canvas></div>
+    <div class="grafico-card"><h3>Consultas por ponto</h3><canvas id="grafico-pontos"></canvas></div>
   </div>
-  <div class="resumo-card">
-    <div class="num" id="total-hoje">—</div>
-    <div class="label">Consultas hoje</div>
-  </div>
-  <div class="resumo-card">
-    <div class="num" id="total-semana">—</div>
-    <div class="label">Últimos 7 dias</div>
-  </div>
-  <div class="resumo-card">
-    <div class="num" id="ponto-top">—</div>
-    <div class="label">Ponto mais ativo</div>
+  <div class="rankings-grid">
+    <div class="ranking-card"><h3>🏆 Destinos mais buscados</h3><div id="ranking-destinos"></div></div>
+    <div class="ranking-card"><h3>🏆 Bairros mais buscados</h3><div id="ranking-bairros"></div></div>
   </div>
 </div>
 
-<!-- FILTROS -->
 <div class="filtros">
   <input type="text" id="filtro-busca" placeholder="Buscar por destino, ponto ou valor..." oninput="filtrarTabela()" />
   <select id="filtro-ponto" onchange="filtrarTabela()">
@@ -279,20 +138,20 @@
     <option value="INDEPENDÊNCIA">Shopping Independência</option>
     <option value="JARDIM NORTE">Shopping Jardim Norte</option>
   </select>
+  <select id="filtro-periodo" onchange="filtrarTabela()">
+    <option value="">Todo o período</option>
+    <option value="hoje">Hoje</option>
+    <option value="7">Últimos 7 dias</option>
+    <option value="30">Últimos 30 dias</option>
+  </select>
 </div>
 
-<!-- TABELA -->
 <div class="tabela-wrap">
+  <div class="tabela-titulo">📋 Registros detalhados</div>
   <div id="status-msg" class="status-msg">Carregando dados...</div>
   <table id="tabela" style="display:none;">
     <thead>
-      <tr>
-        <th>Data / Hora</th>
-        <th>Ponto</th>
-        <th>Destino digitado</th>
-        <th>Endereço Google</th>
-        <th>Resultado</th>
-      </tr>
+      <tr><th>Data / Hora</th><th>Ponto</th><th>Destino digitado</th><th>Endereço Google</th><th>Resultado</th></tr>
     </thead>
     <tbody id="tabela-body"></tbody>
   </table>
@@ -303,12 +162,8 @@
   const SENHA_CORRETA = 'valortaxi161068';
   const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTAFgp-moTJ_gV6c_9p1N0kdJitr_BeZptH0ukJMs-QialQgayN6E0erhdwd0d-acmpcBESsYwDMaxP/pub?output=csv';
   const POR_PAGINA = 50;
+  let todosRegistros = [], registrosFiltrados = [], paginaAtual = 1, charts = {};
 
-  let todosRegistros = [];
-  let registrosFiltrados = [];
-  let paginaAtual = 1;
-
-  // ── SENHA ─────────────────────────────────────────────────────────────────
   function verificarSenha() {
     const val = document.getElementById('input-senha').value;
     if (val === SENHA_CORRETA) {
@@ -321,42 +176,29 @@
     }
   }
 
-  // ── CARREGAR CSV ──────────────────────────────────────────────────────────
   async function carregarDados() {
     document.getElementById('status-msg').textContent = 'Carregando dados...';
     document.getElementById('status-msg').style.display = 'block';
     document.getElementById('tabela').style.display = 'none';
-
     try {
       const r = await fetch(CSV_URL + '&t=' + Date.now());
       const txt = await r.text();
       const linhas = txt.trim().split('\n');
-
-      // Ignora cabeçalho (linha 0)
       todosRegistros = linhas.slice(1).map(linha => {
         const cols = parseCsvLine(linha);
-        return {
-          dataHora:       cols[0] || '',
-          ponto:          cols[1] || '',
-          digitado:       cols[2] || '',
-          enderecoGoogle: cols[3] || '',
-          acao:           cols[4] || '',
-          resultado:      cols[5] || ''
-        };
-      }).filter(r => r.dataHora).reverse(); // mais recentes primeiro
-
+        return { dataHora: cols[0]||'', ponto: cols[1]||'', digitado: cols[2]||'', enderecoGoogle: cols[3]||'', acao: cols[4]||'', resultado: cols[5]||'' };
+      }).filter(r => r.dataHora).reverse();
       atualizarResumo();
+      atualizarGraficos();
+      atualizarRankings();
       filtrarTabela();
-
     } catch(e) {
       document.getElementById('status-msg').textContent = '❌ Erro ao carregar dados. Verifique a planilha ou tente novamente.';
     }
   }
 
-  // Parse de linha CSV respeitando aspas
   function parseCsvLine(line) {
-    const result = [];
-    let cur = '', inQ = false;
+    const result = []; let cur = '', inQ = false;
     for (let i = 0; i < line.length; i++) {
       const c = line[i];
       if (c === '"') { inQ = !inQ; }
@@ -367,125 +209,167 @@
     return result;
   }
 
-  // ── RESUMO ────────────────────────────────────────────────────────────────
-  function atualizarResumo() {
-    const hoje = new Date().toLocaleDateString('pt-BR');
-    const seteDias = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-
-    const soCalculo = todosRegistros.filter(r => r.acao === 'Calculado');
-
-    const totalHoje = soCalculo.filter(r => r.dataHora.startsWith(hoje.split('/').reverse().join('/')) || r.dataHora.includes(hoje)).length;
-
-    // Tenta contar últimos 7 dias
-    const semana = soCalculo.filter(r => {
-      try {
-        const partes = r.dataHora.split(' ')[0].split('/');
-        const d = new Date(partes[2], partes[1]-1, partes[0]);
-        return d >= seteDias;
-      } catch { return false; }
-    }).length;
-
-    // Ponto mais ativo
-    const contagem = {};
-    soCalculo.forEach(r => {
-      const p = r.ponto || 'Desconhecido';
-      contagem[p] = (contagem[p] || 0) + 1;
-    });
-    const topPonto = Object.entries(contagem).sort((a,b) => b[1]-a[1])[0];
-    const topNome = topPonto ? topPonto[0].split('—').pop().trim().split(' ').slice(0,2).join(' ') : '—';
-
-    document.getElementById('total-registros').textContent = soCalculo.length;
-    document.getElementById('total-hoje').textContent = totalHoje;
-    document.getElementById('total-semana').textContent = semana;
-    document.getElementById('ponto-top').textContent = topNome || '—';
+  function parseData(str) {
+    try { const p = str.split(' ')[0].split('/'); if (p.length===3) return new Date(p[2],p[1]-1,p[0]); } catch {}
+    return null;
   }
 
-  // ── FILTRO ────────────────────────────────────────────────────────────────
+  function parseHora(str) {
+    try { return parseInt(str.split(' ')[1].split(':')[0]); } catch { return -1; }
+  }
+
+  function atualizarResumo() {
+    const calc = todosRegistros.filter(r => r.acao === 'Calculado');
+    const hoje = new Date().toLocaleDateString('pt-BR');
+    const set7 = new Date(Date.now() - 7*24*60*60*1000);
+    const totalHoje = calc.filter(r => r.dataHora.includes(hoje)).length;
+    const semana = calc.filter(r => { const d=parseData(r.dataHora); return d&&d>=set7; }).length;
+    const contPonto = {}; calc.forEach(r => { const p=abreviarPonto(r.ponto); contPonto[p]=(contPonto[p]||0)+1; });
+    const topPonto = Object.entries(contPonto).sort((a,b)=>b[1]-a[1])[0];
+    const contHora = Array(24).fill(0); calc.forEach(r => { const h=parseHora(r.dataHora); if(h>=0) contHora[h]++; });
+    const horaPico = contHora.indexOf(Math.max(...contHora));
+    const diasN = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+    const contDia = Array(7).fill(0); calc.forEach(r => { const d=parseData(r.dataHora); if(d) contDia[d.getDay()]++; });
+    const diaPico = contDia.indexOf(Math.max(...contDia));
+    document.getElementById('total-registros').textContent = calc.length;
+    document.getElementById('total-hoje').textContent = totalHoje;
+    document.getElementById('total-semana').textContent = semana;
+    document.getElementById('ponto-top').textContent = topPonto?topPonto[0]:'—';
+    document.getElementById('hora-pico').textContent = horaPico>=0?`${horaPico}h`:'—';
+    document.getElementById('dia-pico').textContent = diasN[diaPico]||'—';
+  }
+
+  function criarChart(id, config) {
+    if (charts[id]) charts[id].destroy();
+    charts[id] = new Chart(document.getElementById(id), config);
+  }
+
+  function atualizarGraficos() {
+    const calc = todosRegistros.filter(r => r.acao === 'Calculado');
+    const am = '#FFE600', azul = 'rgba(255,230,0,0.3)';
+    const tickStyle = { color: 'rgba(255,255,255,0.7)', font: { size: 10 } };
+    const gridStyle = { color: 'rgba(255,255,255,0.1)' };
+
+    const porHora = Array(24).fill(0);
+    calc.forEach(r => { const h=parseHora(r.dataHora); if(h>=0) porHora[h]++; });
+    criarChart('grafico-hora', { type:'bar', data:{ labels:Array.from({length:24},(_,i)=>`${i}h`), datasets:[{data:porHora,backgroundColor:am,borderRadius:4}] }, options:{ plugins:{legend:{display:false}}, scales:{x:{ticks:tickStyle,grid:{display:false}},y:{ticks:tickStyle,grid:gridStyle}} } });
+
+    const diasN = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+    const porDia = Array(7).fill(0);
+    calc.forEach(r => { const d=parseData(r.dataHora); if(d) porDia[d.getDay()]++; });
+    criarChart('grafico-semana', { type:'bar', data:{ labels:diasN, datasets:[{data:porDia,backgroundColor:am,borderRadius:4}] }, options:{ plugins:{legend:{display:false}}, scales:{x:{ticks:tickStyle,grid:{display:false}},y:{ticks:tickStyle,grid:gridStyle}} } });
+
+    const ult14 = []; for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);ult14.push(d.toLocaleDateString('pt-BR'));}
+    const porData = {}; ult14.forEach(d=>porData[d]=0);
+    calc.forEach(r => { const d=parseData(r.dataHora); if(d){const k=d.toLocaleDateString('pt-BR');if(k in porData)porData[k]++;} });
+    criarChart('grafico-dias', { type:'line', data:{ labels:ult14.map(d=>d.substring(0,5)), datasets:[{data:Object.values(porData),borderColor:am,backgroundColor:azul,tension:0.3,fill:true,pointBackgroundColor:am}] }, options:{ plugins:{legend:{display:false}}, scales:{x:{ticks:tickStyle,grid:{display:false}},y:{ticks:tickStyle,grid:gridStyle}} } });
+
+    const porPonto = {}; calc.forEach(r=>{const p=abreviarPonto(r.ponto);porPonto[p]=(porPonto[p]||0)+1;});
+    const pts = Object.entries(porPonto).sort((a,b)=>b[1]-a[1]);
+    criarChart('grafico-pontos', { type:'doughnut', data:{ labels:pts.map(p=>p[0]), datasets:[{data:pts.map(p=>p[1]),backgroundColor:['#FFE600','#2471A3','#22c55e','#e67e22','#9b59b6'],borderColor:'#1A5276',borderWidth:2}] }, options:{ plugins:{legend:{labels:{color:'rgba(255,255,255,0.8)',font:{size:11}}}} } });
+  }
+
+  function atualizarRankings() {
+    const calc = todosRegistros.filter(r => r.acao === 'Calculado');
+    const vazio = '<div style="color:rgba(255,255,255,0.4);font-size:0.85rem;padding:10px 0;">Sem dados suficientes</div>';
+
+    const contDest = {};
+    calc.forEach(r => { const d=(r.digitado||'').split('→')[0].trim().toLowerCase(); if(d&&d.length>2) contDest[d]=(contDest[d]||0)+1; });
+    const topDest = Object.entries(contDest).sort((a,b)=>b[1]-a[1]).slice(0,8);
+    const maxD = topDest[0]?.[1]||1;
+    document.getElementById('ranking-destinos').innerHTML = topDest.length ? topDest.map((d,i)=>`
+      <div class="ranking-item">
+        <span class="ranking-pos">${i+1}</span>
+        <span class="ranking-nome">${capitalizar(d[0])}</span>
+        <div class="ranking-bar-wrap"><div class="ranking-bar" style="width:${Math.round(d[1]/maxD*100)}%"></div></div>
+        <span class="ranking-count">${d[1]}</span>
+      </div>`).join('') : vazio;
+
+    const contBairro = {};
+    calc.forEach(r => {
+      const partes = (r.enderecoGoogle||'').split(',');
+      if (partes.length >= 3) {
+        const b = partes[partes.length-3]?.trim().toLowerCase();
+        if (b && b.length>2 && !b.includes('juiz') && !b.includes('minas') && !b.includes('brasil')) contBairro[b]=(contBairro[b]||0)+1;
+      }
+    });
+    const topBairro = Object.entries(contBairro).sort((a,b)=>b[1]-a[1]).slice(0,8);
+    const maxB = topBairro[0]?.[1]||1;
+    document.getElementById('ranking-bairros').innerHTML = topBairro.length ? topBairro.map((b,i)=>`
+      <div class="ranking-item">
+        <span class="ranking-pos">${i+1}</span>
+        <span class="ranking-nome">${capitalizar(b[0])}</span>
+        <div class="ranking-bar-wrap"><div class="ranking-bar" style="width:${Math.round(b[1]/maxB*100)}%"></div></div>
+        <span class="ranking-count">${b[1]}</span>
+      </div>`).join('') : vazio;
+  }
+
+  function capitalizar(str) { return str.replace(/\b\w/g, c=>c.toUpperCase()); }
+
   function filtrarTabela() {
     const busca = document.getElementById('filtro-busca').value.toLowerCase();
     const ponto = document.getElementById('filtro-ponto').value.toLowerCase();
-
+    const periodo = document.getElementById('filtro-periodo').value;
+    const hoje = new Date().toLocaleDateString('pt-BR');
     registrosFiltrados = todosRegistros.filter(r => {
-      const matchBusca = !busca ||
-        r.digitado.toLowerCase().includes(busca) ||
-        r.enderecoGoogle.toLowerCase().includes(busca) ||
-        r.resultado.toLowerCase().includes(busca) ||
-        r.ponto.toLowerCase().includes(busca);
+      const matchBusca = !busca || r.digitado.toLowerCase().includes(busca) || r.enderecoGoogle.toLowerCase().includes(busca) || r.resultado.toLowerCase().includes(busca) || r.ponto.toLowerCase().includes(busca);
       const matchPonto = !ponto || r.ponto.toLowerCase().includes(ponto);
-      return matchBusca && matchPonto;
+      let matchPeriodo = true;
+      if (periodo==='hoje') matchPeriodo = r.dataHora.includes(hoje);
+      else if (periodo==='7'||periodo==='30') { const limite=new Date(Date.now()-parseInt(periodo)*24*60*60*1000); const d=parseData(r.dataHora); matchPeriodo=d&&d>=limite; }
+      return matchBusca && matchPonto && matchPeriodo;
     });
-
     paginaAtual = 1;
     renderTabela();
   }
 
-  // ── TABELA ────────────────────────────────────────────────────────────────
   function renderTabela() {
     const tbody = document.getElementById('tabela-body');
     const statusMsg = document.getElementById('status-msg');
-
     if (registrosFiltrados.length === 0) {
-      statusMsg.textContent = todosRegistros.length === 0
-        ? 'Nenhum registro encontrado na planilha ainda.'
-        : 'Nenhum resultado para o filtro aplicado.';
+      statusMsg.textContent = todosRegistros.length===0 ? 'Nenhum registro encontrado na planilha ainda.' : 'Nenhum resultado para o filtro aplicado.';
       statusMsg.style.display = 'block';
       document.getElementById('tabela').style.display = 'none';
       document.getElementById('paginacao').innerHTML = '';
       return;
     }
-
     statusMsg.style.display = 'none';
     document.getElementById('tabela').style.display = 'table';
-
-    const inicio = (paginaAtual - 1) * POR_PAGINA;
-    const pagina = registrosFiltrados.slice(inicio, inicio + POR_PAGINA);
-
-    tbody.innerHTML = pagina.map(r => `
+    const inicio = (paginaAtual-1)*POR_PAGINA;
+    tbody.innerHTML = registrosFiltrados.slice(inicio, inicio+POR_PAGINA).map(r=>`
       <tr>
         <td style="white-space:nowrap;color:#666;font-size:0.82rem;">${r.dataHora}</td>
         <td><span class="badge-ponto">${abreviarPonto(r.ponto)}</span></td>
-        <td>${r.digitado || '—'}</td>
-        <td style="color:#666;font-size:0.82rem;">${r.enderecoGoogle || '—'}</td>
-        <td><span class="badge-valor">${r.resultado || '—'}</span></td>
-      </tr>
-    `).join('');
-
+        <td>${r.digitado||'—'}</td>
+        <td style="color:#666;font-size:0.82rem;">${r.enderecoGoogle||'—'}</td>
+        <td><span class="badge-valor">${r.resultado||'—'}</span></td>
+      </tr>`).join('');
     renderPaginacao();
   }
 
   function abreviarPonto(nome) {
     if (!nome) return '—';
-    if (nome.includes('RODOVIÁRIA') || nome.includes('RODOVIARIA')) return 'Rodoviária';
+    if (nome.includes('RODOVIÁRIA')||nome.includes('RODOVIARIA')) return 'Rodoviária';
     if (nome.includes('MARECHAL')) return 'Marechal';
-    if (nome.includes('INDEPENDÊNCIA') || nome.includes('INDEPENDENCIA')) return 'Independência';
+    if (nome.includes('INDEPENDÊNCIA')||nome.includes('INDEPENDENCIA')) return 'Independência';
     if (nome.includes('JARDIM NORTE')) return 'Jardim Norte';
-    return nome.split('—').pop().trim().substring(0, 15);
+    return nome.split('—').pop().trim().substring(0,15);
   }
 
   function renderPaginacao() {
-    const total = Math.ceil(registrosFiltrados.length / POR_PAGINA);
-    if (total <= 1) { document.getElementById('paginacao').innerHTML = ''; return; }
-
-    let html = '';
-    if (paginaAtual > 1) html += `<button onclick="irPagina(${paginaAtual-1})">← Anterior</button>`;
-    for (let i = Math.max(1, paginaAtual-2); i <= Math.min(total, paginaAtual+2); i++) {
-      html += `<button class="${i===paginaAtual?'ativo':''}" onclick="irPagina(${i})">${i}</button>`;
-    }
-    if (paginaAtual < total) html += `<button onclick="irPagina(${paginaAtual+1})">Próxima →</button>`;
-    html += `<span style="padding:6px 10px;font-size:0.8rem;color:var(--blue);font-weight:600;">${registrosFiltrados.length} registros</span>`;
+    const total = Math.ceil(registrosFiltrados.length/POR_PAGINA);
+    if (total<=1) { document.getElementById('paginacao').innerHTML=''; return; }
+    let html='';
+    if (paginaAtual>1) html+=`<button onclick="irPagina(${paginaAtual-1})">← Anterior</button>`;
+    for(let i=Math.max(1,paginaAtual-2);i<=Math.min(total,paginaAtual+2);i++) html+=`<button class="${i===paginaAtual?'ativo':''}" onclick="irPagina(${i})">${i}</button>`;
+    if (paginaAtual<total) html+=`<button onclick="irPagina(${paginaAtual+1})">Próxima →</button>`;
+    html+=`<span style="padding:6px 10px;font-size:0.8rem;color:var(--blue);font-weight:600;">${registrosFiltrados.length} registros</span>`;
     document.getElementById('paginacao').innerHTML = html;
   }
 
-  function irPagina(n) {
-    paginaAtual = n;
-    renderTabela();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
+  function irPagina(n) { paginaAtual=n; renderTabela(); window.scrollTo({top:0,behavior:'smooth'}); }
 
-  // Foca no campo de senha ao carregar
-  window.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('input-senha').focus();
-  });
+  window.addEventListener('DOMContentLoaded', () => { document.getElementById('input-senha').focus(); });
 </script>
 </body>
 </html>
