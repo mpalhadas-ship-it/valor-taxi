@@ -1064,9 +1064,9 @@
       const raioBairro = destResults.find(r => r.ehBairro)?.raioBairro || 'M';
       const { vMin, vMax } = mostrarResultado(distKm, durMin * 0.15, ruaSemNumero, filled.join(' '), ehBairro, raioBairro);
 
-      const msgBairro = 'COMO FOI INFORMADO APENAS O BAIRRO, O VALOR PODE VARIAR BASTANTE CONFORME O DESTINO EXATO. INFORME O ENDEREÇO COMPLETO PARA UMA ESTIMATIVA MAIS PRECISA';
-      const msgSemNumero = 'SEM INFORMAÇÃO DO NÚMERO, O VALOR ACIMA CONSIDERA UM DESTINO MAIS PRÓXIMO E UM MAIS DISTANTE DO LOCAL INFORMADO';
-      const msgComNumero = 'Estes são os valores prováveis até o destino informado. Boa corrida!';
+      const msgBairro = 'Destino por bairro. O valor pode variar bastante. Informe rua e número para melhorar a estimativa.';
+      const msgSemNumero = 'Destino por rua. O valor pode variar mais. Informe o número para melhorar a estimativa.';
+      const msgComNumero = 'Valores prováveis até o destino informado. Boa corrida!';
       const msgExtra = 'Se preferir, consulte também o taxista que está no ponto. Boa corrida!';
       const msgEl = document.getElementById('result-msg');
       const estilo = "font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.95rem;letter-spacing:0.03em;text-transform:uppercase;display:block;";
