@@ -744,11 +744,13 @@
   ];
 
   function destinoBloqueado(texto) {
-    const norm = texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    // Pega só a primeira parte antes da vírgula e remove números
+    const norm = texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .split(',')[0].replace(/\d+/g, '').trim();
     return CIDADES_BLOQUEADAS.some(c => {
       const cn = c.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      // Bloqueia se o texto É a cidade ou COMEÇA com ela
-      return norm === cn || norm.startsWith(cn + ' ') || norm.startsWith(cn + ',');
+      // Bloqueia APENAS se o texto é exatamente a cidade
+      return norm === cn;
     });
   }
 
