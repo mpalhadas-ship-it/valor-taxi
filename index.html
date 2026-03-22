@@ -597,7 +597,9 @@
 
   function carregarPontoDeOrigem() {
     const params = new URLSearchParams(window.location.search);
-    const ponto = params.get('ponto');
+    const subdomainMap = { 'rodoviaria': 'ponto51', 'jardimnorte': 'pontojn', 'independencia': 'pontosind' };
+    const sub = window.location.hostname.split('.')[0];
+    const ponto = params.get('ponto') || subdomainMap[sub] || null;
     if (ponto && PONTOS[ponto]) {
       window._origemFixa = { lat: PONTOS[ponto].lat, lon: PONTOS[ponto].lon };
       document.getElementById('origin').value = PONTOS[ponto].nome;
