@@ -1034,13 +1034,14 @@
       const msgSemNumero = 'Destino por rua. O valor pode variar mais. Informe o número para melhorar a estimativa.';
       const msgComNumero = 'Valores prováveis até o destino informado. Boa corrida!';
       const msgEl = document.getElementById('result-msg');
-      const estilo = "font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.95rem;letter-spacing:0.03em;text-transform:uppercase;display:block;";
+      const estilo = "font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.85rem;letter-spacing:0.03em;text-transform:uppercase;display:block;background:#1A5276;color:#FFE600;border-radius:8px;padding:8px 12px;margin-top:4px;";
+      const estiloNormal = "font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.85rem;letter-spacing:0.03em;text-transform:uppercase;display:block;";
       if (ehBairro) {
         msgEl.innerHTML = `<span style="${estilo}">${msgBairro}</span>`;
       } else if (ruaSemNumero) {
         msgEl.innerHTML = `<span style="${estilo}">${msgSemNumero}</span>`;
       } else {
-        msgEl.innerHTML = `<span style="${estilo}">${msgComNumero}</span>`;
+        msgEl.innerHTML = `<span style="${estiloNormal}">${msgComNumero}</span>`;
       }
       msgEl.style.color = 'var(--taxi-blue)';
 
@@ -1347,8 +1348,6 @@
     n.textContent = msg; n.classList.add('show');
     setTimeout(() => n.classList.remove('show'), 3000);
   }
-
-  // ── PWA ───────────────────────────────────────────────────────────────────
 
   // ── INIT ──────────────────────────────────────────────────────────────────
   window.addEventListener('DOMContentLoaded', () => {
