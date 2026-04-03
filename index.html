@@ -658,6 +658,34 @@
     return t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   }
 
+  // ── BAIRROS (sem rua/número) ──────────────────────────────────────────────
+  const BAIRROS_JF = {
+    'alto dos passos': 'P', 'manoel honorio': 'P', 'poco rico': 'P',
+    'santa rita': 'P', 'santos anjos': 'P', 'mariano procopio': 'P',
+    'paineiras': 'P', 'democrata': 'P', 'santa cecilia': 'P',
+    'monte castelo': 'P', 'nossa senhora de lourdes': 'P', 'bom pastor': 'P',
+    'centro': 'M', 'sao mateus': 'M', 'jardim norte': 'M', 'cascatinha': 'M',
+    'sao pedro': 'M', 'santa luzia': 'M', 'teixeiras': 'M', 'aeroporto': 'M',
+    'dom bosco': 'M', 'ipiranga': 'M', 'santa helena': 'M', 'progresso': 'M',
+    'graminha': 'M', 'bandeirantes': 'M', 'passos': 'M', 'joquei clube': 'M',
+    'morro da gloria': 'M', 'gloria': 'M', 'sagrado coracao': 'M',
+    'santa terezinha': 'M', 'cruzeiro do sul': 'M', 'vitorino braga': 'M',
+    'salvaterra': 'G', 'grama': 'G', 'borboleta': 'G', 'benfica': 'G',
+    'barbosa lage': 'G', 'santa cruz': 'G',
+  };
+
+  function detectarBairro(addr, tipos) {
+    const ehTipoBairro = tipos && tipos.some(t =>
+      ['neighborhood','sublocality','sublocality_level_1','political'].includes(t)
+    ) && !tipos.includes('route') && !tipos.includes('street_address');
+    if (!ehTipoBairro) return null;
+    const norm = normalizarTexto(addr.split(',')[0].trim());
+    for (const [nome, tamanho] of Object.entries(BAIRROS_JF)) {
+      if (norm.includes(normalizarTexto(nome))) return tamanho;
+    }
+    return 'M';
+  }
+
   function buscarBaseLocal(query) {
     const q = normalizarTexto(query.trim());
     const JF_LAT = -21.7642, JF_LON = -43.3503;
