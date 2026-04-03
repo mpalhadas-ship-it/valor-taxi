@@ -672,12 +672,18 @@
     // Prioriza: nome começa exatamente com o termo > nome contém o termo
     const exatos = dentro.filter(l => normalizarTexto(l.n).startsWith(q));
     const contem = dentro.filter(l => !normalizarTexto(l.n).startsWith(q));
-    return [...exatos, ...contem].slice(0, 4).map(l => ({
-      geometry: { location: { lat: l.lat, lng: l.lon } },
-      formatted_address: [l.n, l.r && l.num ? l.r + ', ' + l.num : l.r, l.b, 'Juiz de Fora, MG'].filter(Boolean).join(', '),
-      types: ['establishment'],
-      _local: true
-    }));
+    return [...exatos, ...contem].slice(0, 4).map(l => {
+      const ehBairroLocal = !l.r && !l.num;
+      const tamanho = ehBairroLocal ? (BAIRROS_JF[normalizarTexto(l.n)] || 'M') : null;
+      return {
+        geometry: { location: { lat: l.lat, lng: l.lon } },
+        formatted_address: [l.n, l.r && l.num ? l.r + ', ' + l.num : l.r, l.b, 'Juiz de Fora, MG'].filter(Boolean).join(', '),
+        types: ehBairroLocal ? ['neighborhood'] : ['establishment'],
+        ehBairro: ehBairroLocal,
+        raioBairro: tamanho,
+        _local: true
+      };
+    });
   }
 
   const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwcMh244zukx-p2llStfCVo3znYeiXxUIeXb91Uq4uqQ5QjFsUu37Az1eUa_VSe3jUI/exec';
@@ -800,38 +806,6 @@
   }
 
   // ── RESULTADO ─────────────────────────────────────────────────────────────
-
-  // ── BAIRROS (sem rua/número) ──────────────────────────────────────────────
-  const BAIRROS_JF = {
-    // Pequenos
-    'alto dos passos': 'P', 'manoel honório': 'P', 'poço rico': 'P',
-    'santa rita': 'P', 'santos anjos': 'P', 'mariano procopio': 'P',
-    'paineiras': 'P', 'democrata': 'P', 'santa cecilia': 'P',
-    'monte castelo': 'P', 'nossa senhora de lourdes': 'P', 'bom pastor': 'P',
-    // Médios
-    'centro': 'M', 'sao mateus': 'M', 'jardim norte': 'M', 'cascatinha': 'M',
-    'sao pedro': 'M', 'santa luzia': 'M', 'teixeiras': 'M', 'aeroporto': 'M',
-    'dom bosco': 'M', 'ipiranga': 'M', 'santa helena': 'M', 'progresso': 'M',
-    'graminha': 'M', 'bandeirantes': 'M', 'passos': 'M', 'joquei clube': 'M',
-    'morro da gloria': 'M', 'gloria': 'M', 'sagrado coracao': 'M',
-    'santa terezinha': 'M', 'cruzeiro do sul': 'M', 'vitorino braga': 'M',
-    // Grandes
-    'salvaterra': 'G', 'grama': 'G', 'borboleta': 'G', 'benfica': 'G',
-    'barbosa lage': 'G', 'santa cruz': 'G',
-  };
-
-  function detectarBairro(addr, tipos) {
-    const ehTipoBairro = tipos && tipos.some(t =>
-      ['neighborhood','sublocality','sublocality_level_1','political'].includes(t)
-    ) && !tipos.includes('route') && !tipos.includes('street_address');
-    if (!ehTipoBairro) return null;
-    const norm = normalizarTexto(addr.split(',')[0].trim());
-    for (const [nome, tamanho] of Object.entries(BAIRROS_JF)) {
-      if (norm.includes(normalizarTexto(nome))) return tamanho;
-    }
-    return 'M'; // bairro não mapeado → médio por padrão
-  }
-
   // Avenidas longas com variação máxima especial (sem número)
   const AVENIDAS_LONGAS = [
     { nome: 'rio branco', fatorMax: 2.00 },
@@ -990,14 +964,18 @@
           // Se não definido, assume ehLocal se não tem número mas parece nome de estabelecimento
           let ehLocal = inp.dataset.ehLocal === '1';
           if (!inp.dataset.ehLocal) {
-            ehLocal = !/\d/.test(addr); // sem número = provavelmente local ou rua genérica — trata igual
+            ehLocal = !/\d/.test(addr);
           }
+          const ehBairroCache = inp.dataset.ehBairro === '1';
+          const raioBairroCache = inp.dataset.raioBairro || 'M';
           return Promise.resolve({
             lat: parseFloat(inp.dataset.lat),
             lon: parseFloat(inp.dataset.lon),
             formatted: inp.dataset.formatted || addr,
             ehLocal,
-            temNumero: /\d/.test(addr)
+            temNumero: /\d/.test(addr),
+            ehBairro: ehBairroCache,
+            raioBairro: raioBairroCache
           });
         }
         return geocodeFreshFull(addr);
@@ -1270,6 +1248,8 @@
         input.dataset.lat = res.geometry.location.lat;
         input.dataset.lon = res.geometry.location.lng;
         input.dataset.formatted = res.formatted_address;
+        input.dataset.ehBairro = res.ehBairro ? '1' : '0';
+        input.dataset.raioBairro = res.raioBairro || '';
         // Verifica se é estabelecimento/local (ponto exato) ou rua genérica
         const tipos = res.types || [];
         const ehLocal = tipos.some(t => ['establishment','point_of_interest','premise','subpremise',
