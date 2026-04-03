@@ -671,7 +671,7 @@
     'morro da gloria': 'M', 'gloria': 'M', 'sagrado coracao': 'M',
     'santa terezinha': 'M', 'cruzeiro do sul': 'M', 'vitorino braga': 'M',
     'salvaterra': 'G', 'grama': 'G', 'borboleta': 'G', 'benfica': 'G',
-    'barbosa lage': 'G', 'santa cruz': 'G',
+    'barbosa lage': 'G', 'santa cruz': 'G', 'marumbi': 'M',
   };
 
   function detectarBairro(addr, tipos) {
@@ -701,8 +701,9 @@
     const exatos = dentro.filter(l => normalizarTexto(l.n).startsWith(q));
     const contem = dentro.filter(l => !normalizarTexto(l.n).startsWith(q));
     return [...exatos, ...contem].slice(0, 4).map(l => {
-      const ehBairroLocal = !l.r && !l.num;
-      const tamanho = ehBairroLocal ? (BAIRROS_JF[normalizarTexto(l.n)] || 'M') : null;
+      const nomeNorm = normalizarTexto(l.n);
+      const ehBairroLocal = nomeNorm in BAIRROS_JF;
+      const tamanho = ehBairroLocal ? BAIRROS_JF[nomeNorm] : null;
       return {
         geometry: { location: { lat: l.lat, lng: l.lon } },
         formatted_address: [l.n, l.r && l.num ? l.r + ', ' + l.num : l.r, l.b, 'Juiz de Fora, MG'].filter(Boolean).join(', '),
